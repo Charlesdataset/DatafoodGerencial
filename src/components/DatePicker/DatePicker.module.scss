@@ -1,0 +1,602 @@
+@use "sass:color";
+@use "../../styles/abstracts/variables" as *;
+@use "../../styles/abstracts/mixins" as *;
+
+.formField {
+  margin-bottom: 2rem;
+  width: 100%;
+  position: relative;
+}
+
+.label {
+  display: block;
+  font-size: $font-size-base;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: $gray;
+
+  .required {
+    color: $danger;
+    margin-left: 4px;
+  }
+}
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.datePickerInput {
+  width: 100%;
+  height: 40px;
+  padding: 0 32px 0 12px;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  font-size: 16px;
+  background: $white;
+  transition: all 0.2s ease;
+  box-shadow: $box-shadow-inputs;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow:
+      0 0 0 3px rgba($primary, 0.1),
+      inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  &:disabled {
+    background: $background-light;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+  }
+
+  &.inputError {
+    border-color: $danger;
+    &:focus {
+      box-shadow:
+        0 0 0 3px rgba($danger, 0.1),
+        inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
+.clearBtn {
+  position: absolute;
+  top: 50%;
+  right: 36px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: $gray;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+
+  &:hover {
+    color: $danger;
+    background: rgba($danger, 0.1);
+  }
+}
+
+.calendarIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  pointer-events: none;
+  color: $gray;
+}
+
+.errorMessage {
+  position: absolute;
+  display: block;
+  font-size: 11px;
+  color: $danger;
+  margin-top: 4px;
+
+  // &::before {
+  //   content: "⚠";
+  //   font-size: 11px;
+  //   margin-right: 4px;
+  // }
+}
+
+.helperText {
+  position: absolute;
+  display: block;
+  font-size: 11px;
+  color: $gray-light;
+  margin-top: 4px;
+}
+
+// Dropdown
+.datePickerDropdown {
+  position: absolute;
+  left: 0;
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 1100;
+  padding: 16px;
+  min-width: 280px;
+  max-width: 95vw;
+
+  &.withTimePicker {
+    min-width: 490px;
+  }
+
+  &.dropdownBottom {
+    top: calc(100% + 8px);
+  }
+
+  &.dropdownTop {
+    bottom: calc(100% + 8px);
+    top: auto;
+  }
+}
+
+.datePickerContent {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.calendarSection {
+  flex: 1;
+  min-width: 0;
+}
+
+// Overlay mobile
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1099;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.closeBtnMobile {
+  display: none;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid $border-color;
+}
+
+.navBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: $gray;
+  padding: 6px 10px;
+  border-radius: 6px;
+  min-width: 36px;
+  min-height: 36px;
+
+  &:hover {
+    background: $light;
+    color: $primary;
+  }
+}
+
+.monthYear {
+  font-size: 14px;
+  font-weight: 600;
+  color: $dark;
+  text-align: center;
+  min-width: 140px;
+}
+
+.calendarWeekDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.weekDay {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: $gray;
+  padding: 8px 0;
+  text-transform: uppercase;
+}
+
+.calendarDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendarDayCell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayBtn {
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: $dark;
+  min-height: 36px;
+
+  &:hover {
+    background: $light;
+  }
+
+  &.today {
+    background: rgba($primary, 0.12);
+    color: $primary;
+    font-weight: 600;
+  }
+
+  &.selected {
+    background: $primary;
+    color: white;
+    font-weight: 600;
+
+    &:hover {
+      background: color.scale($primary, $lightness: 8%);
+    }
+  }
+}
+
+// Time picker
+.timePickerSection {
+  width: 200px;
+  padding: 8px 0 8px 16px;
+  border-left: 1px solid $border-color;
+
+  .timePickerHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: $dark;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid $border-color;
+
+    svg {
+      color: $primary;
+    }
+  }
+}
+
+.timeInputs {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.timeSeparator {
+  font-size: 26px;
+  font-weight: 700;
+  color: $primary;
+  margin: 0 4px;
+  margin-top: 8px;
+  user-select: none;
+  line-height: 1;
+}
+
+// Drum Picker
+.drumOuter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.drumLabel {
+  font-size: 10px;
+  color: $gray;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 1px;
+}
+
+.drumArrow {
+  width: 64px;
+  height: 28px;
+  background: $background-light;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 9px;
+  color: $gray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.13s ease,
+    color 0.13s ease;
+  user-select: none;
+
+  &:hover {
+    background: rgba($primary, 0.1);
+    color: $primary;
+    border-color: rgba($primary, 0.4);
+  }
+
+  &:active {
+    background: rgba($primary, 0.2);
+  }
+}
+
+.drumCylinder {
+  position: relative;
+  width: 64px;
+  height: 220px; // 5 × 44px items visible
+  overflow: hidden;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  background: $white;
+  box-shadow: $box-shadow-inputs;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.drumHighlight {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+  background: rgba($primary, 0.07);
+  border-top: 1.5px solid rgba($primary, 0.3);
+  border-bottom: 1.5px solid rgba($primary, 0.3);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.drumFadeTop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 38%;
+  background: linear-gradient(to bottom, $white 20%, rgba($white, 0));
+  pointer-events: none;
+  z-index: 3;
+}
+
+.drumFadeBottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 38%;
+  background: linear-gradient(to top, $white 20%, rgba($white, 0));
+  pointer-events: none;
+  z-index: 3;
+}
+
+.drumItem {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: $dark;
+  user-select: none;
+  z-index: 1;
+  font-variant-numeric: tabular-nums;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.timePickerActions {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .todayBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calendarFooter {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid $border-color;
+}
+
+.todayBtn,
+.cancelBtn,
+.confirmBtn {
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 36px;
+  min-width: 44px;
+
+  &:hover {
+    background: rgba($primary, 0.08);
+    border-color: $primary;
+  }
+}
+
+.confirmBtn {
+  background: $primary;
+  color: white;
+  border-color: $primary;
+
+  &:hover {
+    background: color.scale($primary, $lightness: 10%);
+  }
+}
+
+.cancelBtn {
+  color: $gray;
+}
+
+// Mobile
+@media (max-width: 768px) {
+  .datePickerDropdown {
+    position: fixed !important;
+    left: 16px !important;
+    right: 16px !important;
+    top: 50% !important;
+    transform: translateY(-50%);
+    bottom: auto !important;
+    min-width: auto;
+    width: calc(100% - 32px);
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    padding: 20px;
+    z-index: 9999;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.24);
+    animation: slideUp 0.25s ease;
+
+    &.withTimePicker {
+      min-width: auto;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(-45%) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+  }
+
+  .closeBtnMobile {
+    display: flex;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.08);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: $dark;
+    z-index: 2;
+  }
+
+  .datePickerContent {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .calendarHeader {
+    padding-right: 40px;
+  }
+
+  .timePickerSection {
+    width: 100%;
+    padding: 16px 0 0 0;
+    border-top: 1px solid $border-color;
+    border-left: none;
+  }
+
+  .timeInputs {
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .drumCylinder {
+    width: 80px;
+    height: 200px;
+  }
+
+  .drumArrow {
+    width: 80px;
+    height: 36px;
+  }
+
+  .timeSeparator {
+    font-size: 30px;
+    margin: 0 6px;
+    margin-top: 8px;
+  }
+
+  .timePickerActions {
+    display: none;
+  }
+
+  .calendarFooter {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .todayBtn,
+  .cancelBtn,
+  .confirmBtn {
+    width: 100%;
+    padding: 14px;
+    font-size: 14px;
+    min-height: 48px;
+  }
+}

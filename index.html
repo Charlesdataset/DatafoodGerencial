@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/ico" href="/favicon.ico" />
+    <!-- Preload do logo: browser baixa antes mesmo do React executar -->
+    <link
+      rel="preload"
+      as="image"
+      href="/dataticket_logo.png"
+      fetchpriority="high"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"
+    />
+    <title>DataTicket</title>
+    <style>
+      /* Evita flash roxo antes do CSS/JS carregar */
+      html,
+      body {
+        background: #ffffff !important;
+      }
+      #root {
+        min-height: 100vh;
+        background: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

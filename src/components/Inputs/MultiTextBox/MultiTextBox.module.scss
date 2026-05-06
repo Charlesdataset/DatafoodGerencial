@@ -1,0 +1,186 @@
+@use "../../../styles/abstracts/variables" as *;
+@use "sass:color" as c;
+
+// ── Container principal (mesmo padrão do TextBox) ────────────────────────────
+.formField {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  position: relative;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.label {
+  display: block;
+  font-size: $font-size-base;
+  font-weight: 500;
+  color: $gray;
+
+  .required {
+    color: $danger;
+    margin-left: 4px;
+  }
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  line-height: 1;
+  border: 1.5px solid $border-color;
+  border-radius: 4px;
+  background: transparent;
+  color: $gray-light;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    border-color: $gray;
+    color: $gray;
+    background: rgba($border-color, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// ── Box principal (clicável) ──────────────────────────────────────────────────
+.inputBox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 6px;
+  min-height: 42px;
+  padding: 6px 44px 6px 10px; // padding-right reserva espaço para clear/actions
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  background: $white;
+  cursor: text;
+  transition: all 0.2s ease;
+  box-shadow: $box-shadow-inputs;
+  position: relative;
+
+  &:focus-within {
+    border-color: $primary;
+    box-shadow:
+      0 0 0 3px rgba($primary, 0.1),
+      inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  &.hasError {
+    border-color: $danger;
+    &:focus-within {
+      box-shadow:
+        0 0 0 3px rgba($danger, 0.1),
+        inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  &.disabled {
+    background: $background-light;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+    pointer-events: none;
+  }
+}
+
+// ── Input fantasma (onde o usuário digita) ───────────────────────────────────
+.ghostInput {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: inherit;
+  color: $gray-dark;
+  min-width: 120px;
+  flex: 1;
+  padding: 2px 0;
+  line-height: 1.4;
+
+  &::placeholder {
+    color: $gray-light;
+  }
+}
+
+// ── Placeholder quando não há pills e não está focado ────────────────────────
+.placeholder {
+  color: $gray-light;
+  font-size: 14px;
+  pointer-events: none;
+  user-select: none;
+}
+
+// ── Botões de ação à direita ─────────────────────────────────────────────────
+.actionsArea {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 1;
+}
+
+.clearAllBtn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $gray-light;
+  font-size: 13px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  padding: 0;
+
+  &:hover {
+    background: rgba($danger, 0.1);
+    color: $danger;
+  }
+}
+
+// ── Mensagens de erro / helper ────────────────────────────────────────────────
+.errorMessage {
+  position: absolute;
+  display: block;
+  font-size: 11px;
+  color: $danger;
+  margin-top: 4px;
+}
+
+.helperText {
+  position: absolute;
+  display: block;
+  font-size: 11px;
+  color: $gray-light;
+  margin-top: 4px;
+}
+
+// ── Count de items ────────────────────────────────────────────────────────────
+.itemCount {
+  position: absolute;
+  right: 0;
+  font-size: 11px;
+  color: $gray-light;
+  margin-top: 4px;
+  text-align: right;
+}

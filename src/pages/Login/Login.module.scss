@@ -1,0 +1,17 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.ticketTitle {
+  margin-bottom: 24px;
+  text-align: center;
+  
+  h5 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $secondary;
+    margin: 0;
+  }
+}
+
+// O resto dos estilos do formulário já estão no LoginForm
+// e no AuthSimpleLayout

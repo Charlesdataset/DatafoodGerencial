@@ -1,0 +1,349 @@
+@use "../../styles/abstracts/variables" as *;
+@use "../../styles/abstracts/mixins" as *;
+
+// ─── Tokens locais ────────────────────────────────────────────────────────────
+$radius: 10px;
+$radius-sm: 6px;
+$duration: 0.15s;
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+
+// ─── Overlay ──────────────────────────────────────────────────────────────────
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 16px 24px;
+  background: rgba(0, 0, 0, 0);
+  transition: background $duration ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.overlayVisible {
+  background: rgba(0, 0, 0, 0.45);
+
+  .overlayNoise {
+    opacity: 1;
+  }
+}
+
+.overlayLeaving {
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+}
+
+// Ruído sutil sobre o overlay para dar textura
+.overlayNoise {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity $duration ease;
+}
+
+// ─── Dialog ───────────────────────────────────────────────────────────────────
+.dialog {
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  outline: none;
+  transform: translateY(16px) scale(0.985);
+  opacity: 0;
+  transition:
+    transform $duration $ease-out,
+    opacity $duration ease;
+}
+
+.dialogVisible {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.dialogLeaving {
+  transform: translateY(10px) scale(0.99);
+  opacity: 0;
+  transition:
+    transform ($duration * 0.8) $ease-in,
+    opacity ($duration * 0.8) ease;
+}
+
+// Centralizado verticalmente (quando não precisa scroll)
+.dialogCentered {
+  margin: auto;
+  align-self: center;
+}
+
+// Scrollable: body cresce, dialog não
+.dialogScrollable .body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+// ─── Tamanhos ─────────────────────────────────────────────────────────────────
+.sizeSM {
+  max-width: 380px;
+}
+.sizeMD {
+  max-width: 520px;
+}
+.sizeLG {
+  max-width: 800px;
+}
+.sizeXL {
+  max-width: 1100px;
+}
+.sizeFullscreen {
+  max-width: none;
+  width: 100%;
+  min-height: calc(100vh - 48px);
+
+  .dialogContent {
+    border-radius: $radius;
+    min-height: calc(100vh - 96px);
+  }
+
+  .body {
+    max-height: none;
+    flex: 1;
+  }
+}
+
+// ─── Linha de acento (borda superior colorida) ────────────────────────────────
+.dialogAccent {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba($border-color, 0.5) 30%,
+    rgba($border-color, 0.5) 70%,
+    transparent 100%
+  );
+  border-radius: 0 0 1px 1px;
+  z-index: 1;
+}
+
+// ─── Content ──────────────────────────────────────────────────────────────────
+.dialogContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: $white;
+  border-radius: $radius;
+  border: 1px solid rgba($border-color, 0.16);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.03),
+    0 4px 6px -1px rgba(0, 0, 0, 0.06),
+    0 20px 40px -8px rgba(0, 0, 0, 0.18),
+    0 40px 80px -16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 16px;
+  border-bottom: 2px solid $border-color;
+  background: #f1f5f9;
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+}
+
+// ─── Botão fechar ─────────────────────────────────────────────────────────────
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: $radius-sm;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba($text-secondary, 0.5);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+
+  &:hover {
+    background: rgba($border-color, 0.1);
+    border-color: rgba($border-color, 0.2);
+    color: $text-primary;
+    transform: rotate(90deg);
+  }
+
+  &:active {
+    transform: rotate(90deg) scale(0.92);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba($border-color, 0.5);
+    outline-offset: 1px;
+  }
+}
+
+// ─── Body ─────────────────────────────────────────────────────────────────────
+.body {
+  position: relative;
+  flex: 1 1 auto;
+  padding: 20px;
+  color: $text-primary;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+
+  // Scrollbar fina quando overflow
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($border-color, 0.3);
+    border-radius: 4px;
+    &:hover {
+      background: rgba($border-color, 0.5);
+    }
+  }
+}
+
+.bodyNoPadding {
+  padding: 0;
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 2px solid $border-color;
+  background: #f1f5f9;
+}
+
+.footer_right {
+  justify-content: flex-end;
+}
+.footer_left {
+  justify-content: flex-start;
+}
+.footer_center {
+  justify-content: center;
+}
+.footer_between {
+  justify-content: space-between;
+}
+
+// ─── Responsivo ───────────────────────────────────────────────────────────────
+@media (max-width: 576px) {
+  .overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .dialog {
+    // Em mobile vem de baixo, como sheet
+    transform: translateY(32px) scale(1);
+    max-width: 100% !important;
+    width: 100%;
+    margin: 0;
+  }
+
+  .dialogVisible {
+    transform: translateY(0) scale(1);
+  }
+
+  .dialogLeaving {
+    transform: translateY(32px) scale(1);
+  }
+
+  .dialogContent {
+    border-radius: $radius $radius 0 0;
+    background: #f1f5f9;
+    height: 92dvh;
+    max-height: 92dvh;
+    overflow: hidden;
+    // Indicador de drag (sheet)
+    &::before {
+      content: "";
+      display: block;
+      width: 36px;
+      height: 3px;
+      background: rgba($border-color, 0.35);
+      border-radius: 2px;
+      margin: 10px auto 0;
+      flex-shrink: 0;
+    }
+  }
+
+  .dialogCentered {
+    align-self: flex-end;
+    margin: 0;
+  }
+
+  .sizeFullscreen .dialogContent {
+    border-radius: 0;
+    min-height: 100vh;
+    &::before {
+      display: none;
+    }
+  }
+
+  .header {
+    padding: 14px 16px 12px;
+  }
+  .body {
+    background: #ffffff;
+    padding: 16px;
+    flex: 1;
+    min-height: 0; // crucial: permite o body encolher dentro do flex-column
+    overflow-y: auto;
+    max-height: none;
+  }
+  .footer {
+    padding: 12px 16px;
+    flex-shrink: 0; // footer nunca encolhe
+  }
+}
+
+// ─── Reduced motion ───────────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .dialog,
+  .dialogVisible,
+  .dialogLeaving,
+  .closeBtn {
+    transition: none !important;
+    animation: none !important;
+  }
+}

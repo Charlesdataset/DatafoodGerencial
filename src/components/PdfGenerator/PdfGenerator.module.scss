@@ -1,0 +1,119 @@
+// PdfGenerator.module.scss
+
+.root {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+// ── Button row ────────────────────────────────────────────────────────────────
+
+.buttons {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+// Shared button base
+%btn-base {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: opacity 140ms ease, transform 100ms ease, box-shadow 140ms ease;
+  white-space: nowrap;
+  user-select: none;
+
+  &:hover:not(:disabled) {
+    opacity: 0.88;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+.btnPrimary {
+  @extend %btn-base;
+  background: linear-gradient(135deg, #1f4fd0 0%, #1eb4d5 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(31, 79, 208, 0.30);
+}
+
+.btnSecondary {
+  @extend %btn-base;
+  background: #fff;
+  color: #1f4fd0;
+  border: 1.5px solid #1f4fd0;
+
+  &:hover:not(:disabled) {
+    background: #f0f4ff;
+  }
+}
+
+// ── Spinner ────────────────────────────────────────────────────────────────────
+
+.spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+  flex-shrink: 0;
+
+  // Inside secondary button the spinner should be the accent colour
+  .btnSecondary & {
+    border-color: rgba(31, 79, 208, 0.25);
+    border-top-color: #1f4fd0;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Error banner ──────────────────────────────────────────────────────────────
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #fff1f0;
+  border: 1px solid #ffccc7;
+  color: #cf1322;
+  font-size: 12.5px;
+  max-width: 420px;
+}
+
+.errorDismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.6;
+  margin-left: auto;
+
+  &:hover { opacity: 1; }
+}

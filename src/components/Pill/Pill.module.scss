@@ -1,0 +1,100 @@
+@use "../../styles/abstracts/variables" as *;
+@use "sass:color" as c;
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 220px;
+  transition: all 0.15s ease;
+  cursor: default;
+  user-select: none;
+
+  // ── Tamanhos ────────────────────────────────────────
+  &.sm {
+    font-size: 11px;
+    padding: 2px 8px 2px 10px;
+    .label { max-width: 140px; }
+    .removeBtn { width: 14px; height: 14px; font-size: 9px; }
+  }
+
+  &.md {
+    font-size: 12px;
+    padding: 3px 8px 3px 12px;
+    .label { max-width: 160px; }
+    .removeBtn { width: 16px; height: 16px; font-size: 10px; }
+  }
+
+  &.lg {
+    font-size: 13px;
+    padding: 5px 10px 5px 14px;
+    .label { max-width: 180px; }
+    .removeBtn { width: 18px; height: 18px; font-size: 11px; }
+  }
+}
+
+// ── Variante "solid" (padrão) ───────────────────────
+.solid {
+  border: 1.5px solid transparent;
+
+  .removeBtn {
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.15s, opacity 0.15s;
+    background: rgba(0, 0, 0, 0.12);
+    opacity: 0.7;
+    line-height: 1;
+
+    &:hover {
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.25);
+    }
+  }
+}
+
+// ── Variante "outline" ─────────────────────────────
+.outline {
+  background: transparent !important;
+  border: 1.5px solid currentColor;
+
+  .removeBtn {
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.15s, opacity 0.15s;
+    background: rgba(0, 0, 0, 0.08);
+    opacity: 0.7;
+    line-height: 1;
+
+    &:hover {
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.18);
+    }
+  }
+}
+
+// ── Label (texto) ──────────────────────────────────
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+// ── Sem botão de remover ─────────────────────────
+.pill:not(:has(.removeBtn)) {
+  padding-right: 12px;
+}

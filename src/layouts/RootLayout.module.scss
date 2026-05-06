@@ -1,0 +1,17 @@
+@use '../styles/abstracts/variables' as *;
+@use '../styles/abstracts/mixins' as *;
+
+.root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  padding: $spacing-2xl;
+  
+  @include respond-to(mobile) {
+    padding: $spacing-lg;
+  }
+}

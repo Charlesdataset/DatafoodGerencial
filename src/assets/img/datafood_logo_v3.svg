@@ -1,0 +1,48 @@
+<svg width="100%" viewBox="0 0 680 380" role="img" xmlns="http://www.w3.org/2000/svg" style="">
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Logo DataFood v3</title>
+  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Logo DataFood centralizada com ícone de mochila de delivery e gráfico de barras</desc>
+
+  <!-- Centro horizontal: 340 -->
+
+  <!-- === ÍCONE CENTRALIZADO === -->
+
+  <!-- Alça da mochila -->
+  <rect x="316" y="80" width="48" height="24" rx="12" fill="#21455F" style="fill:rgb(33, 69, 95);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <rect x="324" y="80" width="32" height="18" rx="8" fill="#F1F1F1" style="fill:rgb(241, 241, 241);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Corpo da mochila -->
+  <rect x="270" y="100" width="140" height="116" rx="18" fill="#21455F" style="fill:rgb(33, 69, 95);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Painel frontal -->
+  <rect x="286" y="116" width="108" height="84" rx="10" fill="#F1F1F1" style="fill:rgb(241, 241, 241);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Gráfico de barras — centralizado dentro do painel (painel: x=286 a 394, centro=340) -->
+  <!-- 4 barras, largura 14, gap 6, total = 4*14 + 3*6 = 74, inicio = 340 - 37 = 303 -->
+  <rect x="303" y="168" width="14" height="24" rx="3" fill="#42AB8A" style="fill:rgb(66, 171, 138);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <rect x="323" y="156" width="14" height="36" rx="3" fill="#21455F" opacity="0.7" style="fill:rgb(33, 69, 95);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.7;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <rect x="343" y="146" width="14" height="46" rx="3" fill="#42AB8A" style="fill:rgb(66, 171, 138);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <rect x="363" y="160" width="14" height="32" rx="3" fill="#21455F" opacity="0.4" style="fill:rgb(33, 69, 95);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.4;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Linha base -->
+  <line x1="299" y1="192" x2="381" y2="192" stroke="#21455F" stroke-width="1.5" stroke-linecap="round" opacity="0.25" style="fill:rgb(0, 0, 0);stroke:rgb(33, 69, 95);color:rgb(0, 0, 0);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:miter;opacity:0.25;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Fivela central -->
+  <rect x="326" y="218" width="28" height="10" rx="5" fill="#42AB8A" style="fill:rgb(66, 171, 138);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Sombra/base -->
+  <ellipse cx="340" cy="222" rx="70" ry="8" fill="#21455F" opacity="0.08" style="fill:rgb(33, 69, 95);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.08;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- === TEXTO CENTRALIZADO === -->
+
+  <!-- "DATAFOOD" todo centralizado, DATA azul, FOOD verde -->
+  <!-- Fonte approx: cada char ~32px a font-size 52 -->
+  <!-- DATA = 4 chars * 32 = 128px; FOOD = 4 chars * 32 = 128px; total ~256px -->
+  <!-- Centralizando: inicio em 340 - 128 = 212 -->
+  <text x="340" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="52" fill="#21455F" style="fill:rgb(33, 69, 95);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Arial Black&quot;, Arial, sans-serif;font-size:52px;font-weight:900;text-anchor:middle;dominant-baseline:auto">
+    DATA<tspan fill="#42AB8A" style="fill:rgb(66, 171, 138);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Arial Black&quot;, Arial, sans-serif;font-size:52px;font-weight:900;text-anchor:middle;dominant-baseline:auto">FOOD</tspan>
+  </text>
+
+  <!-- Tagline centralizada -->
+  <text x="340" y="328" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#21455F" letter-spacing="5" opacity="0.55" style="fill:rgb(33, 69, 95);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.55;font-family:Arial, Helvetica, sans-serif;font-size:13px;font-weight:400;text-anchor:middle;dominant-baseline:auto">DELIVERY INTELIGENTE</text>
+
+</svg>

@@ -1,0 +1,753 @@
+// ============================================
+// UTILITÁRIOS GLOBAIS
+// Importado APENAS em main.scss — não repetir em módulos!
+// ============================================
+@use "../abstracts/variables" as *;
+
+// ============================================
+// CORES DE TEXTO
+// ============================================
+
+.text-gray {
+  color: #6c757d;
+}
+.text-gray-100 {
+  color: #f8f9fa;
+}
+.text-gray-200 {
+  color: #e9ecef;
+}
+.text-gray-300 {
+  color: #dee2e6;
+}
+.text-gray-400 {
+  color: #ced4da;
+}
+.text-gray-500 {
+  color: #adb5bd;
+}
+.text-gray-600 {
+  color: #6c757d;
+}
+.text-gray-700 {
+  color: #495057;
+}
+.text-gray-800 {
+  color: #343a40;
+}
+.text-gray-900 {
+  color: #212529;
+}
+.text-gray-light {
+  color: #94a3b8;
+}
+.text-gray-dark {
+  color: #343a40;
+}
+.text-muted {
+  color: $text-muted !important;
+}
+.small {
+  font-size: $font-size-sm;
+}
+
+// ============================================
+// GERAÇÃO DE CLASSES DE ESPAÇAMENTO (MARGIN, PADDING, GAP)
+// ============================================
+
+@mixin generate-spacing($type, $abbr, $property) {
+  @each $key, $value in $spacers {
+    .#{$abbr}-#{$key} {
+      #{$property}: $value !important;
+    }
+  }
+  @if $type == "margin" {
+    .#{$abbr}-auto {
+      #{$property}: auto !important;
+    }
+  }
+}
+
+// Margin (m, mt, mb, ml, mr, mx, my)
+@include generate-spacing("margin", "m", "margin");
+@include generate-spacing("margin", "mt", "margin-top");
+@include generate-spacing("margin", "mb", "margin-bottom");
+@include generate-spacing("margin", "ml", "margin-left");
+@include generate-spacing("margin", "mr", "margin-right");
+
+@each $key, $value in $spacers {
+  .mx-#{$key} {
+    margin-left: $value !important;
+    margin-right: $value !important;
+  }
+  .my-#{$key} {
+    margin-top: $value !important;
+    margin-bottom: $value !important;
+  }
+}
+.mx-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.my-auto {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
+.order-1 {
+  order: 1 !important;
+}
+.order-2 {
+  order: 2 !important;
+}
+.order-3 {
+  order: 3 !important;
+}
+
+@each $bp-name, $bp-width in $breakpoints {
+  @media (min-width: $bp-width) {
+    .order-#{$bp-name}-0 {
+      order: 0 !important;
+    }
+    .order-#{$bp-name}-1 {
+      order: 1 !important;
+    }
+    .order-#{$bp-name}-2 {
+      order: 2 !important;
+    }
+    .order-#{$bp-name}-3 {
+      order: 3 !important;
+    }
+  }
+}
+
+// Padding (p, pt, pb, pl, pr, px, py)
+@include generate-spacing("padding", "p", "padding");
+@include generate-spacing("padding", "pt", "padding-top");
+@include generate-spacing("padding", "pb", "padding-bottom");
+@include generate-spacing("padding", "pl", "padding-left");
+@include generate-spacing("padding", "pr", "padding-right");
+
+@each $key, $value in $spacers {
+  .px-#{$key} {
+    padding-left: $value !important;
+    padding-right: $value !important;
+  }
+  .py-#{$key} {
+    padding-top: $value !important;
+    padding-bottom: $value !important;
+  }
+}
+
+// Gap
+@each $key, $value in $spacers {
+  .gap-#{$key} {
+    gap: $value !important;
+  }
+  .row-gap-#{$key} {
+    row-gap: $value !important;
+  }
+  .col-gap-#{$key} {
+    column-gap: $value !important;
+  }
+}
+
+// ============================================
+// CLASSES BASE PARA XS (sem media query)
+// ============================================
+
+@each $key, $value in $spacers {
+  .m-xs-#{$key} {
+    margin: $value !important;
+  }
+  .mt-xs-#{$key} {
+    margin-top: $value !important;
+  }
+  .mb-xs-#{$key} {
+    margin-bottom: $value !important;
+  }
+  .ml-xs-#{$key} {
+    margin-left: $value !important;
+  }
+  .mr-xs-#{$key} {
+    margin-right: $value !important;
+  }
+  .mx-xs-#{$key} {
+    margin-left: $value !important;
+    margin-right: $value !important;
+  }
+  .my-xs-#{$key} {
+    margin-top: $value !important;
+    margin-bottom: $value !important;
+  }
+
+  .p-xs-#{$key} {
+    padding: $value !important;
+  }
+  .pt-xs-#{$key} {
+    padding-top: $value !important;
+  }
+  .pb-xs-#{$key} {
+    padding-bottom: $value !important;
+  }
+  .pl-xs-#{$key} {
+    padding-left: $value !important;
+  }
+  .pr-xs-#{$key} {
+    padding-right: $value !important;
+  }
+  .px-xs-#{$key} {
+    padding-left: $value !important;
+    padding-right: $value !important;
+  }
+  .py-xs-#{$key} {
+    padding-top: $value !important;
+    padding-bottom: $value !important;
+  }
+
+  .gap-xs-#{$key} {
+    gap: $value !important;
+  }
+}
+
+.m-xs-auto {
+  margin: auto !important;
+}
+.mt-xs-auto {
+  margin-top: auto !important;
+}
+.mb-xs-auto {
+  margin-bottom: auto !important;
+}
+.ml-xs-auto {
+  margin-left: auto !important;
+}
+.mr-xs-auto {
+  margin-right: auto !important;
+}
+.mx-xs-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.my-xs-auto {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
+// ============================================
+// VERSÕES RESPONSIVAS (mobile-first)
+// ============================================
+
+@each $bp-name, $bp-width in $breakpoints {
+  @if $bp-width > 0 {
+    @media (min-width: $bp-width) {
+      @each $key, $value in $spacers {
+        .m-#{$bp-name}-#{$key} {
+          margin: $value !important;
+        }
+        .mt-#{$bp-name}-#{$key} {
+          margin-top: $value !important;
+        }
+        .mb-#{$bp-name}-#{$key} {
+          margin-bottom: $value !important;
+        }
+        .ml-#{$bp-name}-#{$key} {
+          margin-left: $value !important;
+        }
+        .mr-#{$bp-name}-#{$key} {
+          margin-right: $value !important;
+        }
+        .mx-#{$bp-name}-#{$key} {
+          margin-left: $value !important;
+          margin-right: $value !important;
+        }
+        .my-#{$bp-name}-#{$key} {
+          margin-top: $value !important;
+          margin-bottom: $value !important;
+        }
+
+        .p-#{$bp-name}-#{$key} {
+          padding: $value !important;
+        }
+        .pt-#{$bp-name}-#{$key} {
+          padding-top: $value !important;
+        }
+        .pb-#{$bp-name}-#{$key} {
+          padding-bottom: $value !important;
+        }
+        .pl-#{$bp-name}-#{$key} {
+          padding-left: $value !important;
+        }
+        .pr-#{$bp-name}-#{$key} {
+          padding-right: $value !important;
+        }
+        .px-#{$bp-name}-#{$key} {
+          padding-left: $value !important;
+          padding-right: $value !important;
+        }
+        .py-#{$bp-name}-#{$key} {
+          padding-top: $value !important;
+          padding-bottom: $value !important;
+        }
+
+        .gap-#{$bp-name}-#{$key} {
+          gap: $value !important;
+        }
+        .row-gap-#{$bp-name}-#{$key} {
+          row-gap: $value !important;
+        }
+        .col-gap-#{$bp-name}-#{$key} {
+          column-gap: $value !important;
+        }
+      }
+      .m-#{$bp-name}-auto {
+        margin: auto !important;
+      }
+      .mt-#{$bp-name}-auto {
+        margin-top: auto !important;
+      }
+      .mb-#{$bp-name}-auto {
+        margin-bottom: auto !important;
+      }
+      .ml-#{$bp-name}-auto {
+        margin-left: auto !important;
+      }
+      .mr-#{$bp-name}-auto {
+        margin-right: auto !important;
+      }
+      .mx-#{$bp-name}-auto {
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      .my-#{$bp-name}-auto {
+        margin-top: auto !important;
+        margin-bottom: auto !important;
+      }
+    }
+  }
+}
+
+// ============================================
+// FLEXBOX UTILITIES
+// ============================================
+
+.d-flex {
+  display: flex !important;
+}
+.d-inline-flex {
+  display: inline-flex !important;
+}
+.d-block {
+  display: block !important;
+}
+.d-inline {
+  display: inline !important;
+}
+.d-none {
+  display: none !important;
+}
+
+.justify-content-start {
+  justify-content: flex-start !important;
+}
+.justify-content-end {
+  justify-content: flex-end !important;
+}
+.justify-content-center {
+  justify-content: center !important;
+}
+.justify-content-between {
+  justify-content: space-between !important;
+}
+.justify-content-around {
+  justify-content: space-around !important;
+}
+.justify-content-evenly {
+  justify-content: space-evenly !important;
+}
+
+.align-items-start {
+  align-items: flex-start !important;
+}
+.align-items-end {
+  align-items: flex-end !important;
+}
+.align-items-center {
+  align-items: center !important;
+}
+.align-items-baseline {
+  align-items: baseline !important;
+}
+.align-items-stretch {
+  align-items: stretch !important;
+}
+
+.align-content-start {
+  align-content: flex-start !important;
+}
+.align-content-end {
+  align-content: flex-end !important;
+}
+.align-content-center {
+  align-content: center !important;
+}
+.align-content-between {
+  align-content: space-between !important;
+}
+.align-content-around {
+  align-content: space-around !important;
+}
+.align-content-stretch {
+  align-content: stretch !important;
+}
+
+.align-self-start {
+  align-self: flex-start !important;
+}
+.align-self-end {
+  align-self: flex-end !important;
+}
+.align-self-center {
+  align-self: center !important;
+}
+.align-self-baseline {
+  align-self: baseline !important;
+}
+.align-self-stretch {
+  align-self: stretch !important;
+}
+
+.flex-row {
+  flex-direction: row !important;
+}
+.flex-column {
+  flex-direction: column !important;
+}
+.flex-row-reverse {
+  flex-direction: row-reverse !important;
+}
+.flex-column-reverse {
+  flex-direction: column-reverse !important;
+}
+
+.flex-wrap {
+  flex-wrap: wrap !important;
+}
+.flex-nowrap {
+  flex-wrap: nowrap !important;
+}
+.flex-wrap-reverse {
+  flex-wrap: wrap-reverse !important;
+}
+
+.flex-grow-0 {
+  flex-grow: 0 !important;
+}
+.flex-grow-1 {
+  flex-grow: 1 !important;
+}
+.flex-shrink-0 {
+  flex-shrink: 0 !important;
+}
+.flex-shrink-1 {
+  flex-shrink: 1 !important;
+}
+
+// ============================================
+// POSICIONAMENTO / MISC
+// ============================================
+
+.position-relative {
+  position: relative !important;
+}
+.position-absolute {
+  position: absolute !important;
+}
+.position-fixed {
+  position: fixed !important;
+}
+
+.ratio-1x1 {
+  aspect-ratio: 1 / 1 !important;
+}
+
+@each $bp-name, $bp-width in $breakpoints {
+  @media (min-width: $bp-width) {
+    .ratio-1x1-#{$bp-name} {
+      aspect-ratio: 1 / 1 !important;
+    }
+    .ration-1x2-#{$bp-name} {
+      aspect-ratio: 1 / 2 !important;
+    }
+    .ratio-1x3-#{$bp-name} {
+      aspect-ratio: 1 / 3 !important;
+    }
+    .ration-2x1-#{$bp-name} {
+      aspect-ratio: 2 / 1 !important;
+    }
+    .ratio-3x1-#{$bp-name} {
+      aspect-ratio: 3 / 1 !important;
+    }
+    .ratio-#{$bp-name}-none {
+      aspect-ratio: unset !important;
+    }
+  }
+}
+
+// ============================================
+// LARGURAS / ALTURAS
+// ============================================
+
+.w-auto {
+  width: auto !important;
+}
+.w-400 {
+  width: 400px !important;
+}
+
+@each $bp-name, $bp-width in $breakpoints {
+  @media (min-width: $bp-width) {
+    .w-#{$bp-name}-200 {
+      width: 200px !important;
+    }
+    .w-#{$bp-name}-250 {
+      width: 250px !important;
+    }
+    .w-#{$bp-name}-280 {
+      width: 280px !important;
+    }
+    .w-#{$bp-name}-300 {
+      width: 300px !important;
+    }
+    .w-#{$bp-name}-350 {
+      width: 350px !important;
+    }
+    .w-#{$bp-name}-400 {
+      width: 400px !important;
+    }
+    .w-#{$bp-name}-450 {
+      width: 450px !important;
+    }
+    .w-#{$bp-name}-500 {
+      width: 500px !important;
+    }
+    .w-#{$bp-name}-550 {
+      width: 550px !important;
+    }
+    .w-#{$bp-name}-600 {
+      width: 600px !important;
+    }
+    .w-#{$bp-name}-650 {
+      width: 650px !important;
+    }
+    .w-#{$bp-name}-auto {
+      width: auto !important;
+    }
+  }
+}
+
+.h-auto {
+  height: auto !important;
+}
+.h-stretch {
+  height: 100% !important;
+}
+
+@each $bp-name, $bp-width in $breakpoints {
+  @media (min-width: $bp-width) {
+    .h-#{$bp-name}-50 {
+      height: 50px !important;
+    }
+    .h-#{$bp-name}-100 {
+      height: 100px !important;
+    }
+    .h-#{$bp-name}-150 {
+      height: 150px !important;
+    }
+    .h-#{$bp-name}-200 {
+      height: 200px !important;
+    }
+    .h-#{$bp-name}-250 {
+      height: 250px !important;
+    }
+    .h-#{$bp-name}-280 {
+      height: 280px !important;
+    }
+    .h-#{$bp-name}-300 {
+      height: 300px !important;
+    }
+    .h-#{$bp-name}-350 {
+      height: 350px !important;
+    }
+    .h-#{$bp-name}-400 {
+      height: 400px !important;
+    }
+    .h-#{$bp-name}-450 {
+      height: 450px !important;
+    }
+    .h-#{$bp-name}-500 {
+      height: 500px !important;
+    }
+    .h-#{$bp-name}-550 {
+      height: 550px !important;
+    }
+    .h-#{$bp-name}-600 {
+      height: 600px !important;
+    }
+    .h-#{$bp-name}-650 {
+      height: 650px !important;
+    }
+    .h-#{$bp-name}-auto {
+      height: auto !important;
+    }
+  }
+}
+
+// ============================================
+// FLEX RESPONSIVE (XS base + breakpoints)
+// ============================================
+
+.justify-content-xs-start {
+  justify-content: flex-start !important;
+}
+.justify-content-xs-end {
+  justify-content: flex-end !important;
+}
+.justify-content-xs-center {
+  justify-content: center !important;
+}
+.justify-content-xs-between {
+  justify-content: space-between !important;
+}
+.justify-content-xs-around {
+  justify-content: space-around !important;
+}
+.justify-content-xs-evenly {
+  justify-content: space-evenly !important;
+}
+
+.align-items-xs-start {
+  align-items: flex-start !important;
+}
+.align-items-xs-end {
+  align-items: flex-end !important;
+}
+.align-items-xs-center {
+  align-items: center !important;
+}
+.align-items-xs-baseline {
+  align-items: baseline !important;
+}
+.align-items-xs-stretch {
+  align-items: stretch !important;
+}
+
+.flex-xs-row {
+  flex-direction: row !important;
+}
+.flex-xs-column {
+  flex-direction: column !important;
+}
+.flex-xs-row-reverse {
+  flex-direction: row-reverse !important;
+}
+.flex-xs-column-reverse {
+  flex-direction: column-reverse !important;
+}
+
+@each $bp-name, $bp-width in $breakpoints {
+  @if $bp-width > 0 {
+    @media (min-width: $bp-width) {
+      .justify-content-#{$bp-name}-start {
+        justify-content: flex-start !important;
+      }
+      .justify-content-#{$bp-name}-end {
+        justify-content: flex-end !important;
+      }
+      .justify-content-#{$bp-name}-center {
+        justify-content: center !important;
+      }
+      .justify-content-#{$bp-name}-between {
+        justify-content: space-between !important;
+      }
+      .justify-content-#{$bp-name}-around {
+        justify-content: space-around !important;
+      }
+      .justify-content-#{$bp-name}-evenly {
+        justify-content: space-evenly !important;
+      }
+
+      .align-items-#{$bp-name}-start {
+        align-items: flex-start !important;
+      }
+      .align-items-#{$bp-name}-end {
+        align-items: flex-end !important;
+      }
+      .align-items-#{$bp-name}-center {
+        align-items: center !important;
+      }
+      .align-items-#{$bp-name}-baseline {
+        align-items: baseline !important;
+      }
+      .align-items-#{$bp-name}-stretch {
+        align-items: stretch !important;
+      }
+
+      .flex-#{$bp-name}-row {
+        flex-direction: row !important;
+      }
+      .flex-#{$bp-name}-column {
+        flex-direction: column !important;
+      }
+      .flex-#{$bp-name}-row-reverse {
+        flex-direction: row-reverse !important;
+      }
+      .flex-#{$bp-name}-column-reverse {
+        flex-direction: column-reverse !important;
+      }
+
+      .d-#{$bp-name}-flex {
+        display: flex !important;
+      }
+      .d-#{$bp-name}-inline-flex {
+        display: inline-flex !important;
+      }
+      .d-#{$bp-name}-block {
+        display: block !important;
+      }
+      .d-#{$bp-name}-none {
+        display: none !important;
+      }
+    }
+  }
+}
+
+// ============================================
+// SPINNERS
+// ============================================
+
+.btn__spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($white, 0.3);
+  border-radius: 50%;
+  border-top-color: $white;
+  animation: spin 0.6s linear infinite;
+}
+
+.btn__spinner_search {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($gray-800, 0.3);
+  border-radius: 50%;
+  border-top-color: $gray-800;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

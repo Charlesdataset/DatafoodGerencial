@@ -1,0 +1,964 @@
+{
+  "produtos": [
+    {
+      "codigo": "P000",
+      "nome": "Produto 0",
+      "qtd": 1.0,
+      "preco": 100.0,
+      "total": 100.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P001",
+      "nome": "Produto 1",
+      "qtd": 2.0,
+      "preco": 101.0,
+      "total": 202.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P002",
+      "nome": "Produto 2",
+      "qtd": 3.0,
+      "preco": 102.0,
+      "total": 306.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P003",
+      "nome": "Produto 3",
+      "qtd": 4.0,
+      "preco": 103.0,
+      "total": 412.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P004",
+      "nome": "Produto 4",
+      "qtd": 5.0,
+      "preco": 104.0,
+      "total": 520.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P005",
+      "nome": "Produto 5",
+      "qtd": 6.0,
+      "preco": 105.0,
+      "total": 630.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P006",
+      "nome": "Produto 6",
+      "qtd": 7.0,
+      "preco": 106.0,
+      "total": 742.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P007",
+      "nome": "Produto 7",
+      "qtd": 8.0,
+      "preco": 107.0,
+      "total": 856.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P008",
+      "nome": "Produto 8",
+      "qtd": 9.0,
+      "preco": 108.0,
+      "total": 972.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P009",
+      "nome": "Produto 9",
+      "qtd": 10.0,
+      "preco": 109.0,
+      "total": 1090.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P010",
+      "nome": "Produto 10",
+      "qtd": 11.0,
+      "preco": 110.0,
+      "total": 1210.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P011",
+      "nome": "Produto 11",
+      "qtd": 12.0,
+      "preco": 111.0,
+      "total": 1332.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P012",
+      "nome": "Produto 12",
+      "qtd": 13.0,
+      "preco": 112.0,
+      "total": 1456.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P013",
+      "nome": "Produto 13",
+      "qtd": 14.0,
+      "preco": 113.0,
+      "total": 1582.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P014",
+      "nome": "Produto 14",
+      "qtd": 15.0,
+      "preco": 114.0,
+      "total": 1710.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P015",
+      "nome": "Produto 15",
+      "qtd": 16.0,
+      "preco": 115.0,
+      "total": 1840.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P016",
+      "nome": "Produto 16",
+      "qtd": 17.0,
+      "preco": 116.0,
+      "total": 1972.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P017",
+      "nome": "Produto 17",
+      "qtd": 18.0,
+      "preco": 117.0,
+      "total": 2106.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P018",
+      "nome": "Produto 18",
+      "qtd": 19.0,
+      "preco": 118.0,
+      "total": 2242.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P019",
+      "nome": "Produto 19",
+      "qtd": 20.0,
+      "preco": 119.0,
+      "total": 2380.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P020",
+      "nome": "Produto 20",
+      "qtd": 21.0,
+      "preco": 120.0,
+      "total": 2520.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P021",
+      "nome": "Produto 21",
+      "qtd": 22.0,
+      "preco": 121.0,
+      "total": 2662.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P022",
+      "nome": "Produto 22",
+      "qtd": 23.0,
+      "preco": 122.0,
+      "total": 2806.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P023",
+      "nome": "Produto 23",
+      "qtd": 24.0,
+      "preco": 123.0,
+      "total": 2952.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P024",
+      "nome": "Produto 24",
+      "qtd": 25.0,
+      "preco": 124.0,
+      "total": 3100.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P025",
+      "nome": "Produto 25",
+      "qtd": 26.0,
+      "preco": 125.0,
+      "total": 3250.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P026",
+      "nome": "Produto 26",
+      "qtd": 27.0,
+      "preco": 126.0,
+      "total": 3402.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P027",
+      "nome": "Produto 27",
+      "qtd": 28.0,
+      "preco": 127.0,
+      "total": 3556.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P028",
+      "nome": "Produto 28",
+      "qtd": 29.0,
+      "preco": 128.0,
+      "total": 3712.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P029",
+      "nome": "Produto 29",
+      "qtd": 30.0,
+      "preco": 129.0,
+      "total": 3870.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P030",
+      "nome": "Produto 30",
+      "qtd": 31.0,
+      "preco": 130.0,
+      "total": 4030.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P031",
+      "nome": "Produto 31",
+      "qtd": 32.0,
+      "preco": 131.0,
+      "total": 4192.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P032",
+      "nome": "Produto 32",
+      "qtd": 33.0,
+      "preco": 132.0,
+      "total": 4356.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P033",
+      "nome": "Produto 33",
+      "qtd": 34.0,
+      "preco": 133.0,
+      "total": 4522.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P034",
+      "nome": "Produto 34",
+      "qtd": 35.0,
+      "preco": 134.0,
+      "total": 4690.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P035",
+      "nome": "Produto 35",
+      "qtd": 36.0,
+      "preco": 135.0,
+      "total": 4860.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P036",
+      "nome": "Produto 36",
+      "qtd": 37.0,
+      "preco": 136.0,
+      "total": 5032.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P037",
+      "nome": "Produto 37",
+      "qtd": 38.0,
+      "preco": 137.0,
+      "total": 5206.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P038",
+      "nome": "Produto 38",
+      "qtd": 39.0,
+      "preco": 138.0,
+      "total": 5382.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P039",
+      "nome": "Produto 39",
+      "qtd": 40.0,
+      "preco": 139.0,
+      "total": 5560.0,
+      "categoria": "Grupo A"
+    },
+    {
+      "codigo": "P040",
+      "nome": "Produto 40",
+      "qtd": 41.0,
+      "preco": 140.0,
+      "total": 5740.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P041",
+      "nome": "Produto 41",
+      "qtd": 42.0,
+      "preco": 141.0,
+      "total": 5922.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P042",
+      "nome": "Produto 42",
+      "qtd": 43.0,
+      "preco": 142.0,
+      "total": 6106.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P043",
+      "nome": "Produto 43",
+      "qtd": 44.0,
+      "preco": 143.0,
+      "total": 6292.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P044",
+      "nome": "Produto 44",
+      "qtd": 45.0,
+      "preco": 144.0,
+      "total": 6480.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P045",
+      "nome": "Produto 45",
+      "qtd": 46.0,
+      "preco": 145.0,
+      "total": 6670.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P046",
+      "nome": "Produto 46",
+      "qtd": 47.0,
+      "preco": 146.0,
+      "total": 6862.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P047",
+      "nome": "Produto 47",
+      "qtd": 48.0,
+      "preco": 147.0,
+      "total": 7056.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P048",
+      "nome": "Produto 48",
+      "qtd": 49.0,
+      "preco": 148.0,
+      "total": 7252.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P049",
+      "nome": "Produto 49",
+      "qtd": 50.0,
+      "preco": 149.0,
+      "total": 7450.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P050",
+      "nome": "Produto 50",
+      "qtd": 51.0,
+      "preco": 150.0,
+      "total": 7650.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P051",
+      "nome": "Produto 51",
+      "qtd": 52.0,
+      "preco": 151.0,
+      "total": 7852.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P052",
+      "nome": "Produto 52",
+      "qtd": 53.0,
+      "preco": 152.0,
+      "total": 8056.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P053",
+      "nome": "Produto 53",
+      "qtd": 54.0,
+      "preco": 153.0,
+      "total": 8262.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P054",
+      "nome": "Produto 54",
+      "qtd": 55.0,
+      "preco": 154.0,
+      "total": 8470.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P055",
+      "nome": "Produto 55",
+      "qtd": 56.0,
+      "preco": 155.0,
+      "total": 8680.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P056",
+      "nome": "Produto 56",
+      "qtd": 57.0,
+      "preco": 156.0,
+      "total": 8892.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P057",
+      "nome": "Produto 57",
+      "qtd": 58.0,
+      "preco": 157.0,
+      "total": 9106.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P058",
+      "nome": "Produto 58",
+      "qtd": 59.0,
+      "preco": 158.0,
+      "total": 9322.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P059",
+      "nome": "Produto 59",
+      "qtd": 60.0,
+      "preco": 159.0,
+      "total": 9540.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P060",
+      "nome": "Produto 60",
+      "qtd": 61.0,
+      "preco": 160.0,
+      "total": 9760.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P061",
+      "nome": "Produto 61",
+      "qtd": 62.0,
+      "preco": 161.0,
+      "total": 9982.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P062",
+      "nome": "Produto 62",
+      "qtd": 63.0,
+      "preco": 162.0,
+      "total": 10206.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P063",
+      "nome": "Produto 63",
+      "qtd": 64.0,
+      "preco": 163.0,
+      "total": 10432.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P064",
+      "nome": "Produto 64",
+      "qtd": 65.0,
+      "preco": 164.0,
+      "total": 10660.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P065",
+      "nome": "Produto 65",
+      "qtd": 66.0,
+      "preco": 165.0,
+      "total": 10890.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P066",
+      "nome": "Produto 66",
+      "qtd": 67.0,
+      "preco": 166.0,
+      "total": 11122.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P067",
+      "nome": "Produto 67",
+      "qtd": 68.0,
+      "preco": 167.0,
+      "total": 11356.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P068",
+      "nome": "Produto 68",
+      "qtd": 69.0,
+      "preco": 168.0,
+      "total": 11592.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P069",
+      "nome": "Produto 69",
+      "qtd": 70.0,
+      "preco": 169.0,
+      "total": 11830.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P070",
+      "nome": "Produto 70",
+      "qtd": 71.0,
+      "preco": 170.0,
+      "total": 12070.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P071",
+      "nome": "Produto 71",
+      "qtd": 72.0,
+      "preco": 171.0,
+      "total": 12312.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P072",
+      "nome": "Produto 72",
+      "qtd": 73.0,
+      "preco": 172.0,
+      "total": 12556.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P073",
+      "nome": "Produto 73",
+      "qtd": 74.0,
+      "preco": 173.0,
+      "total": 12802.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P074",
+      "nome": "Produto 74",
+      "qtd": 75.0,
+      "preco": 174.0,
+      "total": 13050.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P075",
+      "nome": "Produto 75",
+      "qtd": 76.0,
+      "preco": 175.0,
+      "total": 13300.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P076",
+      "nome": "Produto 76",
+      "qtd": 77.0,
+      "preco": 176.0,
+      "total": 13552.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P077",
+      "nome": "Produto 77",
+      "qtd": 78.0,
+      "preco": 177.0,
+      "total": 13806.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P078",
+      "nome": "Produto 78",
+      "qtd": 79.0,
+      "preco": 178.0,
+      "total": 14062.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P079",
+      "nome": "Produto 79",
+      "qtd": 80.0,
+      "preco": 179.0,
+      "total": 14320.0,
+      "categoria": "Grupo B"
+    },
+    {
+      "codigo": "P080",
+      "nome": "Produto 80",
+      "qtd": 81.0,
+      "preco": 180.0,
+      "total": 14580.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P081",
+      "nome": "Produto 81",
+      "qtd": 82.0,
+      "preco": 181.0,
+      "total": 14842.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P082",
+      "nome": "Produto 82",
+      "qtd": 83.0,
+      "preco": 182.0,
+      "total": 15106.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P083",
+      "nome": "Produto 83",
+      "qtd": 84.0,
+      "preco": 183.0,
+      "total": 15372.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P084",
+      "nome": "Produto 84",
+      "qtd": 85.0,
+      "preco": 184.0,
+      "total": 15640.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P085",
+      "nome": "Produto 85",
+      "qtd": 86.0,
+      "preco": 185.0,
+      "total": 15910.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P086",
+      "nome": "Produto 86",
+      "qtd": 87.0,
+      "preco": 186.0,
+      "total": 16182.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P087",
+      "nome": "Produto 87",
+      "qtd": 88.0,
+      "preco": 187.0,
+      "total": 16456.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P088",
+      "nome": "Produto 88",
+      "qtd": 89.0,
+      "preco": 188.0,
+      "total": 16732.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P089",
+      "nome": "Produto 89",
+      "qtd": 90.0,
+      "preco": 189.0,
+      "total": 17010.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P090",
+      "nome": "Produto 90",
+      "qtd": 91.0,
+      "preco": 190.0,
+      "total": 17290.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P091",
+      "nome": "Produto 91",
+      "qtd": 92.0,
+      "preco": 191.0,
+      "total": 17572.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P092",
+      "nome": "Produto 92",
+      "qtd": 93.0,
+      "preco": 192.0,
+      "total": 17856.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P093",
+      "nome": "Produto 93",
+      "qtd": 94.0,
+      "preco": 193.0,
+      "total": 18142.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P094",
+      "nome": "Produto 94",
+      "qtd": 95.0,
+      "preco": 194.0,
+      "total": 18430.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P095",
+      "nome": "Produto 95",
+      "qtd": 96.0,
+      "preco": 195.0,
+      "total": 18720.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P096",
+      "nome": "Produto 96",
+      "qtd": 97.0,
+      "preco": 196.0,
+      "total": 19012.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P097",
+      "nome": "Produto 97",
+      "qtd": 98.0,
+      "preco": 197.0,
+      "total": 19306.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P098",
+      "nome": "Produto 98",
+      "qtd": 99.0,
+      "preco": 198.0,
+      "total": 19602.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P099",
+      "nome": "Produto 99",
+      "qtd": 100.0,
+      "preco": 199.0,
+      "total": 19900.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P100",
+      "nome": "Produto 100",
+      "qtd": 101.0,
+      "preco": 200.0,
+      "total": 20200.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P101",
+      "nome": "Produto 101",
+      "qtd": 102.0,
+      "preco": 201.0,
+      "total": 20502.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P102",
+      "nome": "Produto 102",
+      "qtd": 103.0,
+      "preco": 202.0,
+      "total": 20806.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P103",
+      "nome": "Produto 103",
+      "qtd": 104.0,
+      "preco": 203.0,
+      "total": 21112.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P104",
+      "nome": "Produto 104",
+      "qtd": 105.0,
+      "preco": 204.0,
+      "total": 21420.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P105",
+      "nome": "Produto 105",
+      "qtd": 106.0,
+      "preco": 205.0,
+      "total": 21730.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P106",
+      "nome": "Produto 106",
+      "qtd": 107.0,
+      "preco": 206.0,
+      "total": 22042.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P107",
+      "nome": "Produto 107",
+      "qtd": 108.0,
+      "preco": 207.0,
+      "total": 22356.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P108",
+      "nome": "Produto 108",
+      "qtd": 109.0,
+      "preco": 208.0,
+      "total": 22672.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P109",
+      "nome": "Produto 109",
+      "qtd": 110.0,
+      "preco": 209.0,
+      "total": 22990.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P110",
+      "nome": "Produto 110",
+      "qtd": 111.0,
+      "preco": 210.0,
+      "total": 23310.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P111",
+      "nome": "Produto 111",
+      "qtd": 112.0,
+      "preco": 211.0,
+      "total": 23632.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P112",
+      "nome": "Produto 112",
+      "qtd": 113.0,
+      "preco": 212.0,
+      "total": 23956.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P113",
+      "nome": "Produto 113",
+      "qtd": 114.0,
+      "preco": 213.0,
+      "total": 24282.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P114",
+      "nome": "Produto 114",
+      "qtd": 115.0,
+      "preco": 214.0,
+      "total": 24610.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P115",
+      "nome": "Produto 115",
+      "qtd": 116.0,
+      "preco": 215.0,
+      "total": 24940.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P116",
+      "nome": "Produto 116",
+      "qtd": 117.0,
+      "preco": 216.0,
+      "total": 25272.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P117",
+      "nome": "Produto 117",
+      "qtd": 118.0,
+      "preco": 217.0,
+      "total": 25606.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P118",
+      "nome": "Produto 118",
+      "qtd": 119.0,
+      "preco": 218.0,
+      "total": 25942.0,
+      "categoria": "Grupo C"
+    },
+    {
+      "codigo": "P119",
+      "nome": "Produto 119",
+      "qtd": 120.0,
+      "preco": 219.0,
+      "total": 26280.0,
+      "categoria": "Grupo C"
+    }
+  ]
+}

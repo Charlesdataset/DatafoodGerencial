@@ -1,0 +1,114 @@
+@use "../../styles/abstracts/variables" as *;
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  cursor: pointer;
+  user-select: none;
+  
+  &.fullWidth {
+    display: flex;
+    width: 100%;
+  }
+  
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  
+  &:focus-visible + .custom {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+  }
+}
+
+.custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid $border-color;
+  border-radius: $border-radius-sm;
+  background-color: $white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-fast;
+  position: relative;
+  
+  &:hover {
+    border-color: $primary;
+  }
+  
+  // ✅ Quando o input está checked, muda a cor de fundo
+  input:checked + & {
+    background-color: $primary;
+    border-color: $primary;
+  }
+  
+  input:disabled + & {
+    background-color: $gray-light;
+    border-color: $border-color;
+    cursor: not-allowed;
+  }
+  
+  // ✅ Estado indeterminado
+  &.indeterminate {
+    background-color: $primary;
+    border-color: $primary;
+  }
+}
+
+.icon {
+  font-size: 12px;
+  color: $white;
+  // ✅ Ícone fica absoluto para não ocupar espaço
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  // ✅ Escondido por padrão
+  display: none;
+  
+  // ✅ Mostra apenas quando o input está :checked
+  input:checked + .custom & {
+    display: block;
+  }
+  
+  // ✅ Mostra também quando indeterminate
+  .indeterminate & {
+    display: block;
+  }
+}
+
+.label {
+  font-size: $font-size-sm;
+  color: $text-primary;
+  line-height: 1.4;
+  
+  &.labelDisabled {
+    color: $text-muted;
+  }
+}
+
+.error {
+  display: block;
+  font-size: $font-size-xs;
+  color: $danger;
+  margin-top: $spacing-xs;
+}

@@ -1,0 +1,22 @@
+// src/components/Layout/FluidLayout/FluidLayout.module.scss
+
+.fluidContainer {
+  display: flex;
+  width: 100%;
+}
+
+.fluidItem {
+  // Garante que itens com flex possam encolher
+  min-width: 0;
+
+  // Para filhos que são inputs, garante que não estourem
+  > * {
+    width: 100%;
+  }
+}
+
+// Classe helper para debug (opcional)
+:global(.fluid-debug) .fluidItem {
+  outline: 1px dashed rgba(255, 0, 0, 0.2);
+  background: rgba(0, 0, 255, 0.02);
+}

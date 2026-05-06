@@ -1,0 +1,207 @@
+@use "../../styles/abstracts/variables" as *;
+
+@keyframes shimmer {
+  0% {
+    background-position: -600px 0;
+  }
+  100% {
+    background-position: 600px 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+$shimmer-bg: linear-gradient(90deg, #e8ecf0 0px, #f4f6f8 80px, #e8ecf0 160px);
+
+// ─── Mixin bar ─────────────────────────────────────────────────────────────────
+@mixin bar($w: 100%, $h: 13px, $r: 6px) {
+  width: $w;
+  height: $h;
+  border-radius: $r;
+  background: $shimmer-bg;
+  background-size: 600px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+// ─── Wrapper ───────────────────────────────────────────────────────────────────
+.skeleton {
+  animation: fadeIn 0.18s ease both;
+  width: 100%;
+}
+
+// ─── Card base ─────────────────────────────────────────────────────────────────
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.07),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+// ─── Toolbar ───────────────────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchBar {
+  @include bar(240px, 36px, 8px);
+  flex-shrink: 0;
+}
+
+.filterChip {
+  @include bar(110px, 36px, 8px);
+  flex-shrink: 0;
+}
+
+.filterChipSm {
+  @include bar(90px, 36px, 8px);
+  flex-shrink: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.btnPrimary {
+  @include bar(148px, 36px, 8px);
+  flex-shrink: 0;
+}
+
+// ─── Table skeleton ─────────────────────────────────────────────────────────────
+.tableCard {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.07),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.tableHeader {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.tableTitle {
+  @include bar(100px, 14px, 6px);
+}
+
+.tableSub {
+  @include bar(60px, 12px, 6px);
+  margin-left: 8px;
+  opacity: 0.6;
+}
+
+.tableHeaderSpacer {
+  flex: 1;
+}
+
+.tableCog {
+  @include bar(28px, 28px, 6px);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+// ─── Cabeçalho da tabela ────────────────────────────────────────────────────────
+.thead {
+  background: rgba(#e8ecf0, 0.35);
+}
+
+.thRow {
+  height: 38px;
+}
+
+.th {
+  padding: 0 14px;
+}
+
+.thBar {
+  @include bar(60%, 10px, 5px);
+}
+
+// ─── Linhas de dados ────────────────────────────────────────────────────────────
+.tr {
+  border-bottom: 1px solid rgba(#e8ecf0, 0.8);
+  height: 44px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.td {
+  padding: 0 14px;
+  vertical-align: middle;
+}
+
+.tdBar {
+  @include bar(75%, 12px, 6px);
+  display: block;
+}
+
+.tdBarSm {
+  @include bar(50%, 12px, 6px);
+  display: block;
+}
+
+.tdBarXs {
+  @include bar(35%, 12px, 6px);
+  display: block;
+  margin: 0 auto;
+}
+
+.tdThumb {
+  @include bar(30px, 30px, 6px);
+  display: block;
+  margin: 0 auto;
+}
+
+.tdBadge {
+  @include bar(64px, 22px, 11px);
+  display: block;
+  margin: 0 auto;
+}
+
+// ─── Footer da tabela ───────────────────────────────────────────────────────────
+.tableFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid #f0f2f5;
+  gap: 12px;
+}
+
+.footerInfo {
+  @include bar(120px, 12px, 6px);
+}
+
+.footerPagination {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pgBtn {
+  @include bar(28px, 28px, 6px);
+}

@@ -1,0 +1,53 @@
+.container {
+  display: grid;
+  gap: 24px;
+  padding: 20px;
+}
+
+.card {
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 18px 55px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+  padding: 28px;
+  display: grid;
+  gap: 16px;
+}
+
+.card h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  color: #0f172a;
+}
+
+.card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.error {
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.viewer {
+  min-height: 600px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+}

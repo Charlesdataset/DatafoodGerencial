@@ -1,0 +1,618 @@
+// Layout Component Styles
+// Sistema de grid responsivo similar ao Bootstrap
+@use "../../styles/abstracts/variables" as *;
+@use "sass:math" as m;
+@use "sass:map";
+// Variáveis do sistema de grid
+$grid-columns: 12;
+$grid-gutter: 1.5rem;
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1320px,
+);
+
+
+
+// Container
+.container {
+  width: 100%;
+  padding-right: calc($grid-gutter / 2);
+  padding-left: calc($grid-gutter / 2);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.container-fluid {
+  max-width: 100%;
+}
+
+// Container sizes
+@each $size, $max-width in $container-max-widths {
+  .container-#{$size} {
+    max-width: $max-width;
+  }
+}
+
+// Row
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: calc($grid-gutter / -2);
+  margin-left: calc($grid-gutter / -2);
+}
+
+// Row gutters
+.row-gutter-none {
+  margin-right: 0;
+  margin-left: 0;
+
+  > .col {
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
+.row-gutter-sm {
+  margin-right: calc(0.5rem / -2);
+  margin-left: calc(0.5rem / -2);
+
+  > .col {
+    padding-right: calc(0.5rem / 2);
+    padding-left: calc(0.5rem / 2);
+  }
+}
+
+.row-gutter-md {
+  margin-right: calc($grid-gutter / -2);
+  margin-left: calc($grid-gutter / -2);
+
+  > .col {
+    padding-right: calc($grid-gutter / 2);
+    padding-left: calc($grid-gutter / 2);
+  }
+}
+
+.row-gutter-lg {
+  margin-right: calc(2rem / -2);
+  margin-left: calc(2rem / -2);
+
+  > .col {
+    padding-right: calc(2rem / 2);
+    padding-left: calc(2rem / 2);
+  }
+}
+
+// Row alignment
+.row-align-start {
+  align-items: flex-start;
+}
+
+.row-align-center {
+  align-items: center;
+}
+
+.row-align-end {
+  align-items: flex-end;
+}
+
+.row-align-stretch {
+  align-items: stretch;
+}
+
+// Row justification
+.row-justify-start {
+  justify-content: flex-start;
+}
+
+.row-justify-center {
+  justify-content: center;
+}
+
+.row-justify-end {
+  justify-content: flex-end;
+}
+
+.row-justify-between {
+  justify-content: space-between;
+}
+
+.row-justify-around {
+  justify-content: space-around;
+}
+
+// Column base
+.col {
+  flex: 1 0 0%;
+  max-width: 100%;
+  padding-right: calc($grid-gutter / 2);
+  padding-left: calc($grid-gutter / 2);
+}
+
+// Column auto - base class
+.col-auto {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+// Generate column classes for each breakpoint
+@mixin make-col($size, $columns: $grid-columns) {
+  flex: 0 0 m.percentage(m.div($size, $columns));
+  max-width: m.percentage(m.div($size, $columns));
+}
+
+@mixin make-col-offset($size, $columns: $grid-columns) {
+  margin-left: m.percentage(m.div($size, $columns));
+}
+
+// Extra small (default)
+@for $i from 1 through $grid-columns {
+  .col-xs-#{$i} {
+    @include make-col($i);
+  }
+
+  .col-xs-offset-#{$i} {
+    @include make-col-offset($i);
+  }
+}
+
+.col-xs-auto {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+// Small breakpoint
+@media (min-width: map.get($breakpoints, sm)) {
+  @for $i from 1 through $grid-columns {
+    .col-sm-#{$i} {
+      @include make-col($i);
+    }
+
+    .col-sm-offset-#{$i} {
+      @include make-col-offset($i);
+    }
+  }
+
+  .col-sm-auto {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}
+@media (min-width: map.get($breakpoints, nt)) {
+  @for $i from 1 through $grid-columns {
+    .col-nt-#{$i} {
+      @include make-col($i);
+    }
+    .col-nt-offset-#{$i} {
+      @include make-col-offset($i);
+    }
+  }
+  .col-nt-auto {
+    flex: 0 0 auto;
+    width: auto;
+  }
+  .col-expand-nt {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding-right: calc($grid-gutter / 2);
+    padding-left: calc($grid-gutter / 2);
+  }
+}
+
+// Medium breakpoint
+@media (min-width: map.get($breakpoints, md)) {
+  @for $i from 1 through $grid-columns {
+    .col-md-#{$i} {
+      @include make-col($i);
+    }
+
+    .col-md-offset-#{$i} {
+      @include make-col-offset($i);
+    }
+  }
+
+  .col-md-auto {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}
+
+// Large breakpoint
+@media (min-width: map.get($breakpoints, lg)) {
+  @for $i from 1 through $grid-columns {
+    .col-lg-#{$i} {
+      @include make-col($i);
+    }
+
+    .col-lg-offset-#{$i} {
+      @include make-col-offset($i);
+    }
+  }
+
+  .col-lg-auto {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}
+
+// Extra large breakpoint
+@media (min-width: map.get($breakpoints, xl)) {
+  @for $i from 1 through $grid-columns {
+    .col-xl-#{$i} {
+      @include make-col($i);
+    }
+
+    .col-xl-offset-#{$i} {
+      @include make-col-offset($i);
+    }
+  }
+
+  .col-xl-auto {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}
+
+// Flex Component
+.flex {
+  display: flex;
+}
+
+// Flex direction
+.flex-direction-row {
+  flex-direction: row;
+}
+
+.flex-direction-column {
+  flex-direction: column;
+}
+
+.flex-direction-row-reverse {
+  flex-direction: row-reverse;
+}
+
+.flex-direction-column-reverse {
+  flex-direction: column-reverse;
+}
+
+// Flex wrap
+.flex-wrap-nowrap {
+  flex-wrap: nowrap;
+}
+
+.flex-wrap-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-wrap-wrap-reverse {
+  flex-wrap: wrap-reverse;
+}
+
+// Flex alignment
+.flex-align-start {
+  align-items: flex-start;
+}
+
+.flex-align-center {
+  align-items: center;
+}
+
+.flex-align-end {
+  align-items: flex-end;
+}
+
+.flex-align-stretch {
+  align-items: stretch;
+}
+
+.flex-align-baseline {
+  align-items: baseline;
+}
+
+// Flex justification
+.flex-justify-start {
+  justify-content: flex-start;
+}
+
+.flex-justify-center {
+  justify-content: center;
+}
+
+.flex-justify-end {
+  justify-content: flex-end;
+}
+
+.flex-justify-between {
+  justify-content: space-between;
+}
+
+.flex-justify-around {
+  justify-content: space-around;
+}
+
+.flex-justify-evenly {
+  justify-content: space-evenly;
+}
+
+// Flex gaps
+.flex-gap-none {
+  gap: 0;
+}
+
+.flex-gap-xs {
+  gap: 0.25rem;
+}
+
+.flex-gap-sm {
+  gap: 0.5rem;
+}
+
+.flex-gap-md {
+  gap: 1rem;
+}
+
+.flex-gap-lg {
+  gap: 1.5rem;
+}
+
+.flex-gap-xl {
+  gap: 2rem;
+}
+
+// Responsive utilities
+.hidden-xs {
+  @media (max-width: map.get($breakpoints, sm) - 1) {
+    display: none !important;
+  }
+}
+
+.hidden-sm {
+  @media (min-width: map.get($breakpoints, sm)) and (max-width: map.get($breakpoints, md) - 1) {
+    display: none !important;
+  }
+}
+
+.hidden-md {
+  @media (min-width: map.get($breakpoints, md)) and (max-width: map.get($breakpoints, lg) - 1) {
+    display: none !important;
+  }
+}
+
+.hidden-lg {
+  @media (min-width: map.get($breakpoints, lg)) and (max-width: map.get($breakpoints, xl) - 1) {
+    display: none !important;
+  }
+}
+
+.hidden-xl {
+  @media (min-width: map.get($breakpoints, xl)) {
+    display: none !important;
+  }
+}
+
+.visible-xs {
+  @media (min-width: map.get($breakpoints, sm)) {
+    display: none !important;
+  }
+}
+
+.visible-sm {
+  @media (max-width: map.get($breakpoints, sm) - 1),
+    (min-width: map.get($breakpoints, md)) {
+    display: none !important;
+  }
+}
+
+.visible-md {
+  @media (max-width: map.get($breakpoints, md) - 1),
+    (min-width: map.get($breakpoints, lg)) {
+    display: none !important;
+  }
+}
+
+.visible-lg {
+  @media (max-width: map.get($breakpoints, lg) - 1),
+    (min-width: map.get($breakpoints, xl)) {
+    display: none !important;
+  }
+}
+
+.visible-xl {
+  @media (max-width: map.get($breakpoints, xl) - 1) {
+    display: none !important;
+  }
+}
+
+.col-expand {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  padding-right: calc($grid-gutter / 2);
+  padding-left: calc($grid-gutter / 2);
+}
+
+// Expand responsivo - funciona como as classes de grid
+@media (min-width: map.get($breakpoints, xs)) {
+  .col-expand-xs {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding-right: calc($grid-gutter / 2);
+    padding-left: calc($grid-gutter / 2);
+  }
+}
+
+@media (min-width: map.get($breakpoints, sm)) {
+  .col-expand-sm {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding-right: calc($grid-gutter / 2);
+    padding-left: calc($grid-gutter / 2);
+  }
+}
+
+@media (min-width: map.get($breakpoints, md)) {
+  .col-expand-md {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding-right: calc($grid-gutter / 2);
+    padding-left: calc($grid-gutter / 2);
+  }
+}
+
+@media (min-width: map.get($breakpoints, lg)) {
+  .col-expand-lg {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding-right: calc($grid-gutter / 2);
+    padding-left: calc($grid-gutter / 2);
+  }
+}
+
+@media (min-width: map.get($breakpoints, xl)) {
+  .col-expand-xl {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding-right: calc($grid-gutter / 2);
+    padding-left: calc($grid-gutter / 2);
+  }
+}
+
+@media (min-width: map.get($breakpoints, sm)) {
+  .flex-direction-sm-row {
+    flex-direction: row;
+  }
+  .flex-direction-sm-column {
+    flex-direction: column;
+  }
+  .flex-direction-sm-row-reverse {
+    flex-direction: row-reverse;
+  }
+  .flex-direction-sm-column-reverse {
+    flex-direction: column-reverse;
+  }
+
+  .flex-wrap-sm-nowrap {
+    flex-wrap: nowrap;
+  }
+  .flex-wrap-sm-wrap {
+    flex-wrap: wrap;
+  }
+  .flex-wrap-sm-wrap-reverse {
+    flex-wrap: wrap-reverse;
+  }
+
+  .flex-gap-sm-none {
+    gap: 0;
+  }
+  .flex-gap-sm-xs {
+    gap: 0.25rem;
+  }
+  .flex-gap-sm-sm {
+    gap: 0.5rem;
+  }
+  .flex-gap-sm-md {
+    gap: 1rem;
+  }
+  .flex-gap-sm-lg {
+    gap: 1.5rem;
+  }
+  .flex-gap-sm-xl {
+    gap: 2rem;
+  }
+}
+
+@media (min-width: map.get($breakpoints, md)) {
+  .flex-direction-md-row {
+    flex-direction: row;
+  }
+  .flex-direction-md-column {
+    flex-direction: column;
+  }
+  .flex-direction-md-row-reverse {
+    flex-direction: row-reverse;
+  }
+  .flex-direction-md-column-reverse {
+    flex-direction: column-reverse;
+  }
+
+  .flex-wrap-md-nowrap {
+    flex-wrap: nowrap;
+  }
+  .flex-wrap-md-wrap {
+    flex-wrap: wrap;
+  }
+  .flex-wrap-md-wrap-reverse {
+    flex-wrap: wrap-reverse;
+  }
+
+  .flex-gap-md-none {
+    gap: 0;
+  }
+  .flex-gap-md-xs {
+    gap: 0.25rem;
+  }
+  .flex-gap-md-sm {
+    gap: 0.5rem;
+  }
+  .flex-gap-md-md {
+    gap: 1rem;
+  }
+  .flex-gap-md-lg {
+    gap: 1.5rem;
+  }
+  .flex-gap-md-xl {
+    gap: 2rem;
+  }
+}
+
+@media (min-width: map.get($breakpoints, lg)) {
+  .flex-direction-lg-row {
+    flex-direction: row;
+  }
+  .flex-direction-lg-column {
+    flex-direction: column;
+  }
+  .flex-direction-lg-row-reverse {
+    flex-direction: row-reverse;
+  }
+  .flex-direction-lg-column-reverse {
+    flex-direction: column-reverse;
+  }
+
+  .flex-wrap-lg-nowrap {
+    flex-wrap: nowrap;
+  }
+  .flex-wrap-lg-wrap {
+    flex-wrap: wrap;
+  }
+  .flex-wrap-lg-wrap-reverse {
+    flex-wrap: wrap-reverse;
+  }
+
+  .flex-gap-lg-none {
+    gap: 0;
+  }
+  .flex-gap-lg-xs {
+    gap: 0.25rem;
+  }
+  .flex-gap-lg-sm {
+    gap: 0.5rem;
+  }
+  .flex-gap-lg-md {
+    gap: 1rem;
+  }
+  .flex-gap-lg-lg {
+    gap: 1.5rem;
+  }
+  .flex-gap-lg-xl {
+    gap: 2rem;
+  }
+}

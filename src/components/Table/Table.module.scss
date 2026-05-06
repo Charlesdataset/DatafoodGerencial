@@ -1,0 +1,118 @@
+@use "../../styles/abstracts/variables" as *;
+
+.wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 8px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  color: $dark;
+}
+
+// ─── Size variants ────────────────────────────────────────────────────────────
+.size--md {
+  .th,
+  .td {
+    padding: 10px 12px;
+  }
+}
+
+.size--sm {
+  .th,
+  .td {
+    padding: 6px 10px;
+  }
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+.thead {
+  .tr {
+    border-bottom: 2px solid $gray-200;
+  }
+}
+
+.th {
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $gray;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  background-color: $gray-100;
+
+  &:first-child {
+    border-radius: 8px 0 0 0;
+  }
+
+  &:last-child {
+    border-radius: 0 8px 0 0;
+  }
+}
+
+// ─── Body ─────────────────────────────────────────────────────────────────────
+.tbody {
+  .tr {
+    border-bottom: 1px solid $gray-200;
+    transition: background-color 0.12s ease;
+  }
+}
+
+.td {
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+.bold {
+  font-weight: 600;
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+.tfoot {
+  .tr {
+    border-top: 2px solid $gray-200;
+  }
+
+  .td {
+    font-weight: 600;
+    background-color: $gray-100;
+    padding: 10px 12px;
+
+    &:first-child {
+      border-radius: 0 0 0 8px;
+    }
+
+    &:last-child {
+      border-radius: 0 0 8px 0;
+    }
+  }
+}
+
+// ─── Zebra striping ───────────────────────────────────────────────────────────
+.striped {
+  .tbody .tr:nth-child(even) {
+    background-color: rgba($gray-100, 0.7);
+  }
+  .tbody .tr:nth-child(odd) {
+    background-color: $white;
+  }
+}
+
+// ─── Hover ────────────────────────────────────────────────────────────────────
+.hover {
+  .tbody .tr:hover {
+    background-color: rgba($primary, 0.06) !important;
+  }
+}
+
+// ─── Bordered ────────────────────────────────────────────────────────────────
+.bordered {
+  .th,
+  .td {
+    border: 1px solid $gray-200;
+  }
+}

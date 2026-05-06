@@ -1,0 +1,85 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// Form group
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-lg;
+}
+
+// Label
+.form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: $dark;
+  
+  &--required::after {
+    content: '*';
+    color: $danger;
+    margin-left: $spacing-xs;
+  }
+}
+
+// Base input
+.form-input {
+  padding: $spacing-md $spacing-lg;
+  border: 2px solid #e2e8f0;
+  border-radius: $border-radius-md;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  background: $white;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+  
+  &:disabled {
+    background: $light;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  &::placeholder {
+    color: $gray-light;
+  }
+  
+  &--error {
+    border-color: $danger;
+    
+    &:focus {
+      box-shadow: 0 0 0 3px rgba($danger, 0.1);
+    }
+  }
+  
+  &--sm {
+    padding: $spacing-sm $spacing-md;
+    font-size: 0.875rem;
+  }
+  
+  &--lg {
+    padding: $spacing-lg $spacing-xl;
+    font-size: 1.125rem;
+  }
+}
+
+// Error message
+.form-error {
+  color: $danger;
+  font-size: 0.75rem;
+  margin-top: $spacing-xs;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+// Helper text
+.form-helper {
+  color: $gray;
+  font-size: 0.75rem;
+  margin-top: $spacing-xs;
+}

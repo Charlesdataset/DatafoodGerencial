@@ -1,0 +1,19 @@
+
+{
+  "data_geracao": "25/04/2026",
+  "empresa": "ClearDataTicket",
+  "faturamento": "123.456,78",
+  "clientes": "1.234",
+  "pedidos": "567",
+  "ticket_medio": "218,45",
+  "meta_faturamento": "82",
+  "meta_mensal": "95",
+  "satisfacao": "93",
+  "periodo": "Abril 2026",
+  "filial": "Matriz",
+  "crescimento": "12",
+  "expansao": "5",
+  "cnpj_fake": "12.345.678/0001-90",
+  "cpf_fake": "123.456.789-00",
+  "telefone_fake": "(11) 98765-4321"
+}

@@ -1,0 +1,59 @@
+@use '../../styles/abstracts/variables' as *;
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  background: $white;
+  border-radius: 24px;
+  padding: 32px;
+  text-align: center;
+  min-width: 280px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.spinnerContainer {
+  margin-bottom: 24px;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba($primary, 0.2);
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.textContainer {
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: $dark;
+    margin: 0 0 8px;
+  }
+  
+  p {
+    font-size: 14px;
+    color: $gray;
+    margin: 0;
+  }
+}

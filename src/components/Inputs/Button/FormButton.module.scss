@@ -1,0 +1,519 @@
+@use "../../../styles/abstracts/variables" as *;
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ========== BASE ==========
+.btn--full {
+  width: 100%;
+}
+
+.btn--loading {
+  pointer-events: none;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+}
+
+// ========== VARIANTES EXISTENTES (mantidas) ==========
+.buttonForm {
+  height: 40px;
+  padding: 0 20px;
+  background: $primary;
+  color: $white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $primary-dark;
+    transform: translateY(-1px);
+  }
+
+  .btnIcon {
+    font-size: 14px;
+  }
+}
+
+.buttonSecondary {
+  height: 40px;
+  padding: 0 20px;
+  background: $secondary;
+  color: $white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $secondary-dark;
+    transform: translateY(-1px);
+  }
+
+  .btnIcon {
+    font-size: 14px;
+  }
+}
+
+.buttonOutline {
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  color: $primary;
+  border: $primary 1px solid;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $primary;
+    transform: translateY(-1px);
+    color: $white;
+  }
+
+  .btnIcon {
+    font-size: 14px;
+  }
+}
+
+.buttonSuccess {
+  height: 40px;
+  padding: 0 20px;
+  background: $success;
+  color: $white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $success-dark;
+    transform: translateY(-1px);
+  }
+
+  .btnIcon {
+    font-size: 14px;
+  }
+}
+
+.buttonText {
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  color: $primary;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: rgba($primary, 0.1);
+  }
+
+  .btnIcon {
+    font-size: 14px;
+  }
+}
+
+// ========== NOVAS VARIANTES ==========
+.buttonDanger {
+  height: 40px;
+  padding: 0 20px;
+  background: $danger;
+  color: $white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $danger-dark;
+    transform: translateY(-1px);
+  }
+}
+
+.buttonOutlineSecondary {
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  color: $secondary;
+  border: 1px solid $secondary;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $secondary;
+    color: $white;
+    transform: translateY(-1px);
+  }
+}
+
+.buttonTextSecondary {
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  color: $secondary;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: rgba($secondary, 0.1);
+  }
+}
+
+.buttonLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  height: auto;
+  background: transparent;
+  color: $primary;
+  border: none;
+  font-size: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    color: $primary-dark;
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    color: $gray-500;
+    text-decoration: none;
+  }
+}
+
+.buttonLinkSecondary {
+  @extend .buttonLink;
+  color: $secondary;
+
+  &:hover:not(:disabled) {
+    color: $secondary-dark;
+  }
+}
+
+.buttonLinkDanger {
+  @extend .buttonLink;
+  color: $danger;
+
+  &:hover:not(:disabled) {
+    color: $danger-dark;
+  }
+}
+
+.buttonLinkInfo {
+  @extend .buttonLink;
+  color: $info;
+
+  &:hover:not(:disabled) {
+    color: $info-dark;
+  }
+}
+
+.buttonIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: transparent;
+  color: $text-color;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba($text-color, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+// ========== SPINNERS ==========
+.Spiner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($white, 0.3);
+  border-radius: 50%;
+  border-top-color: $white;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerSecondary {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($secondary, 0.3);
+  border-radius: 50%;
+  border-top-color: $secondary;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerOutline {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($primary, 0.3);
+  border-radius: 50%;
+  border-top-color: $primary;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerDanger {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($white, 0.3);
+  border-radius: 50%;
+  border-top-color: $white;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerOutlineSecondary {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($secondary, 0.3);
+  border-radius: 50%;
+  border-top-color: $secondary;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerTextSecondary {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($secondary, 0.3);
+  border-radius: 50%;
+  border-top-color: $secondary;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerLink {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($primary, 0.3);
+  border-radius: 50%;
+  border-top-color: $primary;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerLinkSecondary {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($secondary, 0.3);
+  border-radius: 50%;
+  border-top-color: $secondary;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerLinkDanger {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($danger, 0.3);
+  border-radius: 50%;
+  border-top-color: $danger;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerLinkInfo {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($info, 0.3);
+  border-radius: 50%;
+  border-top-color: $info;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerIcon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($text-color, 0.3);
+  border-radius: 50%;
+  border-top-color: $text-color;
+  animation: spin 0.6s linear infinite;
+}
+
+.buttonInfo {
+  height: 40px;
+  padding: 0 20px;
+  background: $info;
+  color: $white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $info-dark;
+    transform: translateY(-1px);
+  }
+}
+
+.buttonOutlineSuccess {
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  color: $success;
+  border: 1px solid $success;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $success;
+    color: $white;
+    transform: translateY(-1px);
+  }
+}
+
+.buttonOutlineDanger {
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  color: $danger;
+  border: 1px solid $danger;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $danger;
+    color: $white;
+    transform: translateY(-1px);
+  }
+}
+
+.buttonOutlineInfo {
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  color: $info;
+  border: 1px solid $info;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: $info;
+    color: $white;
+    transform: translateY(-1px);
+  }
+}
+
+// ========== SPINNERS PARA NOVAS VARIANTES ==========
+.SpinerOutlineSuccess {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($success, 0.3);
+  border-radius: 50%;
+  border-top-color: $success;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerOutlineDanger {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($danger, 0.3);
+  border-radius: 50%;
+  border-top-color: $danger;
+  animation: spin 0.6s linear infinite;
+}
+
+.SpinerOutlineInfo {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($info, 0.3);
+  border-radius: 50%;
+  border-top-color: $info;
+  animation: spin 0.6s linear infinite;
+}

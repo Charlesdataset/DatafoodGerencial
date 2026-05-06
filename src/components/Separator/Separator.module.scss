@@ -1,0 +1,251 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+// ============================================
+// COMPONENTE SEPARATOR REUTILIZÁVEL
+// ============================================
+
+// Container principal
+.separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+// Orientação horizontal (padrão)
+.separatorHorizontal {
+  width: 100%;
+  height: auto;
+  flex-direction: row;
+}
+
+// Orientação vertical
+.separatorVertical {
+  width: auto;
+  height: 100%;
+  flex-direction: column;
+  min-height: 1px;
+}
+
+// Linha do separator
+.line {
+  flex: 1;
+  background-color: $gray-light;
+}
+
+// Separator com label
+.separatorWithLabel {
+  gap: $spacing-md;
+
+  .line {
+    flex: 1;
+  }
+}
+
+// Tamanhos/espessuras
+.separatorXs {
+  .line {
+    height: 1px;
+    min-height: 1px;
+    width: 1px;
+    min-width: 1px;
+  }
+}
+
+.separatorSm {
+  .line {
+    height: 2px;
+    min-height: 2px;
+    width: 2px;
+    min-width: 2px;
+  }
+}
+
+.separatorMd {
+  .line {
+    height: 3px;
+    min-height: 3px;
+    width: 3px;
+    min-width: 3px;
+  }
+}
+
+.separatorLg {
+  .line {
+    height: 4px;
+    min-height: 4px;
+    width: 4px;
+    min-width: 4px;
+  }
+}
+
+.separatorXl {
+  .line {
+    height: 8px;
+    min-height: 8px;
+    width: 8px;
+    min-width: 8px;
+  }
+}
+
+// Variantes de cor
+.separatorPrimary {
+  .line {
+    background-color: $primary;
+  }
+}
+
+.separatorSecondary {
+  .line {
+    background-color: $secondary;
+  }
+}
+
+.separatorSuccess {
+  .line {
+    background-color: $success;
+  }
+}
+
+.separatorDanger {
+  .line {
+    background-color: $danger;
+  }
+}
+
+.separatorWarning {
+  .line {
+    background-color: $warning;
+  }
+}
+
+.separatorInfo {
+  .line {
+    background-color: $info;
+  }
+}
+
+.separatorLight {
+  .line {
+    background-color: $light;
+  }
+}
+
+.separatorDark {
+  .line {
+    background-color: $dark;
+  }
+}
+
+// Tipos de linha
+.separatorSolid {
+  .line {
+    border-style: solid;
+  }
+}
+
+.separatorDashed {
+  .line {
+    border-style: dashed;
+    background-color: transparent !important;
+    border-color: currentColor;
+  }
+}
+
+.separatorDotted {
+  .line {
+    border-style: dotted;
+    background-color: transparent !important;
+    border-color: currentColor;
+  }
+}
+
+.separatorDouble {
+  .line {
+    border-style: double;
+    background-color: transparent !important;
+    border-color: currentColor;
+    border-width: 3px;
+  }
+}
+
+.separatorGradient {
+  .line {
+    background: linear-gradient(90deg, transparent, currentColor, transparent);
+  }
+
+  &.separatorVertical .line {
+    background: linear-gradient(180deg, transparent, currentColor, transparent);
+  }
+}
+
+// Label
+.label {
+  font-size: $font-size-sm;
+  color: $text-muted;
+  font-weight: $font-weight-medium;
+  padding: 0 $spacing-sm;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.labelCenter {
+  text-align: center;
+}
+
+.labelLeft {
+  text-align: left;
+  order: -1;
+}
+
+.labelRight {
+  text-align: right;
+  order: 1;
+}
+
+// Separator invisível (mantém espaçamento)
+.separatorInvisible {
+  .line {
+    opacity: 0;
+  }
+
+  .label {
+    opacity: 0;
+  }
+}
+
+// Estados de foco para acessibilidade
+.separator:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
+}
+
+// Responsividade
+@include respond-to(mobile) {
+ .separatorWithLabel {
+    gap: $spacing-sm;
+  }
+
+  .label {
+    font-size: $font-size-xs;
+    padding: 0 $spacing-xs;
+  }
+}
+// @media (max-width: $mobile) {
+ 
+// }
+
+// Animações
+@keyframes separatorPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.separatorPulse {
+  animation: separatorPulse 2s infinite;
+}

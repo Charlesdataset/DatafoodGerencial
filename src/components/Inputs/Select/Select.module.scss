@@ -1,0 +1,235 @@
+@use "../../../styles/abstracts/variables" as *;
+
+.selectWrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  min-width: fit-content;
+}
+
+.label {
+  display: block;
+  font-size: $font-size-base;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: $gray;
+
+  .required {
+    color: $danger;
+    margin-left: 4px;
+  }
+}
+
+
+.selectContainer {
+  height: 40px;
+  padding: 0 8px 0 12px;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: $white;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: $box-shadow-inputs;
+  
+  &:hover:not(.disabled) {
+    border-color: $primary;
+  }
+
+  &.open {
+    border-color: $primary;
+    box-shadow: 0 0 0 2px rgba($primary, 0.1);
+  }
+
+  // Estilo para erro
+  &.error {
+    border-color: $danger;
+    
+    &:focus {
+      box-shadow: 0 0 0 2px rgba($danger, 0.1);
+    }
+  }
+
+  &.disabled {
+    background: $light;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+}
+.arrow {
+  font-size: 10px;
+  color: $gray;
+  transition: transform 0.2s ease;
+
+  &.arrowUp {
+    transform: rotate(90deg);
+  }
+}
+
+// CORREÇÃO DEFINITIVA
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  
+  // 🔥 SOLUÇÃO CORRETA 🔥
+  width: max-content;
+  min-width: fit-content;
+  max-width: 90vw; // Limita a 90% da viewport width (opcional)
+}
+
+.dropdownList {
+  
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.dropdownItem {
+  padding: 10px 12px;
+  font-size: 14px;
+  color: $dark;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  // NÃO use white-space: nowrap aqui!
+  // Deixe o texto quebrar naturalmente se for muito longo
+  
+  &:hover {
+    background: $primary-light;
+    color: $white;
+  }
+
+  &.selected {
+    background: $primary;
+    color: $white;
+
+    &:hover {
+      background: $primary-dark;
+    }
+  }
+}
+
+// Scrollbar personalizada
+.dropdownList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdownList::-webkit-scrollbar-track {
+  background: $light;
+  border-radius: 3px;
+}
+
+.dropdownList::-webkit-scrollbar-thumb {
+  background: $border-color;
+  border-radius: 3px;
+
+  &:hover {
+    background: $gray;
+  }
+}
+
+
+
+
+
+.selectedValue {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: $dark;
+
+  &.placeholder {
+    color: $gray;
+  }
+}
+
+.arrow {
+  font-size: 10px;
+  color: $gray;
+  transition: transform 0.2s ease;
+
+  &.arrowUp {
+    transform: rotate(90deg);
+  }
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  width: max-content;
+  min-width: fit-content;
+  max-width: 90vw;
+}
+
+.dropdownList {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.dropdownItem {
+  padding: 10px 12px;
+  font-size: 14px;
+  color: $dark;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: $primary-light;
+    color: $white;
+  }
+
+  &.selected {
+    background: $primary;
+    color: $white;
+
+    &:hover {
+      background: $primary-dark;
+    }
+  }
+}
+
+// Mensagem de erro
+.errorMessage {
+  position: absolute;
+  display: block;
+  font-size: 11px;
+  color: $danger;
+  margin-top: 4px;
+}
+
+// Scrollbar personalizada
+.dropdownList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdownList::-webkit-scrollbar-track {
+  background: $light;
+  border-radius: 3px;
+}
+
+.dropdownList::-webkit-scrollbar-thumb {
+  background: $border-color;
+  border-radius: 3px;
+
+  &:hover {
+    background: $gray;
+  }
+}

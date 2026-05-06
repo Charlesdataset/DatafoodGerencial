@@ -1,0 +1,552 @@
+@use "../../../styles/abstracts/variables" as *;
+
+// ─── Busca fixo no topo ───────────────────────────────────────────────────────
+.searchWrap {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 12px 16px;
+  border-bottom: 2px solid $border-color;
+  background: $white;
+
+  > * {
+    width: 100%;
+  }
+}
+
+// ─── Filtros de combobox ──────────────────────────────────────────────────────
+.filtersRow {
+  position: sticky;
+  top: 65px; // abaixo do searchWrap (~65px)
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px;
+  background: $background-light;
+  border-bottom: 1px solid $border-color;
+}
+
+.filterSelect {
+  flex: 1;
+  min-width: 120px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  background: $white;
+  color: $text-primary;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 2px rgba($primary, 0.1);
+  }
+}
+
+// ─── Lista com scroll ─────────────────────────────────────────────────────────
+.listWrap {
+  max-height: 340px;
+  overflow-y: auto;
+  background: #f1f5f9;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($border-color, 0.5);
+    border-radius: 4px;
+    &:hover {
+      background: rgba($border-color, 0.8);
+    }
+  }
+
+  // ── Zebragem ─────────────────────────────────────────────────────────────
+  :global(li:nth-child(even)) {
+    background: #eef2f7 !important;
+  }
+
+  :global(li:nth-child(odd)) {
+    background: $white !important;
+  }
+
+  :global(li:hover) {
+    background: rgba($primary, 0.08) !important;
+  }
+}
+
+// ─── Avatar de imagem no lugar do ícone ──────────────────────────────────────
+.itemAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid rgba($border-color, 0.4);
+  background: $background-light;
+}
+
+// ─── Estado de loading / erro ─────────────────────────────────────────────────
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 24px;
+  font-size: $font-size-sm;
+  color: rgba($text-secondary, 0.6);
+  background: #f1f5f9;
+}
+
+.stateError {
+  color: rgba(#ef4444, 0.8);
+}
+
+// ─── Spinner ──────────────────────────────────────────────────────────────────
+.spinner {
+  color: rgba($text-secondary, 0.4);
+  animation: spin 0.8s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// ─── Barra de contagem ────────────────────────────────────────────────────────
+.countBar {
+  padding: 7px 16px;
+  font-size: $font-size-xs;
+  color: rgba($text-secondary, 0.6);
+  border-top: 1px solid $border-color;
+  background: #f1f5f9;
+  text-align: right;
+}
+
+// ─── Barra de selecionados (modo multi) ───────────────────────────────────────
+.selectedBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: rgba($primary, 0.06);
+  border-bottom: 1px solid rgba($primary, 0.15);
+  font-size: $font-size-xs;
+}
+
+.selectedCount {
+  font-weight: 600;
+  color: $primary;
+}
+
+.clearBtn {
+  border: none;
+  background: none;
+  font-size: $font-size-xs;
+  color: rgba($text-secondary, 0.6);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    color: $text-primary;
+  }
+}
+
+// ─── Checkbox visual por item (modo multi) ────────────────────────────────────
+.checkBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid rgba($border-color, 0.45);
+  background: $white;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+  color: $white;
+}
+
+.checkBoxChecked {
+  background: $primary;
+  border-color: $primary;
+}
+
+// ─── Item selecionado (mode multi) ────────────────────────────────────────────
+.itemSelected {
+  background: rgba($primary, 0.07) !important;
+}
+
+// ─── Botões do footer ─────────────────────────────────────────────────────────
+.confirmBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 6px;
+  background: $primary;
+  color: $white;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.88;
+  }
+}
+
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  background: $white;
+  color: $text-secondary;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($border-color, 0.15);
+  }
+}
+
+
+// ─── Lista com scroll ─────────────────────────────────────────────────────────
+.listWrap {
+  max-height: 340px;
+  overflow-y: auto;
+  background: $background-light;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($border-color, 0.28);
+    border-radius: 4px;
+    &:hover {
+      background: rgba($border-color, 0.45);
+    }
+  }
+
+  // ── Zebragem dos itens ──────────────────────────────────────────────────
+  :global(li):nth-child(even) {
+    background: rgba($border-color, 0.055);
+  }
+
+  :global(li):nth-child(odd) {
+    background: $white;
+  }
+
+  :global(li):hover {
+    background: rgba($primary, 0.06) !important;
+  }
+}
+
+// ─── Estado de loading / erro ─────────────────────────────────────────────────
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 24px;
+  font-size: $font-size-sm;
+  color: rgba($text-secondary, 0.6);
+  background: $background-light;
+}
+
+.stateError {
+  color: rgba(#ef4444, 0.8);
+}
+
+// ─── Spinner ──────────────────────────────────────────────────────────────────
+.spinner {
+  color: rgba($text-secondary, 0.4);
+  animation: spin 0.8s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// ─── Barra de contagem ────────────────────────────────────────────────────────
+.countBar {
+  padding: 7px 16px;
+  font-size: $font-size-xs;
+  color: rgba($text-secondary, 0.5);
+  border-top: 1px solid rgba($border-color, 0.14);
+  background: $background-light;
+  text-align: right;
+}
+
+// ─── Barra de selecionados (modo multi) ───────────────────────────────────────
+.selectedBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: rgba($primary, 0.06);
+  border-bottom: 1px solid rgba($primary, 0.15);
+  font-size: $font-size-xs;
+}
+
+.selectedCount {
+  font-weight: 600;
+  color: $primary;
+}
+
+.clearBtn {
+  border: none;
+  background: none;
+  font-size: $font-size-xs;
+  color: rgba($text-secondary, 0.6);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    color: $text-primary;
+  }
+}
+
+// ─── Checkbox visual por item (modo multi) ────────────────────────────────────
+.checkBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid rgba($border-color, 0.45);
+  background: $white;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+  color: $white;
+}
+
+.checkBoxChecked {
+  background: $primary;
+  border-color: $primary;
+}
+
+// ─── Item selecionado (mode multi) ────────────────────────────────────────────
+.itemSelected {
+  background: rgba($primary, 0.07) !important;
+}
+
+// ─── Botões do footer ─────────────────────────────────────────────────────────
+.confirmBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 6px;
+  background: $primary;
+  color: $white;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.88;
+  }
+}
+
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  background: $white;
+  color: $text-secondary;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($border-color, 0.15);
+  }
+}
+
+
+// ─── Lista com scroll ─────────────────────────────────────────────────────────
+.listWrap {
+  max-height: 340px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($border-color, 0.28);
+    border-radius: 4px;
+    &:hover {
+      background: rgba($border-color, 0.45);
+    }
+  }
+}
+
+// ─── Estado de loading / erro ─────────────────────────────────────────────────
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 24px;
+  font-size: $font-size-sm;
+  color: rgba($text-secondary, 0.6);
+}
+
+.stateError {
+  color: rgba(#ef4444, 0.8);
+}
+
+// ─── Spinner ──────────────────────────────────────────────────────────────────
+.spinner {
+  color: rgba($text-secondary, 0.4);
+  animation: spin 0.8s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// ─── Barra de contagem ────────────────────────────────────────────────────────
+.countBar {
+  padding: 8px 16px;
+  font-size: $font-size-xs;
+  color: rgba($text-secondary, 0.5);
+  border-top: 1px solid rgba($border-color, 0.09);
+  background: rgba($border-color, 0.02);
+  text-align: right;
+}
+
+// ─── Barra de selecionados (modo multi) ───────────────────────────────────────
+.selectedBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: rgba($primary, 0.06);
+  border-bottom: 1px solid rgba($primary, 0.15);
+  font-size: $font-size-xs;
+}
+
+.selectedCount {
+  font-weight: 600;
+  color: $primary;
+}
+
+.clearBtn {
+  border: none;
+  background: none;
+  font-size: $font-size-xs;
+  color: rgba($text-secondary, 0.6);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    color: $text-primary;
+  }
+}
+
+// ─── Checkbox visual por item (modo multi) ────────────────────────────────────
+.checkBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid rgba($border-color, 0.45);
+  background: $white;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+  color: $white;
+}
+
+.checkBoxChecked {
+  background: $primary;
+  border-color: $primary;
+}
+
+// ─── Item selecionado ─────────────────────────────────────────────────────────
+.itemSelected {
+  background: rgba($primary, 0.05) !important;
+}
+
+// ─── Botões do footer ─────────────────────────────────────────────────────────
+.confirmBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 6px;
+  background: $primary;
+  color: $white;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.88;
+  }
+}
+
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  background: $white;
+  color: $text-secondary;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($border-color, 0.15);
+  }
+}
+
+// --- Mobile: deixa o body do Modal scrollar, listWrap cresce livremente -------
+@media (max-width: 576px) {
+  .listWrap {
+    max-height: none;
+    overflow-y: visible;
+  }
+}

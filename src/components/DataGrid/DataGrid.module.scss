@@ -1,0 +1,1005 @@
+@use "../../styles/abstracts/variables" as *;
+@use "../../styles/abstracts/mixins" as *;
+
+// ─── Tokens locais ────────────────────────────────────────────────────────────
+$row-h:         42px;
+$row-h-compact: 34px;
+$header-h:      38px;
+$radius:        10px;
+$radius-sm:     5px;
+$transition:    140ms ease;
+
+// Warm-neutral base (substitui rgba($border-color, …) em toda a folha)
+$warm:          #3c3730;
+
+// Superfícies
+$surface:       #f8f7f5;   // toolbar, thead, footer
+$surface-2:     #f1f0ed;   // hover secundário, inputs
+
+// ─── Root ─────────────────────────────────────────────────────────────────────
+.root {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: $white;
+  border-radius: $radius;
+  border: 1px solid rgba($warm, 0.22);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.07),
+    0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  font-size: $font-size-sm;
+  color: $text-primary;
+}
+
+// ─── Barra de refresh ─────────────────────────────────────────────────────────
+.refreshBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba($white, 0.92);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.refreshFill {
+  height: 100%;
+  width: 0%;
+  background: $success;
+}
+
+.refreshFillActive {
+  animation: refreshFillGrow 0.6s ease forwards;
+}
+
+@keyframes refreshFillGrow {
+  0%   { width: 0%;   opacity: 1; }
+  65%  { width: 100%; opacity: 1; }
+  100% { width: 100%; }
+}
+
+// ─── Toolbar ──────────────────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba($warm, 0.13);
+  background: $surface;
+  flex-wrap: wrap;
+}
+
+.toolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: $font-size-xs;
+  color: rgba($warm, 0.5);
+  line-height: 1.3;
+}
+
+.selectionBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  background: $surface-2;
+  border: 1px solid rgba($warm, 0.2);
+  border-radius: 20px;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $text-secondary;
+  white-space: nowrap;
+}
+
+// ─── Tool buttons ─────────────────────────────────────────────────────────────
+.toolBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba($warm, 0.22);
+  border-radius: $radius-sm;
+  background: $white;
+  color: $text-secondary;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition:
+    background $transition,
+    border-color $transition,
+    color $transition;
+  white-space: nowrap;
+
+  &:hover {
+    background: $surface-2;
+    border-color: rgba($warm, 0.32);
+    color: $text-primary;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// ─── Checkbox ─────────────────────────────────────────────────────────────────
+.checkbox {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: $text-primary;
+  flex-shrink: 0;
+}
+
+// ─── Table wrap ───────────────────────────────────────────────────────────────
+.tableWrap {
+  width: 100%;
+  overflow: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+
+  &::-webkit-scrollbar {
+    height: 5px;
+    width: 5px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($warm, 0.2);
+    border-radius: 10px;
+    &:hover {
+      background: rgba($warm, 0.35);
+    }
+  }
+}
+
+// ─── Table ────────────────────────────────────────────────────────────────────
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  min-width: 480px;
+}
+
+// ─── Thead ────────────────────────────────────────────────────────────────────
+.thead {
+  background: $surface;
+}
+
+.sticky .thead .th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba($surface, 0.97);
+  backdrop-filter: blur(4px);
+}
+
+.sticky .thead .thFrozen {
+  z-index: 14 !important;
+}
+
+.th {
+  height: $header-h;
+  padding: 0 14px;
+  font-size: 11px;
+  font-weight: $font-weight-semibold;
+  color: rgba($warm, 0.5);
+  white-space: nowrap;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  border-bottom: 1.5px solid rgba($warm, 0.18);
+  user-select: none;
+  background: $surface;
+}
+
+.thSortable {
+  cursor: pointer;
+  &:hover {
+    background: $surface-2;
+    .sortIcon {
+      opacity: 1;
+      color: $text-secondary;
+    }
+  }
+}
+
+.thSorted {
+  color: rgba($warm, 0.75);
+  .sortIcon {
+    opacity: 1;
+    color: rgba($warm, 0.75);
+  }
+}
+
+.thFrozen {
+  background: $surface !important;
+}
+
+.thInner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.thLabel {
+  line-height: 1;
+}
+
+.sortIcon {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.25;
+  transition:
+    opacity $transition,
+    color $transition;
+  flex-shrink: 0;
+  color: $text-secondary;
+}
+
+.frozenIndicator {
+  display: inline-flex;
+  align-items: center;
+  color: rgba($warm, 0.3);
+  flex-shrink: 0;
+}
+
+// Borda da última coluna congelada à esquerda
+.frozenLeftEdge {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -1px;
+    width: 1px;
+    height: 100%;
+    background: rgba($warm, 0.28);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+    z-index: 1;
+  }
+}
+
+// Borda da primeira coluna congelada à direita
+.frozenRightEdge {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 1px;
+    height: 100%;
+    background: rgba($warm, 0.28);
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.06);
+    z-index: 1;
+  }
+}
+
+// ─── Tooltip de coluna ────────────────────────────────────────────────────────
+.thTooltipIcon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: rgba($warm, 0.35);
+  cursor: default;
+  flex-shrink: 0;
+  &:hover {
+    color: rgba($warm, 0.6);
+  }
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba($text-primary, 0.9);
+  color: $white;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-normal;
+  padding: 5px 9px;
+  border-radius: $radius-sm;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 300;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: rgba($text-primary, 0.9);
+  }
+}
+
+// ─── Vertical grid ────────────────────────────────────────────────────────────
+.vGrid .th + .th,
+.vGrid .td + .td {
+  border-left: 1px solid rgba($warm, 0.08);
+}
+
+// ─── Tbody ────────────────────────────────────────────────────────────────────
+.tbody {
+  .tr {
+    border-bottom: 1px solid rgba($warm, 0.08);
+    transition: background $transition;
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.striped .tbody .tr:nth-child(even) {
+  background: rgba($warm, 0.025);
+}
+
+.tr:hover {
+  background: rgba($warm, 0.05) !important;
+}
+
+.trClickable {
+  cursor: pointer;
+  &:active {
+    background: rgba($warm, 0.09) !important;
+  }
+}
+
+.trSelected {
+  background: rgba($warm, 0.07) !important;
+  &:hover {
+    background: rgba($warm, 0.1) !important;
+  }
+}
+
+// ─── Células ──────────────────────────────────────────────────────────────────
+.td {
+  height: $row-h;
+  padding: 0 14px;
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  font-size: $font-size-sm;
+  background: inherit;
+}
+
+.tdFrozen {
+  background: $white !important;
+
+  .trSelected & {
+    background: rgba($warm, 0.07) !important;
+  }
+
+  .tr:hover & {
+    background: rgba($warm, 0.05) !important;
+  }
+}
+
+.compact .td {
+  height: $row-h-compact;
+  padding: 0 10px;
+}
+.compact .th {
+  height: 32px;
+  padding: 0 10px;
+}
+
+.cellText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellWithBadge {
+  display: flex;
+  align-items: center;
+}
+
+.rowNumber {
+  display: inline-block;
+  font-size: $font-size-xs;
+  color: rgba($warm, 0.3);
+  font-variant-numeric: tabular-nums;
+  min-width: 24px;
+  text-align: right;
+}
+
+// ─── Badges ───────────────────────────────────────────────────────────────────
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.badge_green  { background: rgba(#22c55e, 0.1);  color: #15803d; }
+.badge_red    { background: rgba(#ef4444, 0.1);   color: #b91c1c; }
+.badge_amber  { background: rgba(#f59e0b, 0.1);   color: #b45309; }
+.badge_blue   { background: rgba(#3b82f6, 0.1);   color: #1d4ed8; }
+.badge_gray   { background: $surface-2;            color: $text-secondary; }
+.badge_purple { background: rgba(#8b5cf6, 0.1);   color: #6d28d9; }
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+.emptyTd {
+  padding: 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 52px 24px;
+}
+
+.emptyIcon {
+  display: flex;
+  color: rgba($warm, 0.25);
+}
+
+.emptyMsg {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: rgba($warm, 0.4);
+  font-weight: $font-weight-medium;
+}
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.skeletonRow {
+  border-bottom: 1px solid rgba($warm, 0.07);
+  animation: fadeIn 0.3s ease both;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+}
+
+.skeletonCell {
+  height: $row-h;
+  padding: 0 14px;
+  vertical-align: middle;
+}
+
+.skeletonBar {
+  height: 11px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba($warm, 0.07) 0%,
+    rgba($warm, 0.14) 50%,
+    rgba($warm, 0.07) 100%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  border-top: 1px solid rgba($warm, 0.12);
+  background: $surface;
+  flex-wrap: wrap;
+  min-height: 46px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+}
+
+.footerInfo {
+  font-size: $font-size-xs;
+  color: rgba($warm, 0.48);
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  strong {
+    color: $text-secondary;
+    font-weight: $font-weight-semibold;
+  }
+
+  @media (max-width: 640px) {
+    text-align: center;
+  }
+}
+
+.footerCenter {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+
+  @media (max-width: 640px) {
+    justify-content: center;
+  }
+}
+
+.psLabel {
+  font-size: $font-size-xs;
+  color: rgba($warm, 0.45);
+  white-space: nowrap;
+}
+
+.psSelect {
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid rgba($warm, 0.2);
+  border-radius: $radius-sm;
+  background: $white;
+  font-size: $font-size-xs;
+  color: $text-primary;
+  cursor: pointer;
+  outline: none;
+  transition: border-color $transition;
+
+  &:focus {
+    border-color: rgba($warm, 0.4);
+  }
+}
+
+// ─── Paginação ────────────────────────────────────────────────────────────────
+.pgBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba($warm, 0.16);
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $text-secondary;
+  cursor: pointer;
+  transition:
+    background $transition,
+    border-color $transition,
+    color $transition;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: $surface-2;
+    border-color: rgba($warm, 0.3);
+    color: $text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.pgNumbers {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pgNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  background: transparent;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $text-secondary;
+  cursor: pointer;
+  transition:
+    background $transition,
+    border-color $transition,
+    color $transition;
+
+  &:hover {
+    background: $surface-2;
+    border-color: rgba($warm, 0.18);
+    color: $text-primary;
+  }
+}
+
+.pgActive {
+  background: $text-primary !important;
+  border-color: $text-primary !important;
+  color: $white !important;
+  font-weight: $font-weight-semibold;
+}
+
+.pgEllipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 26px;
+  font-size: $font-size-xs;
+  color: rgba($warm, 0.35);
+  user-select: none;
+}
+
+// ─── Cog (configurações) ──────────────────────────────────────────────────────
+.cogWrap {
+  position: relative;
+}
+
+.cogBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba($warm, 0.18);
+  border-radius: $radius-sm;
+  background: transparent;
+  color: rgba($warm, 0.45);
+  cursor: pointer;
+  transition:
+    background $transition,
+    border-color $transition,
+    color $transition,
+    transform 0.3s ease;
+
+  &:hover {
+    background: $surface-2;
+    border-color: rgba($warm, 0.3);
+    color: $text-primary;
+  }
+}
+
+.cogBtnActive {
+  background: $surface-2;
+  border-color: rgba($warm, 0.3);
+  color: $text-primary;
+
+  svg {
+    animation: cogSpin 3s linear infinite;
+  }
+}
+
+@keyframes cogSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.cogMenu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  background: $white;
+  border: 1px solid rgba($warm, 0.18);
+  border-radius: $radius;
+  box-shadow:
+    0 -4px 6px -2px rgba(0, 0, 0, 0.04),
+    0 -12px 28px -4px rgba(0, 0, 0, 0.1);
+  z-index: 200;
+  overflow: hidden;
+  animation: fadeSlideUp 0.14s ease;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+// ─── Abas do cog ──────────────────────────────────────────────────────────────
+.cogTabs {
+  display: flex;
+  border-bottom: 1px solid rgba($warm, 0.12);
+  background: $surface;
+}
+
+.cogTab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: rgba($warm, 0.45);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition:
+    color $transition,
+    border-color $transition,
+    background $transition;
+  margin-bottom: -1px;
+
+  &:hover {
+    color: $text-primary;
+    background: $surface-2;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.cogTabActive {
+  color: $text-primary;
+  border-bottom-color: $text-primary;
+}
+
+// ─── Corpo do cog ─────────────────────────────────────────────────────────────
+.cogBody {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px 0;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($warm, 0.2);
+    border-radius: 4px;
+  }
+}
+
+.cogSectionLabel {
+  margin: 0;
+  padding: 6px 14px 8px;
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  color: rgba($warm, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+// ─── Item de visibilidade ─────────────────────────────────────────────────────
+.cogItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  color: $text-primary;
+  transition: background $transition;
+  user-select: none;
+
+  &:hover {
+    background: rgba($warm, 0.04);
+  }
+}
+
+.cogItemLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cogItemIcon {
+  display: flex;
+  align-items: center;
+  color: rgba($warm, 0.4);
+  flex-shrink: 0;
+}
+
+.cogItemIconMuted {
+  color: rgba($warm, 0.22);
+}
+
+// ─── Item de freeze ───────────────────────────────────────────────────────────
+.freezeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+
+  &:hover {
+    background: rgba($warm, 0.03);
+  }
+}
+
+.freezeLabel {
+  flex: 1;
+  font-size: $font-size-xs;
+  color: $text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.freezeBtns {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.freezeBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid rgba($warm, 0.2);
+  border-radius: $radius-sm;
+  background: transparent;
+  font-size: 10px;
+  font-weight: $font-weight-medium;
+  color: $text-secondary;
+  cursor: pointer;
+  transition:
+    background $transition,
+    border-color $transition,
+    color $transition;
+  white-space: nowrap;
+
+  &:hover {
+    background: $surface-2;
+    border-color: rgba($warm, 0.32);
+    color: $text-primary;
+  }
+}
+
+.freezeBtnActive {
+  background: $text-primary !important;
+  border-color: $text-primary !important;
+  color: $white !important;
+}
+
+.freezeBtnClear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba($warm, 0.18);
+  border-radius: $radius-sm;
+  background: transparent;
+  color: rgba($warm, 0.45);
+  cursor: pointer;
+  transition: background $transition, color $transition;
+
+  &:hover {
+    background: rgba(#ef4444, 0.08);
+    border-color: rgba(#ef4444, 0.28);
+    color: #b91c1c;
+  }
+}
+
+.freezeClearAll {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 6px 14px 4px;
+  padding: 6px;
+  border: 1px solid rgba($warm, 0.16);
+  border-radius: $radius-sm;
+  background: transparent;
+  font-size: $font-size-xs;
+  color: rgba($warm, 0.55);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background $transition,
+    border-color $transition,
+    color $transition;
+
+  &:hover {
+    background: $surface-2;
+    border-color: rgba($warm, 0.28);
+    color: $text-primary;
+  }
+}
+
+// ─── Responsivo ───────────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .toolbar {
+    padding: 11px 12px;
+    gap: 8px;
+  }
+  .toolBtn span {
+    display: none;
+  }
+  .toolBtn {
+    padding: 0 8px;
+  }
+  .th,
+  .td {
+    padding: 0 10px;
+  }
+  .title {
+    font-size: 0.85rem;
+  }
+  .cogMenu {
+    width: 240px;
+  }
+}
+
+// ─── Reduced motion ───────────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBar {
+    animation: none;
+    background: rgba($warm, 0.1);
+  }
+  .cogMenu {
+    animation: none;
+  }
+  .cogBtnActive svg {
+    animation: none;
+  }
+}

@@ -1,0 +1,41 @@
+
+{
+  "pageConfiguration": {"backgroundColor": "#ffffff", "margin": {"four": [40, 35, 40, 35]}},
+  "header": {
+    "repeat": true,
+    "content": [
+      {"type": "text", "value": "RELATÓRIO COMPLETO V3", "fontSize": 22, "align": "center", "color": "#1a3a6b", "bold": true, "margin": {"four": [0, 0, 4, 0]}},
+      {"type": "text", "value": "Gerado em: {data_geracao} | Empresa: {empresa}", "fontSize": 10, "align": "center", "color": "#666666", "margin": {"four": [0, 0, 20, 0]}}
+    ]
+  },
+  "content": [
+    {"type": "horizontalStack", "gap": 12, "margin": {"four": [0, 0, 20, 0]}, "content": [
+      {"type": "card", "backgroundColor": "#e8f5e9", "cornerRadius": 8, "padding": {"four": [12, 16, 12, 16]}, "content": [
+        {"type": "text", "value": "💰 Faturamento", "fontSize": 9, "color": "#2e7d32", "bold": true, "margin": {"four": [0, 0, 4, 0]}},
+        {"type": "text", "value": "R$ {faturamento}", "fontSize": 16, "color": "#1b5e20", "bold": true}
+      ]},
+      {"type": "card", "backgroundColor": "#e3f2fd", "cornerRadius": 8, "padding": {"four": [12, 16, 12, 16]}, "content": [
+        {"type": "text", "value": "👥 Clientes", "fontSize": 9, "color": "#1565c0", "bold": true, "margin": {"four": [0, 0, 4, 0]}},
+        {"type": "text", "value": "{clientes}", "fontSize": 16, "color": "#0d47a1", "bold": true}
+      ]},
+      {"type": "card", "backgroundColor": "#fff3e0", "cornerRadius": 8, "padding": {"four": [12, 16, 12, 16]}, "content": [
+        {"type": "text", "value": "📦 Pedidos", "fontSize": 9, "color": "#e65100", "bold": true, "margin": {"four": [0, 0, 4, 0]}},
+        {"type": "text", "value": "{pedidos}", "fontSize": 16, "color": "#bf360c", "bold": true}
+      ]},
+      {"type": "card", "backgroundColor": "#f3e5f5", "cornerRadius": 8, "padding": {"four": [12, 16, 12, 16]}, "content": [
+        {"type": "text", "value": "⭐ Ticket Médio", "fontSize": 9, "color": "#6a1b9a", "bold": true, "margin": {"four": [0, 0, 4, 0]}},
+        {"type": "text", "value": "R$ {ticket_medio}", "fontSize": 16, "color": "#4a148c", "bold": true}
+      ]}
+    ]},
+    {"type": "card", "backgroundColor": "#fafafa", "cornerRadius": 8, "padding": {"four": [12, 16, 12, 16]}, "margin": {"four": [0, 0, 20, 0]}, "content": [
+      {"type": "text", "value": "📋 Produtos Vendidos", "fontSize": 13, "color": "#1a3a6b", "bold": true, "margin": {"four": [0, 0, 12, 0]}},
+      {"type": "table", "datasetName": "produtos", "tableHeader": [
+        {"key": "codigo", "prefix": "Código", "align": "left"},
+        {"key": "nome", "prefix": "Produto", "align": "left"},
+        {"key": "qtd", "prefix": "Qtd", "align": "center", "mask": "number"},
+        {"key": "preco", "prefix": "Preço", "align": "right", "mask": "currency"},
+        {"key": "total", "prefix": "Total", "align": "right", "mask": "currency"}
+      ], "widths": ["auto", "expand", "auto", "auto", "auto"], "grouping": {"groupBy": "categoria", "groupHeader": "📁 {group}", "subtotal": true}, "margin": {"four": [0, 0, 8, 0]}}
+    ]}
+  ]
+}

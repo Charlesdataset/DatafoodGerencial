@@ -1,0 +1,668 @@
+{
+  "pageConfiguration": {
+    "margin": [
+      15,
+      15,
+      15,
+      15
+    ]
+  },
+  "content": [
+    {
+      "type": "text",
+      "value": "RELATÓRIO DE VENDAS",
+      "style": {
+        "fontSize": 22,
+        "bold": true,
+        "color": "#1a365d",
+        "align": "center"
+      }
+    },
+    {
+      "type": "text",
+      "value": "ClearDataTicket - Análise Completa de Produtos",
+      "style": {
+        "fontSize": 11,
+        "color": "#4a5568",
+        "align": "center"
+      }
+    },
+    {
+      "type": "horizontalStack",
+      "children": [
+        {
+          "type": "card",
+          "style": {
+            "backgroundColor": "#ebf8ff",
+            "borderColor": "#63b3ed",
+            "padding": 10,
+            "flex": 1,
+            "margin": 3
+          },
+          "children": [
+            {
+              "type": "text",
+              "value": "Total Produtos",
+              "style": {
+                "fontSize": 9,
+                "color": "#2b6cb0",
+                "align": "center"
+              }
+            },
+            {
+              "type": "text",
+              "value": "316",
+              "style": {
+                "fontSize": 18,
+                "bold": true,
+                "color": "#2b6cb0",
+                "align": "center"
+              }
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "style": {
+            "backgroundColor": "#f0fff4",
+            "borderColor": "#68d391",
+            "padding": 10,
+            "flex": 1,
+            "margin": 3
+          },
+          "children": [
+            {
+              "type": "text",
+              "value": "Valor Total",
+              "style": {
+                "fontSize": 9,
+                "color": "#276749",
+                "align": "center"
+              }
+            },
+            {
+              "type": "text",
+              "value": "R$ 194,808.60",
+              "style": {
+                "fontSize": 18,
+                "bold": true,
+                "color": "#276749",
+                "align": "center"
+              }
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "style": {
+            "backgroundColor": "#faf5ff",
+            "borderColor": "#b794f4",
+            "padding": 10,
+            "flex": 1,
+            "margin": 3
+          },
+          "children": [
+            {
+              "type": "text",
+              "value": "Categorias",
+              "style": {
+                "fontSize": 9,
+                "color": "#553c9a",
+                "align": "center"
+              }
+            },
+            {
+              "type": "text",
+              "value": "4",
+              "style": {
+                "fontSize": 18,
+                "bold": true,
+                "color": "#553c9a",
+                "align": "center"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "value": "",
+      "style": {
+        "fontSize": 4
+      }
+    },
+    {
+      "type": "table",
+      "columns": [
+        {
+          "key": "codigo",
+          "header": "Código",
+          "width": 0.12
+        },
+        {
+          "key": "nome",
+          "header": "Produto",
+          "width": 0.33
+        },
+        {
+          "key": "qtd",
+          "header": "Qtd",
+          "width": 0.12,
+          "align": "right"
+        },
+        {
+          "key": "preco",
+          "header": "Preço",
+          "width": 0.2,
+          "align": "right"
+        },
+        {
+          "key": "total",
+          "header": "Total",
+          "width": 0.23,
+          "align": "right"
+        }
+      ],
+      "data": [
+        {
+          "type": "groupRow",
+          "label": "  Informática",
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ],
+          "style": {
+            "backgroundColor": "#edf2f7",
+            "bold": true,
+            "fontSize": 10
+          }
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P001",
+            "Notebook Ultra",
+            "12",
+            "R$ 4250.00",
+            "R$ 51000.00"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P002",
+            "Mouse Sem Fio",
+            "45",
+            "R$ 89.90",
+            "R$ 4045.50"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P003",
+            "Teclado Mecânico",
+            "28",
+            "R$ 249.90",
+            "R$ 6997.20"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P004",
+            "Monitor 27\" 4K",
+            "8",
+            "R$ 2199.00",
+            "R$ 17592.00"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P009",
+            "Webcam HD",
+            "14",
+            "R$ 159.90",
+            "R$ 2238.60"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P010",
+            "SSD 1TB NVMe",
+            "22",
+            "R$ 549.90",
+            "R$ 12097.80"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P014",
+            "Hub USB-C 7 portas",
+            "10",
+            "R$ 189.90",
+            "R$ 1899.00"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "groupRow",
+          "label": "  Móveis",
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ],
+          "style": {
+            "backgroundColor": "#edf2f7",
+            "bold": true,
+            "fontSize": 10
+          }
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P005",
+            "Cadeira Ergonômica",
+            "6",
+            "R$ 1899.00",
+            "R$ 11394.00"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P006",
+            "Mesa Escritório",
+            "4",
+            "R$ 1599.00",
+            "R$ 6396.00"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "groupRow",
+          "label": "  Áudio",
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ],
+          "style": {
+            "backgroundColor": "#edf2f7",
+            "bold": true,
+            "fontSize": 10
+          }
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P007",
+            "Fone Bluetooth",
+            "32",
+            "R$ 179.90",
+            "R$ 5756.80"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P008",
+            "Caixa de Som Portátil",
+            "18",
+            "R$ 299.90",
+            "R$ 5398.20"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "groupRow",
+          "label": "  Celulares",
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ],
+          "style": {
+            "backgroundColor": "#edf2f7",
+            "bold": true,
+            "fontSize": 10
+          }
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P011",
+            "Smartphone X",
+            "15",
+            "R$ 3299.00",
+            "R$ 49485.00"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P012",
+            "Carregador Turbo",
+            "40",
+            "R$ 79.90",
+            "R$ 3196.00"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P013",
+            "Película Privacidade",
+            "55",
+            "R$ 34.90",
+            "R$ 1919.50"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        },
+        {
+          "type": "dataRow",
+          "values": [
+            "P015",
+            "Tablet Pro",
+            "7",
+            "R$ 2199.00",
+            "R$ 15393.00"
+          ],
+          "columns": [
+            "codigo",
+            "nome",
+            "qtd",
+            "preco",
+            "total"
+          ]
+        }
+      ],
+      "options": {
+        "headerStyle": {
+          "backgroundColor": "#2c5282",
+          "color": "#ffffff",
+          "fontSize": 9,
+          "bold": true
+        },
+        "rowStyle": {
+          "fontSize": 9
+        },
+        "alternating": true,
+        "alternatingColor": "#f7fafc",
+        "borderColor": "#e2e8f0",
+        "borderWidth": 0.5
+      }
+    },
+    {
+      "type": "text",
+      "value": "",
+      "style": {
+        "fontSize": 3
+      }
+    },
+    {
+      "type": "card",
+      "style": {
+        "backgroundColor": "#f7fafc",
+        "borderColor": "#cbd5e0",
+        "padding": 6
+      },
+      "children": [
+        {
+          "type": "text",
+          "value": "Total Geral: R$ 194,808.60",
+          "style": {
+            "fontSize": 11,
+            "bold": true,
+            "color": "#2d3748",
+            "align": "right"
+          }
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "value": "",
+      "style": {
+        "fontSize": 4
+      }
+    },
+    {
+      "type": "horizontalStack",
+      "children": [
+        {
+          "type": "card",
+          "style": {
+            "backgroundColor": "#fff5f5",
+            "borderColor": "#fc8181",
+            "padding": 8,
+            "flex": 1,
+            "margin": 3
+          },
+          "children": [
+            {
+              "type": "text",
+              "value": "Estoque Baixo",
+              "style": {
+                "fontSize": 10,
+                "bold": true,
+                "color": "#9b2c2c"
+              }
+            },
+            {
+              "type": "text",
+              "value": "Produtos com estoque crítico precisam de reposição urgente.",
+              "style": {
+                "fontSize": 8,
+                "color": "#742a2a"
+              }
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "style": {
+            "backgroundColor": "#fffff0",
+            "borderColor": "#ecc94b",
+            "padding": 8,
+            "flex": 1,
+            "margin": 3
+          },
+          "children": [
+            {
+              "type": "text",
+              "value": "Destaques",
+              "style": {
+                "fontSize": 10,
+                "bold": true,
+                "color": "#975a16"
+              }
+            },
+            {
+              "type": "text",
+              "value": "Notebook Ultra e Smartphone X são os mais vendidos.",
+              "style": {
+                "fontSize": 8,
+                "color": "#744210"
+              }
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "style": {
+            "backgroundColor": "#f0fff4",
+            "borderColor": "#68d391",
+            "padding": 8,
+            "flex": 1,
+            "margin": 3
+          },
+          "children": [
+            {
+              "type": "text",
+              "value": "Meta Atingida",
+              "style": {
+                "fontSize": 10,
+                "bold": true,
+                "color": "#276749"
+              }
+            },
+            {
+              "type": "text",
+              "value": "100% da meta trimestral foi atingida este mês.",
+              "style": {
+                "fontSize": 8,
+                "color": "#22543d"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "value": "",
+      "style": {
+        "fontSize": 10
+      }
+    },
+    {
+      "type": "card",
+      "style": {
+        "backgroundColor": "#1a365d",
+        "padding": 6
+      },
+      "children": [
+        {
+          "type": "text",
+          "value": "ClearDataTicket © 2026 - Relatório Gerado Automaticamente",
+          "style": {
+            "fontSize": 8,
+            "color": "#ffffff",
+            "align": "center"
+          }
+        },
+        {
+          "type": "text",
+          "value": "Documento gerado em 25/04/2026",
+          "style": {
+            "fontSize": 7,
+            "color": "#a0aec0",
+            "align": "center"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultStyle": {
+    "fontFamily": "Helvetica"
+  }
+}

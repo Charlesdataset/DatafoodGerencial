@@ -1,0 +1,35 @@
+@use '../abstracts/variables' as *;
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: $gray;
+  
+  input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: $primary;
+  }
+  
+  span {
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  &:hover {
+    color: $dark;
+  }
+  
+  &--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    
+    input, span {
+      cursor: not-allowed;
+    }
+  }
+}

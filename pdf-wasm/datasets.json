@@ -1,0 +1,124 @@
+{
+  "produtos": [
+    {
+      "codigo": "P001",
+      "nome": "Notebook Ultra",
+      "categoria": "Informática",
+      "qtd": 12,
+      "preco": 4250,
+      "total": 51000
+    },
+    {
+      "codigo": "P002",
+      "nome": "Mouse Sem Fio",
+      "categoria": "Informática",
+      "qtd": 45,
+      "preco": 89.9,
+      "total": 4045.5
+    },
+    {
+      "codigo": "P003",
+      "nome": "Teclado Mecânico",
+      "categoria": "Informática",
+      "qtd": 28,
+      "preco": 249.9,
+      "total": 6997.2
+    },
+    {
+      "codigo": "P004",
+      "nome": "Monitor 27\" 4K",
+      "categoria": "Informática",
+      "qtd": 8,
+      "preco": 2199,
+      "total": 17592
+    },
+    {
+      "codigo": "P005",
+      "nome": "Cadeira Ergonômica",
+      "categoria": "Móveis",
+      "qtd": 6,
+      "preco": 1899,
+      "total": 11394
+    },
+    {
+      "codigo": "P006",
+      "nome": "Mesa Escritório",
+      "categoria": "Móveis",
+      "qtd": 4,
+      "preco": 1599,
+      "total": 6396
+    },
+    {
+      "codigo": "P007",
+      "nome": "Fone Bluetooth",
+      "categoria": "Áudio",
+      "qtd": 32,
+      "preco": 179.9,
+      "total": 5756.8
+    },
+    {
+      "codigo": "P008",
+      "nome": "Caixa de Som Portátil",
+      "categoria": "Áudio",
+      "qtd": 18,
+      "preco": 299.9,
+      "total": 5398.2
+    },
+    {
+      "codigo": "P009",
+      "nome": "Webcam HD",
+      "categoria": "Informática",
+      "qtd": 14,
+      "preco": 159.9,
+      "total": 2238.6
+    },
+    {
+      "codigo": "P010",
+      "nome": "SSD 1TB NVMe",
+      "categoria": "Informática",
+      "qtd": 22,
+      "preco": 549.9,
+      "total": 12097.8
+    },
+    {
+      "codigo": "P011",
+      "nome": "Smartphone X",
+      "categoria": "Celulares",
+      "qtd": 15,
+      "preco": 3299,
+      "total": 49485
+    },
+    {
+      "codigo": "P012",
+      "nome": "Carregador Turbo",
+      "categoria": "Celulares",
+      "qtd": 40,
+      "preco": 79.9,
+      "total": 3196
+    },
+    {
+      "codigo": "P013",
+      "nome": "Película Privacidade",
+      "categoria": "Celulares",
+      "qtd": 55,
+      "preco": 34.9,
+      "total": 1919.5
+    },
+    {
+      "codigo": "P014",
+      "nome": "Hub USB-C 7 portas",
+      "categoria": "Informática",
+      "qtd": 10,
+      "preco": 189.9,
+      "total": 1899
+    },
+    {
+      "codigo": "P015",
+      "nome": "Tablet Pro",
+      "categoria": "Celulares",
+      "qtd": 7,
+      "preco": 2199,
+      "total": 15393
+    }
+  ]
+}

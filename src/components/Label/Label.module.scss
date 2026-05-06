@@ -1,0 +1,157 @@
+@use "../../styles/abstracts/variables" as *;
+
+.label {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  
+  color: $gray;
+  font-family: $font-family-base;
+  line-height: 1.5;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $text-secondary;
+  }
+}
+
+// Pesos da fonte (usando suas variáveis)
+.weightNormal {
+  font-weight: $font-weight-normal;
+}
+
+.weightMedium {
+  font-weight: $font-weight-medium;
+}
+
+.weightSemibold {
+  font-weight: $font-weight-semibold;
+}
+
+.weightBold {
+  font-weight: $font-weight-bold;
+}
+
+.weightExtrabold {
+  font-weight: $font-weight-extrabold;
+}
+
+// Tamanhos (usando suas variáveis)
+.sizeXs {
+  font-size: $font-size-xs;
+}
+
+.sizeSm {
+  font-size: $font-size-sm;
+}
+
+.sizeMd {
+  font-size: $font-size-base;
+}
+
+.sizeLg {
+  font-size: $font-size-lg;
+}
+
+.sizeXl {
+  font-size: $font-size-xl;
+}
+
+// Cores (usando suas variáveis)
+.colorPrimary {
+  color: $primary;
+}
+
+.colorSecondary {
+  color: $secondary;
+}
+
+.colorSuccess {
+  color: $success;
+}
+
+.colorDanger {
+  color: $danger;
+}
+
+.colorWarning {
+  color: $warning;
+}
+
+.colorInfo {
+  color: $info;
+}
+
+.colorLight {
+  color: $light;
+}
+
+.colorDark {
+  color: $dark;
+}
+
+.colorGray {
+  color: $gray;
+}
+
+.colorWhite {
+  color: $white;
+}
+
+.colorMuted {
+  color: $text-muted;
+}
+
+// Alinhamentos
+.textLeft {
+  text-align: left;
+}
+
+.textCenter {
+  text-align: center;
+}
+
+.textRight {
+  text-align: right;
+}
+
+// Decorações
+.underline {
+  text-decoration: underline;
+}
+
+.noUnderline {
+  text-decoration: none;
+}
+
+// Transformações
+.uppercase {
+  text-transform: uppercase;
+}
+
+.lowercase {
+  text-transform: lowercase;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+// Campo obrigatório
+.required {
+  color: $danger;
+  margin-left: $spacing-xs;
+  font-weight: $font-weight-bold;
+}
+
+// Truncar texto
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Quebra de linha
+.breakWord {
+  word-break: break-word;
+}

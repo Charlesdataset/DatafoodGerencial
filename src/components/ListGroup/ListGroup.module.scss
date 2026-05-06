@@ -1,0 +1,208 @@
+@use "../../styles/abstracts/variables" as *;
+@use "../../styles/abstracts/mixins" as *;
+
+$radius: 7px;
+$transition: 130ms ease;
+$item-h: 52px;
+$item-h-sm: 40px;
+
+// ─── Lista ────────────────────────────────────────────────────────────────────
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba($border-color, 0.16);
+  border-radius: $radius;
+  overflow: hidden;
+  background: $white;
+}
+
+.flush {
+  border: none;
+  border-radius: 0;
+}
+
+// ─── Item base ────────────────────────────────────────────────────────────────
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  min-height: $item-h;
+  border-bottom: 1px solid rgba($border-color, 0.1);
+  background: $white;
+  color: $text-primary;
+  font-size: $font-size-sm;
+  position: relative;
+  transition: background $transition;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  // Linha de highlight à esquerda (visível no active)
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 2px;
+    border-radius: 0 2px 2px 0;
+    background: $text-primary;
+    opacity: 0;
+    transform: scaleY(0.4);
+    transition:
+      opacity $transition,
+      transform $transition;
+  }
+}
+
+.compact .item {
+  min-height: $item-h-sm;
+  padding: 0 12px;
+}
+
+// ─── Item clicável ────────────────────────────────────────────────────────────
+.itemAction {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background: rgba($border-color, 0.06);
+
+    .itemChevron {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+  }
+
+  &:active {
+    background: rgba($border-color, 0.11);
+  }
+
+  &:focus-visible {
+    outline: none;
+    background: rgba($border-color, 0.08);
+    box-shadow: inset 0 0 0 2px rgba($border-color, 0.35);
+  }
+}
+
+// ─── Zebragem ───────────────────────────────────────────────────────────────
+.zebra {
+  .item:nth-child(odd) {
+    background: $gray-300;
+  }
+
+  .item:nth-child(even) {
+    background: $white;
+  }
+}
+
+// ─── Item ativo ───────────────────────────────────────────────────────────────
+.itemActive {
+  background: rgba($border-color, 0.07);
+  color: $text-primary;
+  font-weight: $font-weight-medium;
+
+  &::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .itemChevron {
+    opacity: 0.6;
+  }
+}
+
+// ─── Item desabilitado ────────────────────────────────────────────────────────
+.itemDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+// ─── Ícone esquerdo ───────────────────────────────────────────────────────────
+.itemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgba($text-secondary, 0.6);
+  width: 20px;
+
+  .itemActive & {
+    color: $text-primary;
+  }
+}
+
+// ─── Corpo do item ────────────────────────────────────────────────────────────
+.itemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 0;
+}
+
+.itemLabel {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+  font-weight: $font-weight-medium;
+  color: $text-primary;
+}
+
+.itemDescription {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  font-weight: $font-weight-normal;
+  line-height: 1.3;
+}
+
+// ─── Sufixo direito ───────────────────────────────────────────────────────────
+.itemSuffix {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: rgba($text-secondary, 0.55);
+  font-size: $font-size-xs;
+}
+
+// ─── Chevron automático ───────────────────────────────────────────────────────
+.itemChevron {
+  display: flex;
+  align-items: center;
+  color: rgba($text-secondary, 0.3);
+  flex-shrink: 0;
+  opacity: 0.5;
+  transform: translateX(0);
+  transition:
+    opacity $transition,
+    transform $transition,
+    color $transition;
+
+  .itemAction:hover & {
+    color: rgba($text-secondary, 0.6);
+  }
+}
+
+// ─── Estado vazio ─────────────────────────────────────────────────────────────
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  font-size: $font-size-sm;
+  color: rgba($text-secondary, 0.5);
+  font-style: italic;
+}

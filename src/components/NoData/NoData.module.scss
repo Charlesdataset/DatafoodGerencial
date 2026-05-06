@@ -1,0 +1,17 @@
+@use '../../styles/abstracts/variables' as *;
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    svg {
+        color: $gray-light;
+    }
+    h3 {
+        color: $gray-light;
+        text-align: center;
+    }
+}

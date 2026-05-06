@@ -1,0 +1,84 @@
+@use '../../styles/abstracts/variables' as *;
+
+.bedge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  transition: all $transition-fast;
+
+  // Variantes preenchidas
+  &--primary {
+    background-color: $primary;
+    color: $white;
+  }
+
+  &--success {
+    background-color: $success;
+    color: $white;
+  }
+
+  &--danger {
+    background-color: $danger;
+    color: $white;
+  }
+
+  &--warning {
+    background-color: $warning;
+    color: $dark;
+  }
+
+  &--info {
+    background-color: $info;
+    color: $white;
+  }
+
+  &--secondary {
+    background-color: $secondary;
+    color: $white;
+  }
+
+  // Variantes outline
+  &--outlined {
+    background-color: transparent;
+    
+    &.bedge--primary {
+      color: $primary;
+      border: 1px solid $primary;
+    }
+    
+    &.bedge--success {
+      color: $success;
+      border: 1px solid $success;
+    }
+    
+    &.bedge--danger {
+      color: $danger;
+      border: 1px solid $danger;
+    }
+    
+    &.bedge--warning {
+      color: $warning;
+      border: 1px solid $warning;
+    }
+    
+    &.bedge--info {
+      color: $info;
+      border: 1px solid $info;
+    }
+    
+    &.bedge--secondary {
+      color: $secondary;
+      border: 1px solid $secondary;
+    }
+  }
+
+  // Bordas arredondadas
+  &--rounded {
+    border-radius: 9999px;
+  }
+}

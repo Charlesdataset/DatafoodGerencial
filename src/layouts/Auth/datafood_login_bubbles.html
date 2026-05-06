@@ -1,0 +1,176 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;}
+
+.themes{display:flex;gap:8px;margin-bottom:12px;justify-content:center;}
+.themes button{padding:6px 14px;border-radius:20px;border:1.5px solid #ddd;cursor:pointer;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;background:#f5f5f5;color:#333;transition:all 0.2s;}
+.themes button.active{color:#fff;border-color:transparent;}
+
+.wrap{display:flex;height:500px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.18);}
+
+.left{position:relative;flex:1;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:40px;}
+canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+
+.left-top{position:relative;z-index:2;}
+.logo-box{display:flex;flex-direction:column;gap:6px;}
+.logo-name{font-size:42px;font-weight:800;color:#fff;letter-spacing:2px;line-height:1;}
+.logo-name span{transition:color 0.4s;}
+.logo-sub{font-size:10px;letter-spacing:5px;color:rgba(255,255,255,0.45);font-weight:500;}
+
+.left-bottom{position:relative;z-index:2;}
+.sep{width:40px;height:2px;border-radius:2px;margin-bottom:16px;transition:background 0.4s;}
+.tagline{font-size:18px;font-weight:700;color:#fff;line-height:1.45;margin-bottom:10px;}
+.tagline em{font-style:normal;transition:color 0.4s;}
+.desc{font-size:12px;color:rgba(255,255,255,0.58);line-height:1.7;margin-bottom:16px;}
+.version{font-size:10px;color:rgba(255,255,255,0.28);letter-spacing:3px;}
+
+.right{width:360px;flex-shrink:0;background:#fff;display:flex;align-items:center;justify-content:center;padding:40px 36px;}
+.form-wrap{width:100%;}
+.form-title{font-size:22px;font-weight:700;margin-bottom:3px;transition:color 0.4s;}
+.form-sub{font-size:12px;color:rgba(0,0,0,0.38);margin-bottom:18px;}
+.grad-bar{height:3px;border-radius:2px;margin-bottom:22px;transition:background 0.4s;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:600;margin-bottom:5px;color:#555;letter-spacing:0.5px;}
+.field input{width:100%;height:44px;border:1.5px solid #e2e8f0;border-radius:10px;padding:0 14px 0 38px;font-size:13px;outline:none;font-family:'Outfit',sans-serif;color:#1a2a3a;transition:border 0.2s;background-repeat:no-repeat;background-position:12px center;background-size:16px;}
+.field input[type=text]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 20c0-4 3.6-7 8-7s8 3 8 7'/%3E%3C/svg%3E");}
+.field input[type=password]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Crect x='3' y='11' width='18' height='11' rx='2'/%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E");}
+.btn{width:100%;height:46px;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;transition:opacity 0.2s,transform 0.1s,background 0.4s;}
+.btn:hover{opacity:0.88;transform:translateY(-1px);}
+
+@media(max-width:600px){.wrap{flex-direction:column;height:auto;}.left{min-height:300px;}.right{width:100%;}}
+</style>
+
+<div class="themes">
+  <button id="t1" onclick="setTheme('verde')">🟢 Verde</button>
+  <button id="t2" onclick="setTheme('laranja')">🟠 Laranja</button>
+  <button id="t3" onclick="setTheme('marinho')">🔵 Marinho</button>
+</div>
+
+<div class="wrap" id="wrap">
+  <div class="left" id="left">
+    <canvas id="c"></canvas>
+    <div class="left-top">
+      <div class="logo-box">
+        <div class="logo-name">DATA<span id="ls">FOOD</span></div>
+        <div class="logo-sub">DELIVERY INTELIGENTE</div>
+      </div>
+    </div>
+    <div class="left-bottom">
+      <div class="sep" id="sep"></div>
+      <div class="tagline">Da visão geral do salão<br>ao <em id="em">controle absoluto</em> do caixa.</div>
+      <div class="desc">Tome decisões estratégicas baseadas em dados reais e veja o seu faturamento crescer de verdade.</div>
+      <div class="version">v1.0.0</div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="form-wrap">
+      <div class="form-title" id="ft">Entrar</div>
+      <div class="form-sub">Acesse sua conta para continuar</div>
+      <div class="grad-bar" id="gb"></div>
+      <div class="field"><label>Código do usuário</label><input id="i1" type="text" placeholder="usuário"/></div>
+      <div class="field"><label>Senha</label><input id="i2" type="password" placeholder="••••••"/></div>
+      <button class="btn" id="btn">→&nbsp; Entrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const THEMES = {
+  verde:   { bg:'linear-gradient(150deg,#1a3a4a 0%,#1e6b52 55%,#42AB8A 100%)', accent:'#42AB8A', dark:'#21455F' },
+  laranja: { bg:'linear-gradient(150deg,#7a2800 0%,#c04a00 55%,#FF6B1A 100%)', accent:'#FF6B1A', dark:'#7a2800' },
+  marinho: { bg:'linear-gradient(150deg,#050e1f 0%,#0d2a4e 55%,#1565C0 100%)', accent:'#4A90E2', dark:'#0a1628' },
+};
+
+let cur = 'verde';
+
+function setTheme(name){
+  cur = name;
+  const t = THEMES[name];
+  document.getElementById('left').style.background = t.bg;
+  document.getElementById('ls').style.color = t.accent;
+  document.getElementById('sep').style.background = t.accent;
+  document.getElementById('em').style.color = t.accent;
+  document.getElementById('gb').style.background = `linear-gradient(90deg,${t.dark},${t.accent})`;
+  document.getElementById('ft').style.color = t.dark;
+  document.getElementById('btn').style.background = t.accent;
+  [document.getElementById('i1'),document.getElementById('i2')].forEach(i=>{
+    i.onfocus = ()=>i.style.borderColor=t.accent;
+    i.onblur  = ()=>i.style.borderColor='#e2e8f0';
+  });
+  document.querySelectorAll('.themes button').forEach(b=>{b.classList.remove('active');b.style.background='#f5f5f5';b.style.color='#333';});
+  const map={verde:'t1',laranja:'t2',marinho:'t3'};
+  const b=document.getElementById(map[name]);
+  b.classList.add('active');b.style.background=t.accent;b.style.color='#fff';
+}
+
+/* ===== BOLHINHAS ===== */
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+let dots=[];
+
+function resize(){
+  canvas.width=canvas.parentElement.offsetWidth;
+  canvas.height=canvas.parentElement.offsetHeight;
+}
+
+function newDot(){
+  const angle=Math.random()*Math.PI*2;
+  const speed=Math.random()*0.5+0.2;
+  return {
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    r:Math.random()*3+1,
+    vx:Math.cos(angle)*speed,
+    vy:Math.sin(angle)*speed,
+    alpha:0,
+    maxAlpha:Math.random()*0.55+0.15,
+    phase:'in',
+    life:0,
+    maxLife:Math.random()*220+120,
+  };
+}
+
+function initDots(){
+  dots=[];
+  for(let i=0;i<35;i++){
+    const d=newDot();
+    d.life=Math.random()*d.maxLife;
+    d.alpha=d.maxAlpha*(d.life/d.maxLife);
+    dots.push(d);
+  }
+}
+
+function drawDots(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  dots.forEach((d,i)=>{
+    d.life++;
+    d.x+=d.vx;
+    d.y+=d.vy;
+
+    if(d.x<-10)d.x=canvas.width+10;
+    if(d.x>canvas.width+10)d.x=-10;
+    if(d.y<-10)d.y=canvas.height+10;
+    if(d.y>canvas.height+10)d.y=-10;
+
+    const half=d.maxLife/2;
+    if(d.life<half) d.alpha=d.maxAlpha*(d.life/half);
+    else d.alpha=d.maxAlpha*(1-(d.life-half)/half);
+
+    if(d.life>=d.maxLife) dots[i]=newDot();
+
+    ctx.beginPath();
+    ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${d.alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawDots);
+}
+
+window.addEventListener('resize',()=>{resize();initDots();});
+resize();
+initDots();
+setTheme('verde');
+drawDots();
+</script>

@@ -1,0 +1,265 @@
+@use '../../styles/abstracts/variables' as *;
+
+// ============================================
+// COMPONENTE SWITCH REUTILIZÁVEL
+// ============================================
+
+// Container do switch
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  cursor: pointer;
+  user-select: none;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    .toggle {
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Switch inline (sem label separado)
+.switchInline {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+// Switch com label acima
+.switchStacked {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  align-items: flex-start;
+}
+
+.switchDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+// Label do switch
+.label {
+  font-size: $font-size-sm;
+  color: $text-primary;
+  font-weight: $font-weight-medium;
+
+  &Left {
+    order: -1;
+  }
+
+  &Right {
+    order: 1;
+  }
+}
+
+// Input escondido
+.input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+// Elemento toggle (o botão do switch)
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  background: $gray-light;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all $transition-base;
+  padding: 0;
+  flex-shrink: 0;
+
+  // Slider interno
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: $white;
+    border-radius: 50%;
+    transition: transform $transition-base;
+    box-shadow: $shadow-sm;
+  }
+}
+
+// Estados
+.toggleChecked {
+  background: $primary;
+
+  &::after {
+    transform: translateX(20px);
+  }
+}
+
+.toggleDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+// Tamanhos
+.toggleSm {
+  width: 36px;
+  height: 20px;
+
+  &::after {
+    width: 16px;
+    height: 16px;
+    top: 2px;
+    left: 2px;
+  }
+
+  &.toggleChecked::after {
+    transform: translateX(16px);
+  }
+}
+
+.toggleLg {
+  width: 52px;
+  height: 28px;
+
+  &::after {
+    width: 24px;
+    height: 24px;
+    top: 2px;
+    left: 2px;
+  }
+
+  &.toggleChecked::after {
+    transform: translateX(24px);
+  }
+}
+
+// Variantes de cor
+.togglePrimary {
+  &.toggleChecked {
+    background: $primary;
+  }
+}
+
+.toggleSecondary {
+  &.toggleChecked {
+    background: $secondary;
+  }
+}
+
+.toggleSuccess {
+  &.toggleChecked {
+    background: $success;
+  }
+}
+
+.toggleDanger {
+  &.toggleChecked {
+    background: $danger;
+  }
+}
+
+.toggleWarning {
+  &.toggleChecked {
+    background: $warning;
+  }
+}
+
+.toggleInfo {
+  &.toggleChecked {
+    background: $info;
+  }
+}
+
+// Variante outline
+.toggleOutline {
+  background: transparent;
+  border: 2px solid $gray-light;
+
+  &.toggleChecked {
+    background: transparent;
+    border-color: $primary;
+
+    &::after {
+      background: $primary;
+    }
+  }
+}
+
+// Variante filled
+.toggleFilled {
+  background: rgba($gray-light, 0.2);
+
+  &.toggleChecked {
+    background: rgba($primary, 0.2);
+
+    &::after {
+      background: $primary;
+    }
+  }
+}
+
+// Variante com ícone
+.toggleWithIcon {
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: $white;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity $transition-base;
+  }
+
+  &.toggleChecked::before {
+    content: '✓';
+    left: 6px;
+    opacity: 1;
+  }
+
+  &:not(.toggleChecked)::before {
+    content: '✕';
+    right: 6px;
+    opacity: 1;
+  }
+}
+
+// Texto de ajuda/descrição
+.help {
+  font-size: $font-size-xs;
+  color: $text-muted;
+  margin-top: $spacing-xs;
+}
+
+// Estados de foco para acessibilidade
+.toggle:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
+}
+
+// Animações
+@keyframes switchPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba($primary, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba($primary, 0.4);
+  }
+}
+
+.togglePulse {
+  animation: switchPulse 2s infinite;
+
+  &.toggleChecked {
+    animation: switchPulse 2s infinite;
+  }
+}

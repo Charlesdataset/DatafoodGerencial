@@ -1,0 +1,37 @@
+// BottomActionBar.module.scss
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 12px 16px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: bottom 0.3s ease;
+
+  // Sombra mais forte para destaque
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+
+  // Garante que os botões sejam tocáveis
+  button {
+    min-height: 48px; // Altura mínima para toque (recomendação WCAG)
+    font-size: 16px; // Evita zoom automático no iOS
+  }
+}
+
+// Quando o teclado está aberto, muda para sticky (acima do teclado)
+.bottomBar.keyboardOpen {
+  position: sticky;
+  bottom: 0;
+  margin-top: 16px;
+  box-shadow: none;
+  border-top: 1px solid #e0e0e0;
+}
+
+// Desktop: não mostra o bottom bar
+@media (min-width: 993px) {
+  .bottomBar {
+    display: none;
+  }
+}

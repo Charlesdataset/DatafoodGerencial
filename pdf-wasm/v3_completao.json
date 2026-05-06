@@ -1,0 +1,320 @@
+{
+  "pageConfiguration": {
+    "margin": [
+      15,
+      15,
+      15,
+      15
+    ]
+  },
+  "header": {
+    "content": [
+      {
+        "type": "card",
+        "backgroundColor": "#1a365d",
+        "padding": 6,
+        "content": [
+          {
+            "type": "text",
+            "value": "ClearDataTicket",
+            "fontSize": 9,
+            "color": "#90cdf4",
+            "align": "center"
+          },
+          {
+            "type": "text",
+            "value": "Relatório Gerencial - V3 Completão",
+            "fontSize": 7,
+            "color": "#63b3ed",
+            "align": "center"
+          }
+        ]
+      }
+    ]
+  },
+  "content": [
+    {
+      "type": "text",
+      "value": "RELATÓRIO DE VENDAS",
+      "fontSize": 22,
+      "bold": true,
+      "color": "#1a365d",
+      "align": "center"
+    },
+    {
+      "type": "text",
+      "value": "ClearDataTicket - Análise Completa de Produtos",
+      "fontSize": 11,
+      "color": "#4a5568",
+      "align": "center"
+    },
+    {
+      "type": "text",
+      "value": "",
+      "fontSize": 4
+    },
+    {
+      "type": "horizontalStack",
+      "content": [
+        {
+          "type": "card",
+          "backgroundColor": "#ebf8ff",
+          "borderColor": "#63b3ed",
+          "padding": 10,
+          "flex": 1,
+          "margin": 3,
+          "content": [
+            {
+              "type": "text",
+              "value": "Total Produtos",
+              "fontSize": 9,
+              "color": "#2b6cb0",
+              "align": "center"
+            },
+            {
+              "type": "text",
+              "value": "316",
+              "fontSize": 18,
+              "bold": true,
+              "color": "#2b6cb0",
+              "align": "center"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "backgroundColor": "#f0fff4",
+          "borderColor": "#68d391",
+          "padding": 10,
+          "flex": 1,
+          "margin": 3,
+          "content": [
+            {
+              "type": "text",
+              "value": "Valor Total",
+              "fontSize": 9,
+              "color": "#276749",
+              "align": "center"
+            },
+            {
+              "type": "text",
+              "value": "R$ 194,808.60",
+              "fontSize": 18,
+              "bold": true,
+              "color": "#276749",
+              "align": "center"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "backgroundColor": "#faf5ff",
+          "borderColor": "#b794f4",
+          "padding": 10,
+          "flex": 1,
+          "margin": 3,
+          "content": [
+            {
+              "type": "text",
+              "value": "Categorias",
+              "fontSize": 9,
+              "color": "#553c9a",
+              "align": "center"
+            },
+            {
+              "type": "text",
+              "value": "4",
+              "fontSize": 18,
+              "bold": true,
+              "color": "#553c9a",
+              "align": "center"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "value": "",
+      "fontSize": 4
+    },
+    {
+      "type": "table",
+      "datasetName": "produtos",
+      "tableHeader": [
+        {
+          "key": "codigo",
+          "prefix": "Código"
+        },
+        {
+          "key": "nome",
+          "prefix": "Produto"
+        },
+        {
+          "key": "qtd",
+          "prefix": "Qtd",
+          "align": "right"
+        },
+        {
+          "key": "preco",
+          "prefix": "Preço",
+          "align": "right"
+        },
+        {
+          "key": "total",
+          "prefix": "Total",
+          "align": "right"
+        }
+      ],
+      "widths": [
+        "auto",
+        "expand",
+        "auto",
+        "auto",
+        "auto"
+      ],
+      "grouping": {
+        "groupBy": "categoria",
+        "groupHeader": "CATEGORIA: {key}",
+        "subtotal": true
+      },
+      "margin": {
+        "four": [
+          5,
+          0,
+          5,
+          0
+        ]
+      }
+    },
+    {
+      "type": "text",
+      "value": "",
+      "fontSize": 3
+    },
+    {
+      "type": "card",
+      "backgroundColor": "#f7fafc",
+      "borderColor": "#cbd5e0",
+      "padding": 6,
+      "content": [
+        {
+          "type": "text",
+          "value": "Total Geral: R$ 194,808.60",
+          "fontSize": 11,
+          "bold": true,
+          "color": "#2d3748",
+          "align": "right"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "value": "",
+      "fontSize": 4
+    },
+    {
+      "type": "horizontalStack",
+      "content": [
+        {
+          "type": "card",
+          "backgroundColor": "#fff5f5",
+          "borderColor": "#fc8181",
+          "padding": 8,
+          "flex": 1,
+          "margin": 3,
+          "content": [
+            {
+              "type": "text",
+              "value": "Estoque Baixo",
+              "fontSize": 10,
+              "bold": true,
+              "color": "#9b2c2c"
+            },
+            {
+              "type": "text",
+              "value": "Produtos com estoque critico precisam de reposicao.",
+              "fontSize": 8,
+              "color": "#742a2a"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "backgroundColor": "#fffff0",
+          "borderColor": "#ecc94b",
+          "padding": 8,
+          "flex": 1,
+          "margin": 3,
+          "content": [
+            {
+              "type": "text",
+              "value": "Destaques",
+              "fontSize": 10,
+              "bold": true,
+              "color": "#975a16"
+            },
+            {
+              "type": "text",
+              "value": "Notebook e Smartphone X sao os mais vendidos.",
+              "fontSize": 8,
+              "color": "#744210"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "backgroundColor": "#f0fff4",
+          "borderColor": "#68d391",
+          "padding": 8,
+          "flex": 1,
+          "margin": 3,
+          "content": [
+            {
+              "type": "text",
+              "value": "Meta Atingida",
+              "fontSize": 10,
+              "bold": true,
+              "color": "#276749"
+            },
+            {
+              "type": "text",
+              "value": "100% da meta trimestral foi atingida.",
+              "fontSize": 8,
+              "color": "#22543d"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "value": "",
+      "fontSize": 10
+    },
+    {
+      "type": "card",
+      "backgroundColor": "#1a365d",
+      "padding": 6,
+      "content": [
+        {
+          "type": "text",
+          "value": "ClearDataTicket 2026 - Relatorio Gerado Automaticamente",
+          "fontSize": 8,
+          "color": "#ffffff",
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "value": "Documento gerado em 25/04/2026",
+          "fontSize": 7,
+          "color": "#a0aec0",
+          "align": "center"
+        }
+      ]
+    }
+  ],
+  "defaultStyle": {
+    "fontFamily": "Helvetica"
+  }
+}

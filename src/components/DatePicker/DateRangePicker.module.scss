@@ -1,0 +1,362 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.dateRangePickerWrapper {
+  position: relative;
+  display: inline-block;
+  
+}
+
+.dateRangeInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  
+}
+
+.dateRangeInput {
+  padding: 8px 32px 8px 12px;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  font-size: 16px;
+  color: $dark;
+  background: $white;
+  cursor: pointer;
+  width: 100%;
+  height: 40px;
+  min-width: 240px;
+  transition: all 0.2s;
+   box-shadow:$box-shadow-inputs;
+  &:hover:not(:disabled) {
+    border-color: $primary;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 2px rgba($primary, 0.1);
+  }
+  
+  &.disabled {
+    background: $light;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+}
+
+.calendarIcon {
+  position: absolute;
+  right: 10px;
+  font-size: 14px;
+  pointer-events: none;
+  color: $gray;
+}
+
+.clearBtn {
+  position: absolute;
+  right: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: $gray;
+  padding: 0;
+  
+  &:hover {
+    color: $danger;
+  }
+}
+
+.dateRangeDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1100;
+  padding: 16px;
+  min-width: 280px;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.navBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: $gray;
+  padding: 4px 8px;
+  border-radius: 4px;
+  
+  &:hover {
+    background: $light;
+    color: $primary;
+  }
+}
+
+.monthYear {
+  font-size: 14px;
+  font-weight: 600;
+  color: $dark;
+}
+
+.calendarWeekDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.weekDay {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: $gray;
+  padding: 8px 0;
+}
+
+.calendarDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendarDayCell {
+  aspect-ratio: 1;
+}
+
+.dayBtn {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: $dark;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: $light;
+  }
+  
+  &.rangeStart {
+    background: $primary;
+    color: $white;
+    border-radius: 8px 0 0 8px;
+  }
+  
+  &.rangeEnd {
+    background: $primary;
+    color: $white;
+    border-radius: 0 8px 8px 0;
+  }
+  
+  &.inRange {
+    background: rgba($primary, 0.2);
+    border-radius: 0;
+  }
+}
+
+.calendarFooter {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  
+  .clearBtn {
+    position: static;
+    flex: 1;
+    padding: 6px 12px;
+    background: $light;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: $gray;
+    
+    &:hover {
+      background: $border-color;
+      color: $danger;
+    }
+  }
+  
+  .applyBtn {
+    flex: 1;
+    padding: 6px 12px;
+    background: $primary;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: $white;
+    
+    &:hover {
+      background: $primary-dark;
+    }
+  }
+}
+
+// ── Time picker ──────────────────────────────────────────────────────────────
+
+.withTime {
+  min-width: 320px;
+}
+
+.timeSection {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid $border-color;
+}
+
+.timeDivider {
+  width: 1px;
+  background: $border-color;
+  align-self: stretch;
+}
+
+.timeGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeGroupLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: $gray;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timeInputs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timeSeparator {
+  font-size: 20px;
+  font-weight: 700;
+  color: $dark;
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.clearRangeBtn {
+  flex: 1;
+  padding: 6px 12px;
+  background: $light;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: $gray;
+
+  &:hover {
+    background: $border-color;
+    color: $danger;
+  }
+}
+
+// ── Drum picker ──────────────────────────────────────────────────────────────
+
+.drumOuter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  user-select: none;
+}
+
+.drumLabel {
+  font-size: 10px;
+  color: $gray;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.drumArrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $gray;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  &:hover { color: $primary; background: rgba($primary, 0.08); }
+  &:active { color: $primary-dark; }
+}
+
+.drumCylinder {
+  position: relative;
+  width: 48px;
+  height: 44px;
+  overflow: hidden;
+  cursor: grab;
+  border-radius: 8px;
+  background: $white;
+  border: 1px solid $border-color;
+  &:active { cursor: grabbing; }
+}
+
+.drumHighlight {
+  position: absolute;
+  inset: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 44px;
+  background: rgba($primary, 0.08);
+  border-top: 1.5px solid rgba($primary, 0.25);
+  border-bottom: 1.5px solid rgba($primary, 0.25);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.drumFadeTop,
+.drumFadeBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 36px;
+  pointer-events: none;
+  z-index: 3;
+}
+.drumFadeTop {
+  top: 0;
+  background: linear-gradient(to bottom, $white 0%, transparent 100%);
+}
+.drumFadeBottom {
+  bottom: 0;
+  background: linear-gradient(to top, $white 0%, transparent 100%);
+}
+
+.drumItem {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  text-align: center;
+  font-size: 16px;
+  color: $dark;
+  pointer-events: none;
+  z-index: 1;
+}

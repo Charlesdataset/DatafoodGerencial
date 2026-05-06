@@ -1,0 +1,61 @@
+@use "../../styles/abstracts/variables" as *;
+@use "../../styles/abstracts/mixins" as *;
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.adminLayout {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+ // background: #f0f2f5;
+ background-color: #D1D5DB   ;
+  animation: fadeIn 0.2s ease both;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.2s ease;
+  margin-left: 200px;
+  width: calc(100% - 200px); /* Garante que o conteúdo ocupe o espaço correto */
+
+  &.sidebarCollapsed {
+    margin-left: 50px;
+    width: calc(100% - 50px);
+  }
+
+  @media (max-width: 992px) {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+.contentArea {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  min-height: calc(100dvh - 60px);
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
+.contentWrapper {
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}

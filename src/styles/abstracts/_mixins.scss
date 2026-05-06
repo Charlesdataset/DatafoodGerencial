@@ -1,0 +1,79 @@
+@use "sass:color" as *;
+
+// ============================================
+// MIXINS RESPONSIVOS
+// ============================================
+
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == mobile {
+    @media (max-width: 640px) {
+      @content;
+    }
+  }
+  @if $breakpoint == tablet {
+    @media (max-width: 768px) {
+      @content;
+    }
+  }
+  @if $breakpoint == desktop {
+    @media (max-width: 1024px) {
+      @content;
+    }
+  }
+}
+
+// Versão mobile-first (recomendada)
+@mixin media-up($breakpoint) {
+  $bp-map: (
+    sm: 576px,
+    md: 768px,
+    lg: 992px,
+    xl: 1200px,
+    xxl: 1400px,
+  );
+  @if map-has-key($bp-map, $breakpoint) {
+    @media (min-width: map-get($bp-map, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint `#{$breakpoint}` não encontrado.";
+  }
+}
+
+// ============================================
+// MIXINS DE LAYOUT
+// ============================================
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+// ============================================
+// FUNÇÕES DE COR
+// ============================================
+
+@function darken-color($color, $amount) {
+  @return adjust-color($color, $lightness: -$amount);
+}
+
+@function lighten-color($color, $amount) {
+  @return adjust-color($color, $lightness: $amount);
+}
+
+// Funções de ajuste de cor para compatibilidade
+@function adjust($color, $lightness: null, $saturation: null, $alpha: null) {
+  @return adjust-color(
+    $color,
+    $lightness: $lightness,
+    $saturation: $saturation,
+    $alpha: $alpha
+  );
+}

@@ -1,0 +1,177 @@
+@use "sass:color" as *;
+
+// ============================================
+// TEMA PRINCIPAL - DATATICKET
+// ATENÇÃO: Apenas variáveis Sass ($var) aqui.
+// Classes CSS ficam em src/styles/base/_utilities.scss
+// ============================================
+
+// Cores principais
+$primary: #42ab8a;
+$secondary: #21455f;
+$success: #28a745;
+$info: #17a2b8;
+$info-dark: #138496;
+$warning: #ffc107;
+$danger: #dc3545;
+$dark: #1f1f1f;
+
+// Cores neutras
+$white: #ffffff;
+$black: #1f1f1f;
+
+$gray: #6c757d;
+$gray-100: #f8f9fa;
+$gray-200: #e9ecef;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #6c757d;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+$gray-light: #94a3b8;
+$gray-dark: #343a40;
+
+// Cores do navbar
+$navbar-vertical-default-bg-color: #404040;
+
+// Cores ajustadas
+$primary-dark: adjust($primary, $lightness: -10%);
+$primary-light: adjust($primary, $lightness: +10%);
+$secondary-dark: adjust($secondary, $lightness: -10%);
+$secondary-light: adjust($secondary, $lightness: +10%);
+$success-light: adjust($success, $lightness: +10%);
+$success-dark: adjust($success, $lightness: -10%);
+$danger-dark: adjust($danger, $lightness: -10%);
+$danger-light: adjust($danger, $lightness: +10%);
+$info-light: adjust($info, $lightness: +10%);
+$warning-light: adjust($warning, $lightness: +10%);
+
+// Cores de luminosidade
+$light: #f8f9fa;
+$lighter: #ffffff;
+$darker: #000000;
+
+// Gradientes
+$gradient-primary: linear-gradient(135deg, $primary 0%, $secondary 100%);
+$gradient-secondary: linear-gradient(135deg, $secondary 0%, $primary-dark 100%);
+$gradient-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+$gradient-ticket: linear-gradient(135deg, $secondary 0%, $secondary-dark 100%);
+$app-background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+// Texto
+$text-primary: $gray-800;
+$text-secondary: $secondary;
+$text-muted: $gray-600;
+$text-light: $gray-100;
+$text-tertiary: #6b7280;
+$text-white: #ffffff;
+$text-black: #000000;
+$text-success: #10b981;
+$text-danger: #ef4444;
+$text-warning: #f59e0b;
+$text-info: #3b82f6;
+
+// Aliases
+$primary-color: $primary;
+$text-color: $text-primary;
+$body-text: $text-primary;
+$heading-text: $dark;
+
+// Fundo
+$bg-color: #1f1f1f;
+$background-light: $gray-100;
+$background-dark: $bg-color;
+$background-card: $white;
+$background-hover: #f3f4f6;
+
+// Bordas
+$border-color: #e2e8f0;
+$border-color-light: #f1f5f9;
+
+// Espaçamento base
+$spacer: 4px;
+$spacers: (
+  0: 0,
+  1: $spacer * 1,
+  2: $spacer * 2,
+  3: $spacer * 3,
+  4: $spacer * 4,
+  5: $spacer * 5,
+  6: $spacer * 6,
+  7: $spacer * 7,
+  8: $spacer * 8,
+  9: $spacer * 9,
+  10: $spacer * 10,
+  12: $spacer * 12,
+  16: $spacer * 16,
+  20: $spacer * 20,
+  24: $spacer * 24,
+  32: $spacer * 32,
+);
+
+$spacing-xs: $spacer * 2;
+$spacing-sm: $spacer * 3;
+$spacing-md: $spacer * 4;
+$spacing-lg: $spacer * 6;
+$spacing-xl: $spacer * 8;
+$spacing-2xl: $spacer * 10;
+$spacing-3xl: $spacer * 12;
+$spacing-4xl: $spacer * 16;
+
+// Breakpoints (mobile-first)
+$breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  nt: 992px,
+  lg: 1332px,
+  xl: 1595px,
+  xxl: 1900px,
+);
+
+// Z-index
+$z-dropdown: 1000;
+$z-modal: 2000;
+$z-toast: 3000;
+$z-tooltip: 4000;
+
+// Bordas arredondadas
+$border-radius-sm: 8px;
+$border-radius-md: 12px;
+$border-radius-lg: 16px;
+$border-radius-xl: 24px;
+$border-radius-full: 9999px;
+
+// Sombras
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+$box-shadow-inputs: inset 0 1px 5px rgba(0, 0, 0, 0.1);
+
+// Transições
+$transition-fast: 0.15s ease;
+$transition-base: 0.3s ease;
+$transition-slow: 0.5s ease;
+
+// Fontes
+$font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$font-family-heading: "Inter", sans-serif;
+
+$font-size-xs: 0.75rem;
+$font-size-sm: 1rem;
+$font-size-base: 13px;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.25rem;
+$font-size-2xl: 1.5rem;
+$font-size-3xl: 1.875rem;
+$font-size-4xl: 2.25rem;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-extrabold: 800;

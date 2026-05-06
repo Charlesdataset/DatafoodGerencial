@@ -1,0 +1,114 @@
+@use "sass:color" as c;
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+// Base button styles
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg;
+  border: none;
+  border-radius: $border-radius-md;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-base;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all $transition-base;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // Sizes
+  &--sm {
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+  }
+
+  &--lg {
+    padding: $spacing-lg $spacing-xl;
+    font-size: $font-size-lg;
+  }
+
+  &--full {
+    width: 100%;
+  }
+
+  // Variants
+  &--primary {
+    background: $primary;
+    color: $white;
+  }
+
+  &--primary-gradient {
+    background: $gradient-primary;
+    color: $white;
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 10px 20px rgba($primary, 0.3);
+    }
+  }
+
+  &--secondary {
+    background: $secondary;
+    color: $white;
+
+    &:hover:not(:disabled) {
+      background: $secondary-dark;
+    }
+  }
+
+  &--outline {
+    background: transparent;
+    border: 2px solid $primary;
+    color: $primary;
+
+    &:hover:not(:disabled) {
+      background: rgba($primary, 0.1);
+    }
+  }
+
+  &--danger {
+    background: $danger;
+    color: $white;
+
+    &:hover:not(:disabled) {
+      background: c.adjust($danger, $lightness: -10%);
+    }
+  }
+
+  &--success {
+    background: $success;
+    color: $white;
+
+    &:hover:not(:disabled) {
+      background: c.adjust($success, $lightness: -10%);
+    }
+  }
+
+  &--text {
+    background: transparent;
+    color: $primary;
+    padding: $spacing-sm $spacing-md;
+
+    &:hover:not(:disabled) {
+      background: rgba($primary, 0.1);
+      transform: none;
+    }
+  }
+}
+
+// Loading state

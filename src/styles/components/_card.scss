@@ -1,0 +1,36 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.card {
+  background: $white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-lg;
+  overflow: hidden;
+  
+  &__header {
+    padding: $spacing-lg;
+    border-bottom: 1px solid #e2e8f0;
+    
+    @include respond-to(mobile) {
+      padding: $spacing-md;
+    }
+  }
+  
+  &__body {
+    padding: $spacing-lg;
+    
+    @include respond-to(mobile) {
+      padding: $spacing-md;
+    }
+  }
+  
+  &__footer {
+    padding: $spacing-lg;
+    border-top: 1px solid #e2e8f0;
+    background: $light;
+    
+    @include respond-to(mobile) {
+      padding: $spacing-md;
+    }
+  }
+}
