@@ -1,10 +1,12 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { useRememberMe } from "../hooks/userRememberMe";
 
 export function ProtectedRoute() {
-  const user = localStorage.getItem("user");
-  const token = localStorage.getItem("tokenTicket");
+  const {credentials} = useRememberMe();
+  const token = localStorage.getItem("tokenDataFood");
 
-  if (!user && !token) {
+  if (!credentials || !token) {
+   console.log(credentials, token)
     return <Navigate to="/login" replace />;
   }
 

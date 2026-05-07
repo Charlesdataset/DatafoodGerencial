@@ -12,11 +12,30 @@ export const api = axios.create({
   },
 });
 
+// Interceptor para adicionar o token e o CNPJ
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("tokenTicket");
+  // Verifica se a URL NÃO é de login
+  const isLoginRoute = config.url?.includes('/auth/login') || 
+                       config.url?.includes('/users/register');
+  
+  // Se for rota de login/registro, NÃO adiciona headers
+  if (isLoginRoute) {
+    console.log('🔓 Rota de autenticação - pulando headers');
+    return config;
+  }
+  
+  // Para todas as outras rotas, adiciona os headers
+  const token = localStorage.getItem("tokenDataFood");
+  const cnpj = localStorage.getItem("cnpj");
+  
   if (token) {
     config.headers["x-access-token"] = token;
   }
+  
+  if (cnpj) {
+    config.headers["cnpj"] = cnpj;
+  }
+  
   return config;
 });
 
@@ -34,7 +53,7 @@ const isCancelError = (error: any): boolean => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Ignora completamente erros de cancelamento (não faz nada)
+    // Ignora completamente erros de cancelamento
     if (isCancelError(error)) {
       console.log("Requisição cancelada - ignorando");
       return Promise.reject(error);
@@ -49,22 +68,26 @@ api.interceptors.response.use(
     // Tratamento de erro 401 (Não autorizado)
     const currentPath = window.location.pathname;
     if (currentPath !== "/login" && error.response?.status === 401) {
-      localStorage.removeItem("tokenTicket");
+      localStorage.removeItem("tokenDataFood");
+      localStorage.removeItem("cnpj"); // ← Remove também o CNPJ
       window.location.href = "/login";
       return Promise.reject(error);
     }
 
     // Tratamento de erro 500 (Erro interno do servidor)
     if (error.response?.status === 500) {
-      if(error.response.data != 'canceled') {
-
-        console.log(error.response)
-        const errorMessage = 
-          error.response.data ||
-          error.response?.data?.message || 
-          error.response?.data?.error ||
+      if (error.response.data != 'canceled') {
+        console.log(error.response);
+        let errorMessage = "Erro interno do servidor. Tente novamente mais tarde.";
         
-          "Erro interno do servidor. Tente novamente mais tarde.";
+        // Tenta extrair a mensagem de erro da resposta
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.data?.error) {
+          errorMessage = error.response.data.error;
+        }
         
         toast.error(errorMessage);
         console.error("Erro 500:", error.response?.data);
@@ -74,10 +97,15 @@ api.interceptors.response.use(
 
     // Tratamento de erro 400 (Bad Request)
     if (error.response?.status === 400) {
-      const errorMessage = 
-        error.response?.data?.message || 
-        error.response?.data?.error ||
-        "Erro na requisição. Verifique os dados enviados.";
+      let errorMessage = "Erro na requisição. Verifique os dados enviados.";
+      
+      if (typeof error.response.data === 'string') {
+        errorMessage = error.response.data;
+      } else if (error.response.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data?.error) {
+        errorMessage = error.response.data.error;
+      }
       
       toast.error(errorMessage);
       return Promise.reject(error);

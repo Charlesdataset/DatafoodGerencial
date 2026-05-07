@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./Modal.module.scss";
 
@@ -7,7 +7,7 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
+  size?: "xs"|"sm" | "md" | "lg" | "xl" | "fullscreen";
   centered?: boolean;
   backdrop?: boolean | "static";
   scrollable?: boolean;

@@ -6,6 +6,7 @@ import { NavigationProvider } from "./contexts/NavigationContext";
 import { AdminLayout } from "./layouts/Admin/AdminLayout";
 import Dashboard from "./pages/Dashboard/dashboard";
 import Login from "./pages/Login/Login";
+import Relatorios from "./pages/Relatorios/Relatorios";
 
 
 function App() {
@@ -21,6 +22,8 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<AdminLayout />}>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/reports" element={<Relatorios />} />
               
               </Route>
             </Route>

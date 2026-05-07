@@ -84,6 +84,9 @@ $ease-in: cubic-bezier(0.55, 0, 1, 0.45);
 }
 
 // ─── Tamanhos ─────────────────────────────────────────────────────────────────
+.sizeXS {
+  max-width: 280px;
+}
 .sizeSM {
   max-width: 380px;
 }

@@ -17,11 +17,7 @@ import {
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { useApp } from "../../contexts/AppContext";
-import { DateRangePicker } from "../DatePicker/DateRangePicker";
-import { EventSelector } from "../EventSelector/EventSelector";
 import styles from "./MobileHeader.module.scss";
 
 const pageIcons: Record<string, any> = {
@@ -72,42 +68,13 @@ const pageTitles: Record<string, string> = {
 };
 const MobileHeader = () => {
   const location = useLocation();
-  const { dataInicial, dataFinal, setDataInicial, setDataFinal } = useApp();
+  
 
   const currentIcon = pageIcons[location.pathname] || "📌";
   const currentTitle = pageTitles[location.pathname] || "TicketFlow";
-  const showDateRangePicker =
-    location.pathname === "/" || location.pathname === "/dashboard";
-
-  const parseDate = (dateStr: string | null): Date | null => {
-    if (!dateStr) return null;
-    const [date, time] = dateStr.split(" ");
-    const [year, month, day] = date.split("-");
-    const [hour, minute] = time?.split(":") || ["00", "00"];
-    return new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(hour),
-      parseInt(minute),
-    );
-  };
+ 
 
  
-  const formatDateToString = (date: Date | null): string => {
-    if (!date) return "";
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-  };
-
-  const handleDateRangeChange = (start: Date | null, end: Date | null) => {
-    setDataInicial(start ? formatDateToString(start) : "");
-    setDataFinal(end ? formatDateToString(end) : "");
-  };
 
   return (
     <div className={styles.mobileHeader}>
@@ -118,16 +85,7 @@ const MobileHeader = () => {
         <h2>{currentTitle}</h2>
       </div>
 
-      <div className={styles.mobileControls}>
-        <EventSelector />
-        {showDateRangePicker && (
-          <DateRangePicker
-            startDate={parseDate(dataInicial)}
-            endDate={parseDate(dataFinal)}
-            onChange={handleDateRangeChange}
-          />
-        )}
-      </div>
+   
     </div>
   );
 };

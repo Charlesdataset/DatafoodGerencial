@@ -1,24 +1,19 @@
 import React, {
   createContext,
   useEffect,
-  useState,
   useMemo,
+  useState,
   type ReactNode,
 } from "react";
-import { api } from "../services/api";
 import { initialUser } from "../types/user.types";
 
 interface AppContextType {
   user: any;
   setUser: (user: any) => void;
-  eventsList: any[];
-  setEventsList: (events: any[]) => void;
-  currentEvent: any;
-  setCurrentEvent: (event: any) => void;
-  dataInicial: string;
-  setDataInicial: (date: string) => void;
-  dataFinal: string;
-  setDataFinal: (date: string) => void;
+  companyInfo: any;
+  setCompanyInfo: (info: any) => void;
+  isAuthenticated: boolean;
+  setIsAuthenticated: (auth: boolean) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   isDark: boolean;
@@ -29,22 +24,37 @@ interface AppContextType {
   setIsCollapsed: (e: boolean) => void;
 }
 
+export interface CompanyInfo {
+  cnpj: string,
+  franquia: string,
+  idCli: number,
+  nomeCli: string
+}
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any>(initialUser);
-  const [eventsList, setEventsList] = useState<any[]>([]);
-  const [currentEvent, setCurrentEvent] = useState<any>(null);
-  const [dataInicial, setDataInicial] = useState<string>("");
-  const [dataFinal, setDataFinal] = useState<string>("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>(() => {
+    const saved = localStorage.getItem('companyInfo');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+
+  useEffect(() => {
+    if (companyInfo) {
+      localStorage.setItem('companyInfo', JSON.stringify(companyInfo));
+    } else {
+      localStorage.removeItem('companyInfo');
+    }
+  }, [companyInfo]);
   // Carregar eventos iniciais
   useEffect(() => {
-    loadEvents();
     const checkMobile = () => {
       const mobile = window.innerWidth <= 992;
       setIsMobile(mobile);
@@ -54,34 +64,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
+
+
+
+
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-  useEffect(() => {}, []);
+  useEffect(() => { }, []);
 
-  const loadEvents = async () => {
-    try {
-      const response = await api.get("/events-select");
-      if (response?.status === 200 && response.data.length > 0) {
-        setEventsList(response.data);
-        setCurrentEvent(response.data[0]?.value);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar eventos:", error);
-    }
-  };
+
 
   const value = useMemo(
     () => ({
       user,
       setUser,
-      eventsList,
-      setEventsList,
-      currentEvent,
-      setCurrentEvent,
-      dataInicial,
-      setDataInicial,
-      dataFinal,
-      setDataFinal,
+
+      companyInfo,
+      setCompanyInfo,
+      isAuthenticated,
+      setIsAuthenticated,
       isLoading,
       setIsLoading,
       isDark,
@@ -93,10 +94,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }),
     [
       user,
-      eventsList,
-      currentEvent,
-      dataInicial,
-      dataFinal,
+      companyInfo,
+      isAuthenticated,
       isLoading,
       isDark,
       isMobile,

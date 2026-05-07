@@ -4,7 +4,7 @@
 
 const Dashboard: React.FC = () => {
     return (
-    <>consturindo</>
+    <>construindo</>
     );
 };
 export default Dashboard;

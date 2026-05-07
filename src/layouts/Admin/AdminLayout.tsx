@@ -1,13 +1,13 @@
 import { Suspense, useState } from "react";
 import { Outlet } from "react-router-dom";
 
-import MobileHeader from "../../components/MobileHeader/MobileHeader";
 import PageSkeleton from "../../components/PageSkeleton/PageSkeleton";
 import { useApp } from "../../contexts/AppContext";
 import styles from "./AdminLayout.module.scss";
 import { BottomActionBar } from "./BottomActionBar";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
+import MobileHeader from "./MobileHeader";
 
 export const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

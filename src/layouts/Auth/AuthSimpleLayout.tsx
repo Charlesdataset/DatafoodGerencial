@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useApp } from "../../contexts/AppContext";
+import { api } from "../../services/api";
 import styles from "./AuthSimpleLayout.module.scss";
 
 export type LoginTheme = "verde" | "laranja" | "marinho";
@@ -17,13 +19,13 @@ const THEMES = {
     dark: "#21455F",
   },
   laranja: {
-    bg: "linear-gradient(150deg,#7a2800 0%,#c04a00 55%,#FF6B1A 100%)",
+    bg: "#000",
     accent: "#FF6B1A",
-    dark: "#7a2800",
+    dark: "#000",
   },
   marinho: {
-    bg: "linear-gradient(150deg,#050e1f 0%,#0d2a4e 55%,#1565C0 100%)",
-    accent: "#4A90E2",
+    bg: "linear-gradient(150deg,#55BACA 0%,#3F8AB6 55%,#3473AC 100%)",
+    accent: "rgb(23, 62, 107)",
     dark: "#0a1628",
   },
 };
@@ -44,6 +46,7 @@ interface Dot {
 function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const dotsRef = useRef<Dot[]>([]);
   const animFrameRef = useRef<number>(0);
+  const isInitializedRef = useRef(false);
 
   const newDot = useCallback((width: number, height: number): Dot => {
     const angle = Math.random() * Math.PI * 2;
@@ -78,9 +81,16 @@ function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
-    const ctx = canvas.getContext("2d")!;
-    const parent = canvas.parentElement!;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    // Evita reinicialização
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
 
     const resize = () => {
       canvas.width = parent.offsetWidth;
@@ -92,8 +102,11 @@ function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     window.addEventListener("resize", resize);
 
     const drawDots = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Verifica se o canvas ainda existe
+      if (!canvas || !canvas.parentElement) return;
       
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       dotsRef.current.forEach((d, i) => {
         d.life++;
         d.x += d.vx;
@@ -120,7 +133,7 @@ function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         ctx.fillStyle = `rgba(255,255,255,${d.alpha})`;
         ctx.fill();
       });
-      
+
       animFrameRef.current = requestAnimationFrame(drawDots);
     };
 
@@ -128,7 +141,10 @@ function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
     return () => {
       window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animFrameRef.current);
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+      isInitializedRef.current = false;
     };
   }, [canvasRef, initDots, newDot]);
 }
@@ -142,6 +158,52 @@ const AuthSimpleLayout = ({
 }: AuthSimpleLayoutProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [currentTheme, setCurrentTheme] = useState<LoginTheme>(theme);
+  const [canShow, setChanShow] = useState(false);
+  const [companyValidated, setCompanyValidated] = useState(false);
+  const {isAuthenticated, setCompanyInfo} = useApp();
+  useEffect(() => {
+    if(!isAuthenticated) {
+      
+      const cnpj = new URLSearchParams(window.location.search).get("cnpj");
+      if (cnpj) {
+        handleValidateCompany(cnpj);
+        
+      }
+    }
+  }, [])
+
+  const handleValidateCompany = async (cnpj: string) => {
+    try {
+      const res = await api.get("/company/validate", { headers: { "cnpj": cnpj } });
+      if (res?.status == 200) {
+        if (res.data.validated == true) {
+          setCompanyInfo(res.data.data);
+          const franquia = res.data.data.franquia;
+          const franquiaTheme: Record<string, LoginTheme> = {
+            "DATASET": "verde",
+            "GIGABYTE": "laranja",
+            "ARS": "marinho"
+          };
+          
+          handleThemeChange(franquiaTheme[franquia])
+          setCompanyValidated(true);
+          setChanShow(true)
+
+        }
+        else {
+          setCompanyValidated(false);
+          setChanShow(false)
+        }
+      }
+      else {
+        setCompanyValidated(false);
+      }
+    }
+    catch (error: any) {
+      console.error("Erro ao validar empresa:", error);
+    }
+  }
+
 
   useCanvasDots(canvasRef);
 
@@ -153,85 +215,149 @@ const AuthSimpleLayout = ({
   };
 
   return (
-    <div className={styles.login_card}>
-      {showThemeSelector && (
-        <div className={styles.themes}>
-          {(["verde", "laranja", "marinho"] as LoginTheme[]).map((name) => (
-            <button
-              key={name}
-              className={currentTheme === name ? styles.active : ""}
-              style={{
-                background: currentTheme === name ? THEMES[name].accent : "rgba(255, 255, 255, 0.9)",
-                color: currentTheme === name ? "#fff" : "#333",
-              }}
-              onClick={() => handleThemeChange(name)}
-            >
-              {name === "verde" && "🟢 Verde"}
-              {name === "laranja" && "🟠 Laranja"}
-              {name === "marinho" && "🔵 Marinho"}
-            </button>
-          ))}
+    <>
+     <div style={{ '--primary-color':THEMES[currentTheme].accent} as React.CSSProperties} >
+
+    
+      {canShow == true ? (
+
+        <div className={styles.login_card}>
+          {showThemeSelector && (
+            <div className={styles.themes}>
+              {(["verde", "laranja", "marinho"] as LoginTheme[]).map((name) => (
+                <button
+                  key={name}
+                  className={currentTheme === name ? styles.active : ""}
+                  style={{
+                    background: currentTheme === name ? THEMES[name].accent : "rgba(255, 255, 255, 0.9)",
+                    color: currentTheme === name ? "#fff" : "#333",
+                  }}
+                  onClick={() => handleThemeChange(name)}
+                >
+                  {name === "verde" && "🟢 Verde"}
+                  {name === "laranja" && "🟠 Laranja"}
+                  {name === "marinho" && "🔵 Marinho"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.wrap}>
+            {/* LADO ESQUERDO - APRESENTAÇÃO */}
+            <div className={styles.left} style={{ background: t.bg }}>
+              <canvas ref={canvasRef} className={styles.canvas} />
+
+              {/* Logo + Nome */}
+              <div className={styles.logo_container}>
+                {/* <img src={logo} alt="DataFood" className={styles.logo_img} /> */}
+                <div className={styles.logo_divider} />
+                <div className={styles.logo_text}>
+                  <div className={styles.logo_brand}>
+                    {currentTheme === "verde" ? (
+                      <>
+                      DATA<span style={{ color: t.accent }}>FOOD</span>
+                      </>
+
+                    ) : currentTheme === "laranja" ? (
+                      <>
+                      GIGA<span style={{ color: t.accent }}>BYTE</span>
+                      </>
+                    ) : currentTheme === "marinho" ? (
+                      <>
+                      ARS<span style={{ color: t.accent }}>AUTOMAÇÃO</span>
+                      </>
+                    ) : null}
+                  </div>
+                  <div className={styles.logo_subtitle}>Delivery Inteligente</div>
+                </div>
+              </div>
+
+              {/* Texto de apresentação */}
+              <div className={styles.left_bottom}>
+                <div className={styles.sep} style={{ background: t.accent }} />
+                <div className={styles.tagline}>
+                  Da visão geral do salão
+                  <br />
+                  ao <em style={{ color: t.accent }}>controle absoluto</em> do caixa.
+                </div>
+                <div className={styles.desc}>
+                  Tome decisões estratégicas baseadas em dados reais e veja o seu
+                  faturamento crescer de verdade.
+                </div>
+                <div className={styles.version}>v1.0.0</div>
+              </div>
+            </div>
+
+            {/* LADO DIREITO - FORMULÁRIO */}
+            <div className={styles.right}>
+              <div className={styles.form_wrap}>
+                <div className={styles.form_title} style={{ color: t.dark }}>
+                  Entrar
+                </div>
+                <div className={styles.form_sub}>
+                  Acesse sua conta para continuar
+                </div>
+                <div
+                  className={styles.grad_bar}
+                  style={{
+                    background: `linear-gradient(90deg,${t.dark},${t.accent})`,
+                  }}
+                />
+                <div
+                  className={styles.content}
+                  style={{ "--accent": t.accent } as React.CSSProperties}
+                >
+                  {children}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.restricted}>
+          <div className={styles.restricted_card}>
+
+            {!companyValidated ? (
+              // Estado: empresa não encontrada
+              <>
+                <svg className={styles.restricted_icon} width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1a2a3a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 8v4" />
+                  <circle cx="12" cy="16" r="0.5" fill="#1a2a3a" />
+                </svg>
+                <div className={styles.restricted_brand}>
+                  OPS!
+                </div>
+                <div className={styles.restricted_divider} />
+                <h2 className={styles.restricted_title}>Empresa não encontrada</h2>
+                <p className={styles.restricted_desc}>
+                  Não foi possível identificar sua empresa. Verifique o link de acesso ou entre em contato com o suporte.
+                </p>
+              </>
+            ) : (
+              // Estado: acesso restrito (sem CNPJ)
+              <>
+                <svg className={styles.restricted_icon} width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1a2a3a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  <circle cx="12" cy="16" r="1" fill="#1a2a3a" />
+                </svg>
+                <div className={styles.restricted_brand}>
+                  OPS!
+                </div>
+                <div className={styles.restricted_divider} />
+                <h2 className={styles.restricted_title}>Acesso Restrito</h2>
+                <p className={styles.restricted_desc}>
+                  Por favor, acesse a página de login através do link fornecido pela sua empresa.
+                </p>
+              </>
+            )}
+
+          </div>
         </div>
       )}
-
-      <div className={styles.wrap}>
-        {/* LADO ESQUERDO - APRESENTAÇÃO */}
-        <div className={styles.left} style={{ background: t.bg }}>
-          <canvas ref={canvasRef} className={styles.canvas} />
-
-          {/* Logo + Nome */}
-          <div className={styles.logo_container}>
-            {/* <img src={logo} alt="DataFood" className={styles.logo_img} /> */}
-            <div className={styles.logo_divider} />
-            <div className={styles.logo_text}>
-              <div className={styles.logo_brand}>
-                DATA<span style={{ color: t.accent }}>FOOD</span>
-              </div>
-              <div className={styles.logo_subtitle}>Delivery Inteligente</div>
-            </div>
-          </div>
-
-          {/* Texto de apresentação */}
-          <div className={styles.left_bottom}>
-            <div className={styles.sep} style={{ background: t.accent }} />
-            <div className={styles.tagline}>
-              Da visão geral do salão
-              <br />
-              ao <em style={{ color: t.accent }}>controle absoluto</em> do caixa.
-            </div>
-            <div className={styles.desc}>
-              Tome decisões estratégicas baseadas em dados reais e veja o seu 
-              faturamento crescer de verdade.
-            </div>
-            <div className={styles.version}>v1.0.0</div>
-          </div>
-        </div>
-
-        {/* LADO DIREITO - FORMULÁRIO */}
-        <div className={styles.right}>
-          <div className={styles.form_wrap}>
-            <div className={styles.form_title} style={{ color: t.dark }}>
-              Entrar
-            </div>
-            <div className={styles.form_sub}>
-              Acesse sua conta para continuar
-            </div>
-            <div
-              className={styles.grad_bar}
-              style={{
-                background: `linear-gradient(90deg,${t.dark},${t.accent})`,
-              }}
-            />
-            <div
-              className={styles.content}
-              style={{ "--accent": t.accent } as React.CSSProperties}
-            >
-              {children}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+       </div>
+    </>
   );
 };
 

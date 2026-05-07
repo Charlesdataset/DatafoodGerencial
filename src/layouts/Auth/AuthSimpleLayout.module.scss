@@ -374,3 +374,71 @@
     }
   }
 }
+
+
+
+.restricted {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  background: #f0f2f5;
+  font-family: 'Outfit', sans-serif;
+}
+
+.restricted_card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #fff;
+  border-radius: 24px;
+  padding: 56px 48px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.07);
+  animation: floatUp 0.5s ease both;
+
+  @keyframes floatUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
+
+.restricted_icon {
+  margin-bottom: 28px;
+  opacity: 0.85;
+}
+
+.restricted_brand {
+  font-size: 26px;
+  font-weight: 800;
+  color: #21455F;
+  letter-spacing: 2px;
+  margin-bottom: 18px;
+
+  span { color: #42AB8A; }
+}
+
+.restricted_divider {
+  width: 40px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #21455F, #42AB8A);
+  margin-bottom: 20px;
+}
+
+.restricted_title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a2a3a;
+  margin-bottom: 10px;
+}
+
+.restricted_desc {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.42);
+  line-height: 1.75;
+  max-width: 290px;
+}

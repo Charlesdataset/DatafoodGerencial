@@ -124,7 +124,7 @@ export default function MessageBox({
             response = await api.put(`${op.apiRoute}?${op.query}`, op.data, {
               signal,
               headers: {
-                'x-access-token': localStorage.getItem('tokenTicket')
+                'x-access-token': localStorage.getItem('tokenDataFood')
               }
             });
             break;

@@ -49,7 +49,7 @@
 
   // Variants
   &--primary {
-    background: $primary;
+    background: var(--primary-color, $primary);
     color: $white;
   }
 
