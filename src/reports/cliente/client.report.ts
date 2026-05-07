@@ -138,45 +138,58 @@ const handleGenerateClientReport = async (
         },
       ],
     },
-    content: [
-
-
-
-
-      {
-        ...(agrupadoPor !== ClienteAgrupadoPor.Nenhum && {
-
-          grouping: {
-            groupBy: agrupadoPor === ClienteAgrupadoPor.Bairro ? 'bairro' : 'cidade',
-          }
-        }),
-
-        type: "table",
-        datasetName: 'clientes',
-        ...(modelo === ModeloRelatorio.Simplificado ? {
-          tableHeader: [
-            { key: 'idCliente', prefix: 'Código' },
-            { key: 'razaoSocial', prefix: 'Nome' },
-            { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time', align: 'center' },
-            { key: 'celular', prefix: 'Celular', align: 'center' },
-            { key: 'limiteCredito', prefix: 'Saldo', align: 'center' },
-          ],
-          widths: [60, 'expand', 100, 80, 80, 50],
-
-        } : {
-          tableHeader: [
-            { key: 'idCliente', prefix: 'Código' },
-            { key: 'razaoSocial', prefix: 'Nome' },
-            { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time', align: 'center' },
-            { key: 'celular', prefix: 'Celular', align: 'center' },
-            { key: 'limiteCredito', prefix: 'Saldo', align: 'center' },
-          ],
-          widths: [60, 'expand', 100, 80, 80, 50],
-        })
-
-      }
-
-    ],
+    content: modelo === ModeloRelatorio.Simplificado
+      ? [
+          {
+            ...(agrupadoPor !== ClienteAgrupadoPor.Nenhum && {
+              grouping: {
+                groupBy: agrupadoPor === ClienteAgrupadoPor.Bairro ? 'bairro' : 'cidade',
+              },
+            }),
+            type: "table" as const,
+            datasetName: 'clientes',
+            tableHeader: [
+              { key: 'idCliente', prefix: 'Código' },
+              { key: 'razaoSocial', prefix: 'Nome' },
+              { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const, align: 'center' as const },
+              { key: 'celular', prefix: 'Celular', align: 'center' as const },
+              { key: 'limiteCredito', prefix: 'Saldo', mask: 'currency' as const, align: 'center' as const },
+            ],
+            widths: [60, 'expand', 100, 80, 80],
+          },
+        ]
+      : [
+          {
+            type: "tableMultiData" as const,
+            datasetName: 'clientes',
+            titleField: 'razaoSocial',
+            titlePrefix: 'Cliente: ',
+            titleBackgroundColor: '#20435C',
+            titleTextColor: '#ffffff',
+            labelBackgroundColor: '#EEF1F6',
+            labelColor: '#555e74',
+            valueColor: '#1e222b',
+            borderColor: '#c8cdd8',
+            borderWidth: 0.4,
+            columns: 4,
+            gap: 8,
+            fields: [
+              { key: 'idCliente',      prefix: 'Código' },
+              { key: 'dataCadastro',   prefix: 'Data Cadastro',   mask: 'date-time' as const },
+              { key: 'celular',        prefix: 'Celular' },
+              { key: 'limiteCredito',  prefix: 'Limite de Crédito', mask: 'currency' as const, align: 'right' as const },
+              // { key: 'cpf',            prefix: 'CPF / CNPJ',       mask: 'cnpjCpf' as const,  span: 2 },
+              // { key: 'email',          prefix: 'E-mail',            span: 2 },
+              // { key: 'endereco',       prefix: 'Endereço',          span: 2 },
+              // { key: 'bairro',         prefix: 'Bairro' },
+              // { key: 'cidade',         prefix: 'Cidade' },
+              // { key: 'cep',            prefix: 'CEP',               mask: 'cep' as const },
+              // { key: 'uf',             prefix: 'UF' },
+              // { key: 'telefone',       prefix: 'Telefone',          mask: 'phone' as const },
+            ],
+            margin: { four: [0, 0, 6, 0] as [number, number, number, number] },
+          },
+        ],
   };
 
   json._datasets = {

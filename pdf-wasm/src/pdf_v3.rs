@@ -100,6 +100,8 @@ pub enum ComponentV3 {
     #[serde(alias = "image-box")]
     ImageBox(ImageBoxComponent),
     PriceList(PriceListComponent),
+    #[serde(alias = "tableMultiData")]
+    TableMultiData(TableMultiDataComponent),
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -443,6 +445,55 @@ pub struct PriceListComponent {
     pub item_color: Option<String>,
     pub price_color: Option<String>,
     pub dot_color: Option<String>,
+    pub margin: Option<EdgeValues>,
+}
+
+// ─── TableMultiData ─────────────────────────────────────────────────────────
+
+/// Um campo individual dentro de um bloco de registro tableMultiData.
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct TableMultiDataField {
+    pub key: String,
+    pub prefix: Option<String>,
+    pub mask: Option<String>,
+    pub align: Option<String>,
+    pub bold: Option<bool>,
+    /// Quantas colunas este campo ocupa (colspan). Padrão: 1
+    pub span: Option<u32>,
+}
+
+/// Tabela multi-linha por registro: cada item do dataset é exibido como um
+/// bloco com barra de título + grade de N colunas com label + valor.
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct TableMultiDataComponent {
+    pub dataset_name: String,
+    pub fields: Vec<TableMultiDataField>,
+    /// Número de colunas por linha dentro do bloco. Padrão: 4
+    pub columns: Option<u32>,
+    /// Campo do dataset usado como título do bloco
+    pub title_field: Option<String>,
+    /// Prefixo antes do valor do título
+    pub title_prefix: Option<String>,
+    /// Cor de fundo da barra de título. Padrão: #20435C
+    pub title_background_color: Option<String>,
+    /// Cor do texto do título. Padrão: #ffffff
+    pub title_text_color: Option<String>,
+    /// Cor de fundo da linha de labels. Padrão: #EEF1F6
+    pub label_background_color: Option<String>,
+    /// Cor dos textos de label. Padrão: #555e74
+    pub label_color: Option<String>,
+    /// Cor dos textos de valor. Padrão: #1e222b
+    pub value_color: Option<String>,
+    /// Cor das bordas da grade. Padrão: #c8cdd8
+    pub border_color: Option<String>,
+    /// Espessura da borda. Padrão: 0.4
+    pub border_width: Option<f32>,
+    /// Espaço entre blocos. Padrão: 8
+    pub gap: Option<f32>,
+    /// Cor de fundo zebra (registros pares). Padrão: #f9fafc
+    pub zebra_background_color: Option<String>,
     pub margin: Option<EdgeValues>,
 }
 
@@ -2813,6 +2864,7 @@ fn est_h(comp: &ComponentV3, pw: f32, ctx: &V3DataContext) -> f32 {
             render_h + m.0 + m.2
         }
         ComponentV3::PriceList(_) => 34.0, // minimal estimate, expands with dataset
+        ComponentV3::TableMultiData(_) => 34.0, // minimal estimate, expands with dataset
     }
 }
 
@@ -2900,6 +2952,7 @@ fn est_h_with_margin(comp: &ComponentV3, pw: f32, ctx: &V3DataContext) -> f32 {
         }
         ComponentV3::ImageBox(_) => est_h(comp, pw, ctx),
         ComponentV3::PriceList(_) => est_h(comp, pw, ctx),
+        ComponentV3::TableMultiData(_) => est_h(comp, pw, ctx),
     }
 }
 
@@ -5345,6 +5398,302 @@ fn render_chart(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TABLE MULTI DATA
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Renderiza o componente tableMultiData.
+///
+/// Cada registro do dataset é exibido como um "bloco" composto por:
+///   1. Barra de título (opcional) — fundo escuro + nome do registro
+///   2. Grade com `columns` colunas onde cada célula mostra:
+///        ┌─────────────┐
+///        │  Label      │  ← row de labels (fundo suave)
+///        │  Valor      │  ← row de valores (fundo branco/zebra)
+///        └─────────────┘
+///
+/// Campos com `span > 1` ocupam múltiplas colunas.
+fn render_table_multi_data(
+    c: &mut Content,
+    comp: &TableMultiDataComponent,
+    ctx: &mut V3RenderContext,
+    dctx: &V3DataContext,
+    curs: &mut f32,
+    fr: Name<'static>,
+    fb: Name<'static>,
+    page_break: &mut dyn FnMut(&mut Content, &mut f32),
+) {
+    let rows = match dctx.datasets.get(&comp.dataset_name) {
+        Some(d) => d,
+        None => return,
+    };
+
+    let m = comp
+        .margin
+        .as_ref()
+        .map(|m| m.resolve())
+        .unwrap_or((6.0, 0.0, 6.0, 0.0));
+
+    let tx = ctx.margin + m.3;
+    let iw = ctx.content_w - m.1 - m.3;
+
+    let cols = comp.columns.unwrap_or(4).max(1) as usize;
+    let gap = comp.gap.unwrap_or(8.0);
+
+    // ── Colors ──────────────────────────────────────────────────────────────
+    let title_bg = comp
+        .title_background_color
+        .as_deref()
+        .map(hex_to_rgb)
+        .unwrap_or([0.125, 0.263, 0.361]); // #20435C
+    let title_tc = comp
+        .title_text_color
+        .as_deref()
+        .map(hex_to_rgb)
+        .unwrap_or([1.0, 1.0, 1.0]);
+    let label_bg = comp
+        .label_background_color
+        .as_deref()
+        .map(hex_to_rgb)
+        .unwrap_or([0.933, 0.945, 0.965]); // #EEF1F6
+    let label_col = comp
+        .label_color
+        .as_deref()
+        .map(hex_to_rgb)
+        .unwrap_or([0.333, 0.369, 0.455]); // #555e74
+    let value_col = comp
+        .value_color
+        .as_deref()
+        .map(hex_to_rgb)
+        .unwrap_or([0.118, 0.133, 0.169]); // #1e222b
+    let border_col = comp
+        .border_color
+        .as_deref()
+        .map(hex_to_rgb)
+        .unwrap_or([0.784, 0.804, 0.847]); // #c8cdd8
+    let border_w = comp.border_width.unwrap_or(0.4);
+    let zebra_bg = comp
+        .zebra_background_color
+        .as_deref()
+        .map(hex_to_rgb)
+        .unwrap_or([0.976, 0.980, 0.988]); // #f9fafc
+
+    // ── Font sizes ───────────────────────────────────────────────────────────
+    let label_fs = 7.5_f32;
+    let value_fs = 9.0_f32;
+    let title_fs = 9.5_f32;
+
+    let label_rh = label_fs + 4.0;
+    let value_rh = value_fs * 1.55 + 3.0;
+    let title_h  = title_fs * 1.7 + 4.0;
+
+    // Expandir fields em "slots" respeitando span
+    // Cada slot ocupa `span` colunas
+    let fields = &comp.fields;
+
+    // Calcula altura total de um bloco de registro para checar page-break
+    let block_height = |has_title: bool| -> f32 {
+        // número de "linhas" de campos necessárias
+        let mut used_cols = 0usize;
+        let mut rows_count = 1usize;
+        for f in fields.iter() {
+            let span = (f.span.unwrap_or(1) as usize).max(1).min(cols);
+            if used_cols + span > cols {
+                rows_count += 1;
+                used_cols = 0;
+            }
+            used_cols += span;
+        }
+        let title_part = if has_title { title_h } else { 0.0 };
+        title_part + rows_count as f32 * (label_rh + value_rh)
+    };
+
+    *curs -= m.0;
+
+    for (ri, row) in rows.iter().enumerate() {
+        let has_title = comp.title_field.is_some();
+        let bh = block_height(has_title);
+
+        // Page-break se não couber o bloco inteiro (ou pelo menos título + primeira linha)
+        let min_needed = title_h + label_rh + value_rh + 10.0;
+        if *curs - min_needed < ctx.bottom_reserved {
+            page_break(c, curs);
+        }
+
+        // Zebra de fundo para o bloco inteiro
+        let block_bg = if ri % 2 == 0 {
+            zebra_bg
+        } else {
+            [1.0_f32, 1.0, 1.0]
+        };
+
+        // ── Barra de título ───────────────────────────────────────────────
+        if let Some(ref tf) = comp.title_field {
+            let raw_val = row
+                .get(tf)
+                .map(|v| match v {
+                    serde_json::Value::String(s) => s.clone(),
+                    _ => v.to_string(),
+                })
+                .unwrap_or_default();
+            let prefix = comp.title_prefix.as_deref().unwrap_or("");
+            let title_text = format!("{}{}", prefix, raw_val);
+
+            *curs -= title_h;
+            c.set_fill_rgb(title_bg[0], title_bg[1], title_bg[2]);
+            c.rect(tx, *curs, iw, title_h);
+            c.fill_nonzero();
+
+            let enc = to_utf8_winansi(&title_text, title_text.len());
+            let ty = *curs + title_h / 2.0 - title_fs / 3.0;
+            show_text(c, &enc, fb, title_fs, tx + 6.0, ty, title_tc);
+
+            // Borda inferior da barra de título
+            c.set_stroke_rgb(border_col[0], border_col[1], border_col[2]);
+            c.set_line_width(border_w);
+            c.move_to(tx, *curs);
+            c.line_to(tx + iw, *curs);
+            c.stroke();
+        }
+
+        // ── Grade de campos ───────────────────────────────────────────────
+        // Distribui os campos em linhas de `cols` colunas
+        let mut field_lines: Vec<Vec<(usize, usize)>> = Vec::new(); // (field_idx, span)
+        let mut current_line: Vec<(usize, usize)> = Vec::new();
+        let mut used_cols = 0usize;
+
+        for (fi, field) in fields.iter().enumerate() {
+            let span = (field.span.unwrap_or(1) as usize).max(1).min(cols);
+            if used_cols + span > cols && !current_line.is_empty() {
+                field_lines.push(current_line.clone());
+                current_line.clear();
+                used_cols = 0;
+            }
+            current_line.push((fi, span));
+            used_cols += span;
+        }
+        if !current_line.is_empty() {
+            // Preenche até `cols` com spans para alinhar última linha
+            field_lines.push(current_line);
+        }
+
+        // Col width base = iw / cols
+        let col_w = iw / cols as f32;
+
+        for line in &field_lines {
+            // ── Row de labels ────────────────────────────────────────────
+            if *curs - label_rh < ctx.bottom_reserved {
+                page_break(c, curs);
+            }
+
+            *curs -= label_rh;
+
+            // Fundo label row
+            c.set_fill_rgb(label_bg[0], label_bg[1], label_bg[2]);
+            c.rect(tx, *curs, iw, label_rh);
+            c.fill_nonzero();
+
+            // Textos dos labels
+            let mut lx = tx;
+            for (fi, span) in line.iter() {
+                let cell_w = col_w * (*span as f32);
+                let field = &fields[*fi];
+                let label = field.prefix.as_deref().unwrap_or(&field.key);
+                let enc = to_utf8_winansi(label, label.len());
+                let ly = *curs + label_rh / 2.0 - label_fs / 3.0;
+                show_text(c, &enc, fr, label_fs, lx + 4.0, ly, label_col);
+
+                // Borda vertical direita da célula
+                c.set_stroke_rgb(border_col[0], border_col[1], border_col[2]);
+                c.set_line_width(border_w);
+                if lx + cell_w < tx + iw - 0.5 {
+                    c.move_to(lx + cell_w, *curs);
+                    c.line_to(lx + cell_w, *curs + label_rh);
+                    c.stroke();
+                }
+
+                lx += cell_w;
+            }
+
+            // ── Row de valores ────────────────────────────────────────────
+            if *curs - value_rh < ctx.bottom_reserved {
+                page_break(c, curs);
+            }
+
+            *curs -= value_rh;
+
+            // Fundo valor row (zebra)
+            c.set_fill_rgb(block_bg[0], block_bg[1], block_bg[2]);
+            c.rect(tx, *curs, iw, value_rh);
+            c.fill_nonzero();
+
+            let mut vx = tx;
+            for (fi, span) in line.iter() {
+                let cell_w = col_w * (*span as f32);
+                let field = &fields[*fi];
+                let raw = row
+                    .get(&field.key)
+                    .map(|v| format_mask(v, field.mask.as_deref()))
+                    .unwrap_or_default();
+                let enc = to_utf8_winansi(&raw, raw.len());
+                let is_bold = field.bold.unwrap_or(false);
+                let font = if is_bold { fb } else { fr };
+                let al = field.align.as_deref().unwrap_or("left");
+                let tw = enc.len() as f32 * value_fs * 0.55;
+                let dx = match al {
+                    "center" => vx + (cell_w - tw) / 2.0,
+                    "right"  => vx + cell_w - tw - 4.0,
+                    _        => vx + 4.0,
+                };
+                let vy = *curs + value_rh / 2.0 - value_fs / 3.0;
+                show_text(c, &enc, font, value_fs, dx, vy, value_col);
+
+                // Borda vertical direita da célula
+                c.set_stroke_rgb(border_col[0], border_col[1], border_col[2]);
+                c.set_line_width(border_w);
+                if vx + cell_w < tx + iw - 0.5 {
+                    c.move_to(vx + cell_w, *curs);
+                    c.line_to(vx + cell_w, *curs + value_rh);
+                    c.stroke();
+                }
+
+                vx += cell_w;
+            }
+
+            // Borda inferior da linha de valores
+            c.set_stroke_rgb(border_col[0], border_col[1], border_col[2]);
+            c.set_line_width(border_w);
+            c.move_to(tx, *curs);
+            c.line_to(tx + iw, *curs);
+            c.stroke();
+        }
+
+        // Borda externa do bloco (esquerda + direita + topo se sem título)
+        c.set_stroke_rgb(border_col[0], border_col[1], border_col[2]);
+        c.set_line_width(border_w);
+        let block_top = *curs + block_height(has_title);
+        if !has_title {
+            // topo
+            c.move_to(tx, block_top);
+            c.line_to(tx + iw, block_top);
+            c.stroke();
+        }
+        // esquerda
+        c.move_to(tx, block_top);
+        c.line_to(tx, *curs);
+        c.stroke();
+        // direita
+        c.move_to(tx + iw, block_top);
+        c.line_to(tx + iw, *curs);
+        c.stroke();
+
+        // Espaço entre blocos
+        *curs -= gap;
+    }
+
+    *curs -= m.2;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // DISPATCH
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -5378,6 +5727,9 @@ fn render_comp(
         ComponentV3::Chart(ch) => render_chart(c, ch, ctx, dctx, curs, fr, fb),
         ComponentV3::ImageBox(img) => render_image_box(c, img, ctx, dctx, curs, image_map, fr),
         ComponentV3::PriceList(pl) => render_price_list(c, pl, ctx, dctx, curs, fr, fb, page_break),
+        ComponentV3::TableMultiData(tmd) => {
+            render_table_multi_data(c, tmd, ctx, dctx, curs, fr, fb, page_break)
+        }
     }
 }
 

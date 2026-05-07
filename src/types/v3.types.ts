@@ -288,6 +288,7 @@ export type ComponentV3 =
   | HorizontalStackComponent
   | StackLayoutComponent
   | TableComponent
+  | TableMultiDataComponent
   | ChartComponent
   | ImageBoxComponent
   | PriceListComponent;
@@ -302,6 +303,81 @@ export interface ImageBoxComponent {
   height?: number;
   /** Alinhamento horizontal */
   align?: "left" | "center" | "right";
+  margin?: V3EdgeValues;
+}
+
+// ─── TableMultiData ──────────────────────────────────────────────────────────
+
+/**
+ * Um campo exibido dentro de cada bloco de registro do tableMultiData.
+ */
+export interface TableMultiDataField {
+  /** Chave no dataset */
+  key: string;
+  /** Label exibido acima do valor */
+  prefix?: string;
+  mask?: V3Mask;
+  align?: V3TextAlign;
+  bold?: boolean;
+  /** Quantas colunas este campo ocupa (colspan). Padrão: 1 */
+  span?: number;
+}
+
+/**
+ * Tabela multi-linha por registro: cada item do dataset é exibido como um bloco
+ * com título (opcional) + grade de N colunas com label + valor por campo.
+ *
+ * Ideal para relatórios detalhados com 10+ campos por registro.
+ *
+ * @example
+ * ```json
+ * {
+ *   "type": "tableMultiData",
+ *   "datasetName": "clientes",
+ *   "titleField": "razaoSocial",
+ *   "titlePrefix": "Cliente: ",
+ *   "columns": 4,
+ *   "fields": [
+ *     { "key": "idCliente",    "prefix": "Código" },
+ *     { "key": "dataCadastro", "prefix": "Data Cadastro", "mask": "date-time" },
+ *     { "key": "celular",      "prefix": "Celular" },
+ *     { "key": "limiteCredito","prefix": "Limite",         "mask": "currency" },
+ *     { "key": "cpf",          "prefix": "CPF/CNPJ",       "mask": "cnpjCpf", "span": 2 },
+ *     { "key": "endereco",     "prefix": "Endereço",        "span": 2 }
+ *   ]
+ * }
+ * ```
+ */
+export interface TableMultiDataComponent {
+  type: "tableMultiData";
+  /** Nome do dataset */
+  datasetName: string;
+  /** Lista de campos a exibir por registro */
+  fields: TableMultiDataField[];
+  /** Quantas colunas por linha dentro do bloco de cada registro. Padrão: 4 */
+  columns?: number;
+  /** Campo do dataset usado como título do bloco. Se omitido, não exibe título */
+  titleField?: string;
+  /** Prefixo antes do valor do título (ex: "Cliente: ") */
+  titlePrefix?: string;
+  /** Cor de fundo da barra de título. Padrão: #20435C */
+  titleBackgroundColor?: string;
+  /** Cor do texto do título. Padrão: #ffffff */
+  titleTextColor?: string;
+  /** Cor de fundo da linha de labels. Padrão: #EEF1F6 */
+  labelBackgroundColor?: string;
+  /** Cor dos textos de label. Padrão: #555e74 */
+  labelColor?: string;
+  /** Cor dos textos de valor. Padrão: #1e222b */
+  valueColor?: string;
+  /** Cor das bordas da grade. Padrão: #c8cdd8 */
+  borderColor?: string;
+  /** Espessura da borda. Padrão: 0.4 */
+  borderWidth?: number;
+  /** Espaço entre blocos de registros. Padrão: 8 */
+  gap?: number;
+  /** Cor de fundo zebra (registros pares). Padrão: #f9fafc */
+  zebraBackgroundColor?: string;
   margin?: V3EdgeValues;
 }
 
