@@ -5,10 +5,20 @@ import React, {
   useState,
   type ReactNode,
 } from "react";
+import logoArsRelatorio from '../assets/icones/ars/logo-a-fundo-branco.jpg';
+import logoArs from "../assets/icones/ars/logo-a-fundo-branco.png";
+import logoDataSet from "../assets/icones/dataset/logo-d-branco-transparente.png";
+import logoDataSetRelatorio from '../assets/icones/dataset/logo-d-fundo-branco.jpg';
+import logoGigaByte from "../assets/icones/gigabyte/logo-g-fundo-branco.png";
+import logoGigaByteRelatorio from '../assets/icones/gigabyte/logo-g-relatorio.jpg';
 import { initialUser } from "../types/user.types";
 
 interface AppContextType {
   user: any;
+  currLogo: string;
+  primaryColor: string;
+  currLogoRelatorio: string;
+  secondaryColor: string;
   setUser: (user: any) => void;
   companyInfo: any;
   setCompanyInfo: (info: any) => void;
@@ -44,7 +54,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [isDark, setIsDark] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
+  const [primaryColor, setPrimaryColor] = useState("#42ab8a");
+  const [secondaryColor, setSecondaryColor] = useState("#21455f");
+  const [currLogo, setCurrLogo] = useState<string>(logoDataSet);
+  const [currLogoRelatorio, setCurrLogoRelatorio] = useState<string>(logoArsRelatorio);
 
   useEffect(() => {
     if (companyInfo) {
@@ -70,7 +83,43 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-  useEffect(() => { }, []);
+  useEffect(() => {
+
+    let franquia = companyInfo?.franquia || "";
+    //franquia = 'DATASET';
+    //franquia = 'GIGABYTE';
+    franquia = 'ARS';
+
+    switch (franquia) {
+      case "DATASET":
+        setPrimaryColor("#21455f");
+        setSecondaryColor("#21455f");
+        setCurrLogo(logoDataSet);
+        setCurrLogoRelatorio(logoDataSetRelatorio)
+        break;
+      case "GIGABYTE":
+        setPrimaryColor("#000000");
+        setSecondaryColor("#000000");
+        setCurrLogo(logoGigaByte);
+        setCurrLogoRelatorio(logoGigaByteRelatorio)
+        break;
+      case "ARS":
+        setPrimaryColor("#55BACA");
+        setSecondaryColor("#55BACA");
+        setCurrLogo(logoArs);
+        setCurrLogoRelatorio(logoArsRelatorio)
+        break;
+      default:
+        setPrimaryColor("#55BACA");
+        setSecondaryColor("#55BACA");
+        setCurrLogo(logoDataSet);
+        break;
+    }
+
+
+
+
+  }, [companyInfo]);
 
 
 
@@ -78,7 +127,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       user,
       setUser,
-
+      currLogo,
+      currLogoRelatorio,
+      primaryColor,
+      secondaryColor,
       companyInfo,
       setCompanyInfo,
       isAuthenticated,
@@ -93,6 +145,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setIsCollapsed,
     }),
     [
+      currLogo,
+      currLogoRelatorio,
+      primaryColor,
+      secondaryColor,
       user,
       companyInfo,
       isAuthenticated,

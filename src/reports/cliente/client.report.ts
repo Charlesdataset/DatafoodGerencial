@@ -1,4 +1,3 @@
-import logo from '../../assets/logoDataFood.jpg';
 import type { CompanyInfo } from "../../contexts/AppContext";
 import type { ReportV3 } from "../../types/v3.types";
 import { maskCnpj, maskCpf } from "../../utils/format";
@@ -21,7 +20,8 @@ const handleGenerateClientReport = async (
   dataset: any[],
   agrupadoPor: ClienteAgrupadoPor,
   modelo: ModeloRelatorio,
-  companyInfo: CompanyInfo
+  companyInfo: CompanyInfo,
+  currLogoRelatorio: string
 ) => {
 
   const getImageBase64FromPath = async (imagePath: string): Promise<string> => {
@@ -210,7 +210,7 @@ const handleGenerateClientReport = async (
   };
 
 
-  const imageBase64 = await getImageBase64FromPath(logo);
+  const imageBase64 = await getImageBase64FromPath(currLogoRelatorio);
   json._variables = {
     data_geracao: new Date().toLocaleDateString("pf-BR"),
     empresa: companyInfo.nomeCli,
