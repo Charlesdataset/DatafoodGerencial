@@ -60,6 +60,7 @@ pub struct PageConfigV3 {
 pub struct SectionV3 {
     pub repeat: Option<bool>,
     pub background_color: Option<String>,
+    pub height: Option<f32>,
     pub min_height: Option<f32>,
     pub box_shadow: Option<BoxShadowDef>,
     pub gradient: Option<GradientDef>,
@@ -6005,9 +6006,13 @@ pub(crate) fn generate_pdf_v3_inner(
                 .iter()
                 .map(|comp| est_h_with_margin(comp, inner_width, &dctx))
                 .sum::<f32>();
-            let min_content_height =
-                (footer.min_height.unwrap_or(0.0) - border.0 - border.2).max(0.0);
-            content_height.max(min_content_height) + border.0 + border.2
+            if let Some(fixed) = footer.height {
+                fixed.max(0.0)
+            } else {
+                let min_content_height =
+                    (footer.min_height.unwrap_or(0.0) - border.0 - border.2).max(0.0);
+                content_height.max(min_content_height) + border.0 + border.2
+            }
         })
         .unwrap_or(0.0);
     let footer_repeat = report
@@ -6182,11 +6187,15 @@ pub(crate) fn generate_pdf_v3_inner(
                 .iter()
                 .map(|comp| est_h_with_margin(comp, inner_width, &dctx))
                 .sum();
-            let header_height = header
-                .min_height
-                .unwrap_or(0.0)
-                .max(estimated_height + border.0 + border.2)
-                .max(0.0);
+            let header_height = if let Some(fixed) = header.height {
+                fixed.max(0.0)
+            } else {
+                header
+                    .min_height
+                    .unwrap_or(0.0)
+                    .max(estimated_height + border.0 + border.2)
+                    .max(0.0)
+            };
             let header_top = ph;
             let header_bottom = header_top - header_height;
 
@@ -6268,8 +6277,13 @@ pub(crate) fn generate_pdf_v3_inner(
             }
 
             let rendered_height = header_top - header_cursor;
-            let used_height = rendered_height.max(header_height);
-            *curs = header_top - used_height - margin.0;
+            let used_height = if header.height.is_some() {
+                // altura fixa: cursor avança exatamente pelo valor declarado
+                header_height
+            } else {
+                rendered_height.max(header_height)
+            };
+            *curs = header_top - used_height;
         }
     };
 

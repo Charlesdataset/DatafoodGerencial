@@ -44,6 +44,7 @@ export interface GradientDef {
 export interface SectionV3 {
   repeat?: boolean;
   backgroundColor?: string;
+  height?: number;
   minHeight?: number;
   boxShadow?: BoxShadowDef;
   gradient?: GradientDef;

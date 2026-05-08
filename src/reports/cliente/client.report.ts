@@ -47,7 +47,7 @@ const handleGenerateClientReport = async (
     },
     header: {
       repeat: false,
-
+      height: 60,
       backgroundColor: "#ffffff",
       content: [
         {
@@ -169,7 +169,7 @@ const handleGenerateClientReport = async (
           datasetName: 'clientes',
           titleField: 'razaoSocial',
           titlePrefix: 'Cliente: ',
-          titleBackgroundColor: '#20435C',
+          titleBackgroundColor: '#404040',
           titleTextColor: '#ffffff',
           labelBackgroundColor: '#EEF1F6',
           labelColor: '#555e74',
