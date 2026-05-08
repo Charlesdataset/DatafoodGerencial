@@ -44,6 +44,7 @@ const handleGenerateClientReport = async (
       margin: {
         four: [40, 35, 40, 35],
       },
+      orientation: modelo === ModeloRelatorio.Detalhado ? 'landscape' : 'portrait',
     },
     header: {
       repeat: false,
@@ -150,7 +151,7 @@ const handleGenerateClientReport = async (
             },
           }),
           headerBackgroundColor: '#404040',
-          zebraBackgroundColor: '#909090',
+
           type: "table" as const,
           datasetName: 'clientes',
           tableHeader: [
@@ -176,21 +177,21 @@ const handleGenerateClientReport = async (
           valueColor: '#1e222b',
           borderColor: '#c8cdd8',
           borderWidth: 0.4,
-          columns: 4,
+          columns: 8,
           gap: 8,
           fields: [
             { key: 'idCliente', prefix: 'Código' },
             { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const },
             { key: 'celular', prefix: 'Celular' },
+            { key: 'telefone', prefix: 'Telefone', mask: 'phone' as const },
             { key: 'limiteCredito', prefix: 'Limite de Crédito', mask: 'currency' as const, align: 'right' as const },
-            { key: 'cnpjCpf', prefix: 'CPF / CNPJ', mask: 'cnpjCpf' as const, span: 2 },
+            { key: 'cnpjCpf', prefix: 'CPF / CNPJ', mask: 'cnpjCpf' as const },
             { key: 'email', prefix: 'E-mail', span: 2 },
-            { key: 'logradouro', prefix: 'Endereço', span: 2 },
-            { key: 'bairro', prefix: 'Bairro' },
+            { key: 'logradouro', prefix: 'Endereço', span: 3 },
+            { key: 'bairro', prefix: 'Bairro', span: 2 },
             { key: 'cidade', prefix: 'Cidade' },
             { key: 'cep', prefix: 'CEP', mask: 'cep' as const },
             { key: 'uf', prefix: 'UF' },
-            { key: 'telefone', prefix: 'Telefone', mask: 'phone' as const },
           ],
           margin: { four: [0, 0, 6, 0] as [number, number, number, number] },
         },
