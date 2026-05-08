@@ -10,7 +10,7 @@ export default defineConfig({
 
   server: {
     port: 3000,
-    host: "192.168.0.136",
+    host: "192.168.0.118",
     open: true,
     watch: {
       usePolling: false,
@@ -26,12 +26,8 @@ export default defineConfig({
         "./src/layouts/Admin/Sidebar.tsx",
         "./src/pages/Login/Login.tsx",
         "./src/pages/Dashboard/Dashboard.tsx",
-        "./src/pages/Produtos/Produtos.tsx",
-        "./src/pages/Produtos/components/ProdutoList.tsx",
-        "./src/pages/Produtos/components/ProdutoReg.tsx",
-        "./src/pages/Eventos/Evento.tsx",
-        "./src/pages/Grupos/Grupos.tsx",
-        "./src/pages/Funcionarios/Funcionarios.tsx",
+      
+    
         "./src/components/DataGrid/DataGrid.tsx",
         "./src/components/Modal/SelectModal/SelectModal.tsx",
       ],

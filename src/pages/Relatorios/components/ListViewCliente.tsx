@@ -7,6 +7,7 @@ import type { ExtendedColumnDef } from "../../../components/DataGrid/DataGrid";
 import DataGrid from "../../../components/DataGrid/DataGrid";
 import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import Select from "../../../components/Inputs/Select/Select";
+
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
@@ -23,7 +24,9 @@ const ListViewCliente: React.FC = () => {
     const [dados, setDados] = useState([])
     const [refreshKey, setRefreshKey] = useState(0);
     const [url, setUrl] = useState(null);
-
+    const [hasLoaded, setHasLoaded] = useState(false);
+    const [textSearch, setTextSearch] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const [modalShow, setModalShow] = useState(false);
     const [agrupado, setAgrupado] = useState<ClienteAgrupadoPor>(ClienteAgrupadoPor.Nenhum);
     const [tipo, setTipo] = useState<ModeloRelatorio>(ModeloRelatorio.Simplificado);
@@ -43,19 +46,31 @@ const ListViewCliente: React.FC = () => {
 
 
     useEffect(() => {
-        fetchData();
+        if (!hasLoaded) {
+            setHasLoaded(true);
+            fetchData();
+            return;
+        }
 
-    }, [])
+        const timer = setTimeout(() => {
+            if (textSearch !== "") {
+                fetchData();
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [textSearch])
 
     const fetchData = async () => {
+        setIsLoading(true);
         setRefreshKey(prev => prev + 1);
-        const res = await api.get("/clients");
+        const res = await api.get(`/clients?textSearch=${textSearch}`);
         if (res?.status === 200) {
             setDados(res.data);
         }
         else {
             setDados([])
         }
+        setIsLoading(false);
 
     }
 
@@ -111,6 +126,7 @@ const ListViewCliente: React.FC = () => {
     ]
 
     const handlePrint = async () => {
+        await fetchData();
         console.log(companyInfo)
         const bytes = await handleGenerateClientReport(dados, agrupado, tipo, companyInfo);
         const blob = new Blob([bytes], { type: 'application/octet-stream' });
@@ -171,8 +187,12 @@ const ListViewCliente: React.FC = () => {
 
                         rowGap={0}
                     >
-                        <TextSearch placeholder="Digite para buscar..." />
-                        <FormButton variant="text"  >
+                        <TextSearch isLoading={isLoading} placeholder="Digite para buscar..." value={textSearch} onChange={(e) => {
+                            setTextSearch(e.target.value);
+                        }} />
+                        <FormButton isLoading={isLoading} loadAlone variant="text" onClick={() => {
+                            fetchData();
+                        }} >
                             <FontAwesomeIcon icon={faRedo} />
                         </FormButton>
                         <FormButton variant="primary" onClick={() => {
