@@ -6,11 +6,17 @@
 // Classes CSS ficam em src/styles/base/_utilities.scss
 // ============================================
 
-$primary-base:(--primary-color, #42ab8a) ;
-$secondary-base: #21455f;
+$primary-base: (
+  --primary-color,
+  #42ab8a
+);
+$secondary-base: (
+  --secondary-color,
+  #21455f
+);
 
 // Cores principais
-$primary:  #42ab8a;
+$primary: #42ab8a;
 $secondary: #21455f;
 $success: #28a745;
 $info: #17a2b8;

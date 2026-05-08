@@ -8,7 +8,8 @@
   width: 200px;
   height: 100vh;
   height: 100dvh;
-  background: linear-gradient(180deg, $secondary 0%, $secondary-dark 100%);
+  background: linear-gradient(180deg, var(--secondary-color) 0%, var(--secondary-color) 100%);
+
   background-size: cover;
   background-repeat: no-repeat;
   box-shadow: inset 0 0 60px rgba($black, 0.22);
@@ -19,47 +20,47 @@
   z-index: 1030;
   overflow-y: auto;
   overflow-x: hidden;
-  
+
   scrollbar-width: thin;
   scrollbar-color: rgba($white, 0.3) transparent;
-  
+
   &::-webkit-scrollbar {
     width: 4px;
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba($white, 0.3);
     border-radius: 4px;
   }
-  
+
   &.collapsed {
     width: 50px;
-    
+
     .menuLabel,
     .menuArrow {
       display: none;
     }
-    
+
     .logo img {
       margin: 0 auto;
     }
   }
-  
+
   @media (max-width: 992px) {
     transform: translateX(-100%);
     width: 260px;
     height: 100dvh;
-    
+
     &.mobileOpen {
       transform: translateX(0);
     }
   }
-  
+
   &.mobileOpen {
     overscroll-behavior: contain;
   }
@@ -67,7 +68,7 @@
 
 body:has(.sidebar.mobileOpen) {
   overflow: hidden;
-  
+
   @media (max-width: 992px) {
     overflow: hidden;
   }
@@ -82,20 +83,20 @@ body:has(.sidebar.mobileOpen) {
   background: rgba(0, 0, 0, 0.5);
   z-index: 1020;
   display: none;
-  
+
   @media (max-width: 992px) {
     display: block;
   }
 }
 
 .sidebarHeader {
-  padding: 10px 16px;
+  padding: 0px 0px;
   display: flex;
   justify-content: center;
   align-items: center;
   border-bottom: 1px solid rgba($white, 0.1);
   position: relative;
-  min-height: 70px;
+  min-height: 60px;
   flex-shrink: 0;
 }
 
@@ -127,16 +128,16 @@ body:has(.sidebar.mobileOpen) {
   z-index: 1050;
   transition: all 0.2s;
   padding: 0;
-  
+
   svg {
     font-size: 12px;
     color: $secondary;
   }
-  
+
   &:hover {
     transform: scale(1.1);
   }
-  
+
   @media (max-width: 992px) {
     display: none;
   }
@@ -167,13 +168,13 @@ body:has(.sidebar.mobileOpen) {
   transition: all 0.2s;
   text-align: left;
   font-size: 14px;
-  
+
   &:hover {
     background: rgba($white, 0.16);
     color: $white;
     filter: brightness(1.05);
   }
-  
+
   &.open {
     color: $primary-light;
   }
@@ -188,18 +189,18 @@ body:has(.sidebar.mobileOpen) {
   text-decoration: none;
   transition: all 0.2s;
   font-size: 14px;
-  
+
   &:hover {
     background: rgba($white, 0.16);
     color: $white;
     filter: brightness(1.08);
   }
-  
+
   &.active {
     background: rgba($white, 0.18);
     color: $white;
     box-shadow: inset 0 0 0 1px rgba($white, 0.1);
-    
+
     .menuIcon {
       color: $white;
     }
@@ -227,7 +228,7 @@ body:has(.sidebar.mobileOpen) {
   font-size: 10px;
   color: rgba($white, 0.5);
   transition: transform 0.2s;
-  
+
   &.arrowOpen {
     transform: rotate(90deg);
   }

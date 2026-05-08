@@ -31,7 +31,7 @@ const ListViewCliente: React.FC = () => {
     const [agrupado, setAgrupado] = useState<ClienteAgrupadoPor>(ClienteAgrupadoPor.Nenhum);
     const [tipo, setTipo] = useState<ModeloRelatorio>(ModeloRelatorio.Simplificado);
     const { subscribe } = useNavigation();
-    const { companyInfo } = useApp();
+    const { companyInfo, currLogoRelatorio } = useApp();
     useEffect(() => {
         const unsubscribeBackView = subscribe('backView', () => {
             // Lógica para voltar à tela anterior
@@ -128,7 +128,7 @@ const ListViewCliente: React.FC = () => {
     const handlePrint = async () => {
         await fetchData();
         console.log(companyInfo)
-        const bytes = await handleGenerateClientReport(dados, agrupado, tipo, companyInfo);
+        const bytes = await handleGenerateClientReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio);
         const blob = new Blob([bytes], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
         setUrl(url);
