@@ -471,6 +471,12 @@ pub struct TableMultiDataField {
 pub struct TableMultiDataComponent {
     pub dataset_name: String,
     pub fields: Vec<TableMultiDataField>,
+    /// Agrupamento dos registros (igual ao table normal)
+    pub grouping: Option<GroupingConfig>,
+    /// Cor de fundo do cabeçalho de grupo. Padrão: #404040
+    pub group_header_background_color: Option<String>,
+    /// Cor do texto do cabeçalho de grupo. Padrão: #ffffff
+    pub group_header_text_color: Option<String>,
     /// Número de colunas por linha dentro do bloco. Padrão: 4
     pub columns: Option<u32>,
     /// Campo do dataset usado como título do bloco
@@ -5510,7 +5516,66 @@ fn render_table_multi_data(
 
     *curs -= m.0;
 
-    for (ri, row) in rows.iter().enumerate() {
+    // ── Grouping ─────────────────────────────────────────────────────────────
+    // Monta a lista de (Option<group_label>, rows_do_grupo)
+    let grouped: Vec<(Option<String>, Vec<&HashMap<String, serde_json::Value>>)> =
+        if let Some(ref grouping) = comp.grouping {
+            group_rows(rows, &grouping.group_by)
+                .into_iter()
+                .map(|(key, grp)| {
+                    let label = if let Some(ref template) = grouping.group_header {
+                        template.replace("{value}", &key)
+                    } else if let Some(ref prefix) = grouping.prefix {
+                        format!("{}{}", prefix, key)
+                    } else {
+                        key
+                    };
+                    (Some(label), grp)
+                })
+                .collect()
+        } else {
+            vec![(None, rows.iter().collect())]
+        };
+
+    let group_header_bg = comp
+        .grouping
+        .as_ref()
+        .and_then(|g| g.group_header_background_color.as_deref())
+        .or(comp.group_header_background_color.as_deref())
+        .map(hex_to_rgb)
+        .unwrap_or([0.251, 0.251, 0.251]); // #404040
+    let group_header_text = comp
+        .grouping
+        .as_ref()
+        .and_then(|g| g.group_header_text_color.as_deref())
+        .or(comp.group_header_text_color.as_deref())
+        .map(hex_to_rgb)
+        .unwrap_or([1.0, 1.0, 1.0]);
+    let group_header_h = title_fs * 1.7 + 4.0;
+
+    let mut global_ri = 0usize;
+
+    for (group_label, group_rows) in &grouped {
+        // ── Cabeçalho do grupo ────────────────────────────────────────────
+        if let Some(ref label) = group_label {
+            if *curs - group_header_h < ctx.bottom_reserved {
+                page_break(c, curs);
+            }
+            *curs -= group_header_h;
+            c.set_fill_rgb(group_header_bg[0], group_header_bg[1], group_header_bg[2]);
+            c.rect(tx, *curs, iw, group_header_h);
+            c.fill_nonzero();
+            let enc = to_utf8_winansi(label, label.len());
+            let ty = *curs + group_header_h / 2.0 - title_fs / 3.0;
+            show_text(c, &enc, fb, title_fs, tx + 8.0, ty, group_header_text);
+            *curs -= gap / 2.0;
+        }
+
+    for (ri, row) in group_rows.iter().enumerate() {
+        let _ = ri; // índice local dentro do grupo, não usado diretamente
+        let row = *row;
+        let ri = global_ri;
+        global_ri += 1;
         let has_title = comp.title_field.is_some();
         let bh = block_height(has_title);
 
@@ -5689,7 +5754,9 @@ fn render_table_multi_data(
 
         // Espaço entre blocos
         *curs -= gap;
-    }
+    } // fim loop registros do grupo
+
+    } // fim loop grupos
 
     *curs -= m.2;
 }

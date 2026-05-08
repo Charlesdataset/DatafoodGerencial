@@ -355,6 +355,12 @@ export interface TableMultiDataComponent {
   datasetName: string;
   /** Lista de campos a exibir por registro */
   fields: TableMultiDataField[];
+  /** Agrupamento dos registros (igual ao table normal) */
+  grouping?: GroupingConfig;
+  /** Cor de fundo do cabeçalho de grupo. Padrão: #404040 */
+  groupHeaderBackgroundColor?: string;
+  /** Cor do texto do cabeçalho de grupo. Padrão: #ffffff */
+  groupHeaderTextColor?: string;
   /** Quantas colunas por linha dentro do bloco de cada registro. Padrão: 4 */
   columns?: number;
   /** Campo do dataset usado como título do bloco. Se omitido, não exibe título */

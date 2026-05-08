@@ -166,6 +166,13 @@ const handleGenerateClientReport = async (
       ]
       : [
         {
+          ...(agrupadoPor !== ClienteAgrupadoPor.Nenhum && {
+            grouping: {
+              groupHeaderBackgroundColor: '#ffffff',
+              groupHeaderTextColor: '#000000',
+              groupBy: agrupadoPor === ClienteAgrupadoPor.Bairro ? 'bairro' : 'cidade',
+            },
+          }),
           type: "tableMultiData" as const,
           datasetName: 'clientes',
           titleField: 'razaoSocial',
