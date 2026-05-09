@@ -4,6 +4,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Card from '../../components/Card/Card';
 import Fluid from '../../components/Layout/Fluid';
+import ListViewBairro from './components/ListViewBairro';
 import ListViewCliente from './components/ListViewCliente';
 import ReportList from './components/ReportList';
 
@@ -12,7 +13,7 @@ import ReportList from './components/ReportList';
 const Relatorios: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Pega o parâmetro 'listing' da URL
     const searchParams = new URLSearchParams(location.search);
     const listing = searchParams.get('listing');
@@ -28,7 +29,7 @@ const Relatorios: React.FC = () => {
             case 'cliente':
                 return <ListViewCliente />;
             case 'bairro':
-                return <ListViewCliente />;
+                return <ListViewBairro />;
             case 'produto':
                 return <ListViewCliente />;
             default:
@@ -38,36 +39,36 @@ const Relatorios: React.FC = () => {
 
     return (
         <>
-        {!listing && (
-            <Card>
-                <Card.Body>
-                    <Fluid>
-                        <ReportList
-                            icon={faFileAlt}
-                            title="Financeiro"
-                            accentColor="#185FA5"
-                            accentBg="rgba(24, 95, 165, 0.12)"
-                            reports={[
-                                { 
-                                    name: "Clientes", 
-                                    onClick: () => handleNavigateToListing('cliente')
-                                },
-                                { 
-                                    name: "Bairros", 
-                                    onClick: () => handleNavigateToListing('bairro')
-                                },
-                                { 
-                                    name: "Produtos", 
-                                    onClick: () => handleNavigateToListing('produto')
-                                },
-                            ]}
-                        />
-                    </Fluid>
-                </Card.Body>
-            </Card>
+            {!listing && (
+                <Card>
+                    <Card.Body>
+                        <Fluid>
+                            <ReportList
+                                icon={faFileAlt}
+                                title="Financeiro"
+                                accentColor="#185FA5"
+                                accentBg="rgba(24, 95, 165, 0.12)"
+                                reports={[
+                                    {
+                                        name: "Clientes",
+                                        onClick: () => handleNavigateToListing('cliente')
+                                    },
+                                    {
+                                        name: "Bairros",
+                                        onClick: () => handleNavigateToListing('bairro')
+                                    },
+                                    {
+                                        name: "Produtos",
+                                        onClick: () => handleNavigateToListing('produto')
+                                    },
+                                ]}
+                            />
+                        </Fluid>
+                    </Card.Body>
+                </Card>
 
-        )}
-            
+            )}
+
             {/* Renderiza a listagem selecionada */}
             {renderListView()}
         </>
