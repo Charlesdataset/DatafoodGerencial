@@ -74,7 +74,7 @@ export interface TableHeaderDef {
   align?: V3TextAlign;
   sum?: boolean;
   pill?: boolean;
-  pillCases?: Array<{ case: string; color: string }>;
+  pillCases?: Array<{ case: string; color: string; transform?: string }>;
   pillWidth?: number;
 }
 

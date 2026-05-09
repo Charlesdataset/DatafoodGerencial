@@ -141,7 +141,7 @@ const handleGenerateBairroReport = async (
                     { key: 'idBairro', prefix: 'Código' },
                     { key: 'descricao', prefix: 'Nome' },
                     { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const, align: 'center' as const },
-                    { key: 'pausar', prefix: 'Celular', align: 'center', pill: true, pillCases: [{ case: 'false', color: ' #f59e0b' }, { case: 'true', color: '#000' }] },
+                    { key: 'pausar', prefix: 'Celular', align: 'center', pill: true, pillCases: [{ case: 'false', color: ' #f59e0b' , transform: 'Não' }, { case: 'true', color: '#000', transform: 'Sim' }] },
                     { key: 'taxa', prefix: 'Saldo', mask: 'currency' as const, align: 'center' as const },
                 ],
                 widths: [60, 'expand', 100, 80, 80],

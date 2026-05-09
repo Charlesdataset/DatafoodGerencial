@@ -323,6 +323,7 @@ pub struct TableHeaderDef {
 pub struct PillCase {
     pub case: String,
     pub color: String,
+    pub transform: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -4247,13 +4248,17 @@ fn render_table(
                         .map(|v| format_mask(v, hdr.mask.as_deref()))
                         .unwrap_or_default();
                     if hdr.pill {
-                        let pill_bg = hdr
+                        let matched_case = hdr
                             .pill_cases
                             .as_ref()
-                            .and_then(|cases| cases.iter().find(|pc| pc.case == val))
+                            .and_then(|cases| cases.iter().find(|pc| pc.case == val));
+                        let pill_bg = matched_case
                             .map(|pc| hex_to_rgb(&pc.color))
                             .unwrap_or([0.45, 0.50, 0.58]);
-                        draw_pill(c, &val, hx, cw[ci], ry, rh, al[ci], hdr.pill_width, pill_bg, fb, fs);
+                        let pill_label = matched_case
+                            .and_then(|pc| pc.transform.as_deref())
+                            .unwrap_or(&val);
+                        draw_pill(c, pill_label, hx, cw[ci], ry, rh, al[ci], hdr.pill_width, pill_bg, fb, fs);
                     } else {
                         let enc = to_utf8_winansi(&val, val.len());
                         let al2 = al[ci];
@@ -4724,13 +4729,17 @@ fn render_table(
                     .map(|v| format_mask(v, hdr.mask.as_deref()))
                     .unwrap_or_default();
                 if hdr.pill {
-                    let pill_bg = hdr
+                    let matched_case = hdr
                         .pill_cases
                         .as_ref()
-                        .and_then(|cases| cases.iter().find(|pc| pc.case == val))
+                        .and_then(|cases| cases.iter().find(|pc| pc.case == val));
+                    let pill_bg = matched_case
                         .map(|pc| hex_to_rgb(&pc.color))
                         .unwrap_or([0.45, 0.50, 0.58]);
-                    draw_pill(c, &val, hx, cw[ci], ry, rh, al[ci], hdr.pill_width, pill_bg, fb, fs);
+                    let pill_label = matched_case
+                        .and_then(|pc| pc.transform.as_deref())
+                        .unwrap_or(&val);
+                    draw_pill(c, pill_label, hx, cw[ci], ry, rh, al[ci], hdr.pill_width, pill_bg, fb, fs);
                 } else {
                     let enc = to_utf8_winansi(&val, val.len());
                     let al2 = al[ci];
