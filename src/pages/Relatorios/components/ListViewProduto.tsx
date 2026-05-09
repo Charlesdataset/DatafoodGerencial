@@ -15,7 +15,8 @@ import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import { useApp } from "../../../contexts/AppContext";
 import { useNavigation } from "../../../contexts/NavigationContext";
-import handleGenerateClientReport, { ClienteAgrupadoPor, ModeloRelatorio } from "../../../reports/cliente/client.report";
+import { ModeloRelatorio } from "../../../reports/cliente/client.report";
+import handleGenerateProductReport, { ProdutoAgrupadoPor } from "../../../reports/produto/produt.report";
 import { api } from "../../../services/api";
 
 
@@ -28,7 +29,7 @@ const ListViewProduto: React.FC = () => {
     const [textSearch, setTextSearch] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [modalShow, setModalShow] = useState(false);
-    const [agrupado, setAgrupado] = useState<ClienteAgrupadoPor>(ClienteAgrupadoPor.Nenhum);
+    const [agrupado, setAgrupado] = useState<ProdutoAgrupadoPor>(ProdutoAgrupadoPor.Nenhum);
     const [tipo, setTipo] = useState<ModeloRelatorio>(ModeloRelatorio.Simplificado);
     const { subscribe } = useNavigation();
     const { companyInfo, currLogoRelatorio } = useApp();
@@ -63,7 +64,7 @@ const ListViewProduto: React.FC = () => {
     const fetchData = async () => {
         setIsLoading(true);
         setRefreshKey(prev => prev + 1);
-        const res = await api.get(`/clients?textSearch=${textSearch}`);
+        const res = await api.get(`/products?textSearch=${textSearch}&detail=${tipo === ModeloRelatorio.Detalhado ? 'S' : 'N'}`);
         if (res?.status === 200) {
             setDados(res.data);
         }
@@ -76,7 +77,7 @@ const ListViewProduto: React.FC = () => {
 
     const columns: Array<ExtendedColumnDef<any>> = [
         {
-            accessorKey: 'idCliente',
+            accessorKey: 'idProduto',
             header: "Código",
             width: 80,
             headerAlign: "center",
@@ -84,41 +85,50 @@ const ListViewProduto: React.FC = () => {
 
         },
         {
-            accessorKey: 'razaoSocial',
-            header: "Razão Social",
-            width: 180,
+            accessorKey: 'descricao',
+            header: "Produto",
+            width: 'expand',
             headerAlign: "left",
             textAlign: "left",
 
         },
         {
-            accessorKey: 'bairro',
-            header: "Bairro",
-            width: 180,
+            accessorKey: 'precoVenda',
+            header: "Preço Venda",
+            width: 80,
             headerAlign: "center",
             textAlign: "center",
 
         },
         {
-            accessorKey: 'cidade',
-            header: "Cidade",
-            width: 180,
+            accessorKey: 'cest',
+            header: "Cest",
+            width: 80,
+            headerAlign: "center",
+            textAlign: "center",
+
+        },
+        {
+            accessorKey: 'ncm',
+            header: "Ncm",
+            width: 80,
             headerAlign: "center",
             textAlign: "center",
 
         },
         {
             accessorKey: 'dataCadastro',
-            header: "Cadastro",
-            width: 120,
+            header: "Data Cadastro",
+            width: 180,
             headerAlign: "center",
             textAlign: "center",
             mask: "datetime",
+
         },
         {
-            accessorKey: 'celular',
-            header: "Celular",
-            width: 120,
+            accessorKey: 'ean1',
+            header: "Cód. Barra",
+            width: 100,
             headerAlign: "center",
             textAlign: "center",
 
@@ -128,7 +138,7 @@ const ListViewProduto: React.FC = () => {
     const handlePrint = async () => {
         await fetchData();
         console.log(companyInfo)
-        const bytes = await handleGenerateClientReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio);
+        const bytes = await handleGenerateProductReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio);
         const blob = new Blob([bytes], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
         setUrl(url);
@@ -152,10 +162,10 @@ const ListViewProduto: React.FC = () => {
                     >
                         <Select label="Agrupado por" value={agrupado} options={[
                             {
-                                value: ClienteAgrupadoPor.Nenhum, label: 'Nenhum'
+                                value: ProdutoAgrupadoPor.Nenhum, label: 'Nenhum'
                             }, {
-                                value: ClienteAgrupadoPor.Bairro, label: 'Bairro'
-                            }, { value: ClienteAgrupadoPor.Cidade, label: 'Cidade' }
+                                value: ProdutoAgrupadoPor.NCM, label: 'Ncm'
+                            },
                         ]} onChange={(e: any) => { setAgrupado(e) }} />
                         <Select label="Tipo" value={tipo} options={[{
                             value: ModeloRelatorio.Detalhado, label: 'Detalhado'

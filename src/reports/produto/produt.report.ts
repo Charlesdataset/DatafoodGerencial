@@ -2,12 +2,21 @@ import type { CompanyInfo } from "../../contexts/AppContext";
 import type { ReportV3 } from "../../types/v3.types";
 import { maskCnpj, maskCpf } from "../../utils/format";
 import { gerarRelatorioPdfV3 } from "../../wasm/pdfium_generator";
+import { ModeloRelatorio } from "../cliente/client.report";
 
 
 
 
-const handleGenerateBairroReport = async (
+export enum ProdutoAgrupadoPor {
+    NCM = 'ncm',
+    Nenhum = 'nenhum'
+}
+
+
+const handleGenerateProductReport = async (
     dataset: any[],
+    agrupadoPor: ProdutoAgrupadoPor,
+    modelo: ModeloRelatorio,
     companyInfo: CompanyInfo,
     currLogoRelatorio: string
 ) => {
@@ -32,7 +41,7 @@ const handleGenerateBairroReport = async (
             margin: {
                 four: [40, 35, 40, 35],
             },
-
+            orientation: modelo === ModeloRelatorio.Detalhado ? 'landscape' : 'portrait',
         },
         header: {
             repeat: false,
@@ -54,7 +63,7 @@ const handleGenerateBairroReport = async (
                         },
                         {
                             type: "text",
-                            value: "Relatório Bairros",
+                            value: "Relatório Produtos",
 
                             fontSize: 20,
                             bold: true,
@@ -130,29 +139,74 @@ const handleGenerateBairroReport = async (
                 },
             ],
         },
-        content: [
+        content: modelo === ModeloRelatorio.Simplificado
+            ? [
+                {
+                    ...(agrupadoPor !== ProdutoAgrupadoPor.Nenhum && {
+                        grouping: {
+                            groupBy: 'ncm',
+                        },
+                    }),
+                    headerBackgroundColor: '#404040',
 
-            {
-                headerBackgroundColor: '#404040',
-
-                type: "table" as const,
-                datasetName: 'bairros',
-                tableHeader: [
-                    { key: 'idBairro', prefix: 'Código' },
-                    { key: 'descricao', prefix: 'Nome' },
-                    { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const, align: 'center' as const },
-                    { key: 'pausar', prefix: 'Pausar', align: 'center', pill: true, pillCases: [{ case: 'false', color: '#f59e0b', transform: 'Não' }, { case: 'true', color: '#000', transform: 'Sim' }] },
-                    { key: 'taxaEntrega', prefix: 'Taxa', align: 'center' as const },
-                ],
-                widths: [60, 'expand', 100, 80, 80],
-            },
-
-        ]
-
+                    type: "table" as const,
+                    datasetName: 'produtos',
+                    tableHeader: [
+                        { key: 'idProduto', prefix: 'Código' },
+                        { key: 'descricao', prefix: 'Descrição' },
+                        { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const, align: 'center' as const },
+                        { key: 'cest', prefix: 'Cest', align: 'center' },
+                        { key: 'custoAtual', prefix: 'Custo Atual', align: 'center' },
+                        { key: 'ncm', prefix: 'Ncm', align: 'center' },
+                        { key: 'ean1', prefix: 'Cod. Barra', align: 'center' as const },
+                    ],
+                    widths: [60, 'expand', 100, 80, 80],
+                },
+            ]
+            : [
+                {
+                    ...(agrupadoPor !== ProdutoAgrupadoPor.Nenhum && {
+                        grouping: {
+                            groupHeaderBackgroundColor: '#ffffff',
+                            groupHeaderTextColor: '#000000',
+                            groupBy: 'ncm'
+                        },
+                    }),
+                    type: "tableMultiData" as const,
+                    datasetName: 'produtos',
+                    titleField: 'descricao',
+                    titlePrefix: 'Produto: ',
+                    titleBackgroundColor: '#404040',
+                    titleTextColor: '#ffffff',
+                    labelBackgroundColor: '#EEF1F6',
+                    labelColor: '#555e74',
+                    valueColor: '#1e222b',
+                    borderColor: '#c8cdd8',
+                    borderWidth: 0.4,
+                    columns: 7,
+                    gap: 8,
+                    fields: [
+                        { key: 'idProduto', prefix: 'Código' },
+                        { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const },
+                        { key: 'precoVenda', prefix: 'Celular' },
+                        { key: 'precoDelivery', prefix: 'Telefone', },
+                        { key: 'precoAPartir', prefix: 'Preço Apartir', align: 'right' as const },
+                        { key: 'custoAtual', prefix: 'Custo Atual', },
+                        { key: 'cest', prefix: 'Cest', },
+                        { key: 'ncm', prefix: 'Ncm', },
+                        { key: 'qtdeAtual', prefix: 'Qtde. Atual' },
+                        { key: 'estoqueMin', prefix: 'Estoque mim.' },
+                        { key: 'estoqueMax', prefix: 'Estoque mix', },
+                        { key: 'margem', prefix: 'Margem' },
+                        { key: 'ean1', prefix: 'Cód. barra', span: 2 },
+                    ],
+                    margin: { four: [0, 0, 6, 0] as [number, number, number, number] },
+                },
+            ],
     };
 
     json._datasets = {
-        bairros: dataset,
+        produtos: dataset,
     };
 
 
@@ -178,4 +232,4 @@ const handleGenerateBairroReport = async (
 
 }
 
-export default handleGenerateBairroReport;
+export default handleGenerateProductReport;
