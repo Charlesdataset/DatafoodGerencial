@@ -88,7 +88,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     let franquia = companyInfo?.franquia || "";
     //franquia = 'DATASET';
     //franquia = 'GIGABYTE';
-    franquia = 'ARS';
+    //franquia = 'ARS';
 
     switch (franquia) {
       case "DATASET":

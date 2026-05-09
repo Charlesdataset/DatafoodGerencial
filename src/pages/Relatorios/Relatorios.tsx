@@ -6,6 +6,7 @@ import Card from '../../components/Card/Card';
 import Fluid from '../../components/Layout/Fluid';
 import ListViewBairro from './components/ListViewBairro';
 import ListViewCliente from './components/ListViewCliente';
+import ListViewProduto from './components/ListViewProduto';
 import ReportList from './components/ReportList';
 
 
@@ -31,7 +32,7 @@ const Relatorios: React.FC = () => {
             case 'bairro':
                 return <ListViewBairro />;
             case 'produto':
-                return <ListViewCliente />;
+                return <ListViewProduto />;
             default:
                 return null;
         }
@@ -45,7 +46,7 @@ const Relatorios: React.FC = () => {
                         <Fluid>
                             <ReportList
                                 icon={faFileAlt}
-                                title="Financeiro"
+                                title="Cadastros"
                                 accentColor="#185FA5"
                                 accentBg="rgba(24, 95, 165, 0.12)"
                                 reports={[
