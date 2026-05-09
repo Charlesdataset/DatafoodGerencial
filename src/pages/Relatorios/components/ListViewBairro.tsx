@@ -14,6 +14,8 @@ import { useApp } from "../../../contexts/AppContext";
 import { useNavigation } from "../../../contexts/NavigationContext";
 import handleGenerateBairroReport from "../../../reports/bairro/bairro.report";
 import { api } from "../../../services/api";
+import type { TableHeaderDef } from "../../../types/v3.types";
+import { maskCnpj, maskCpf } from "../../../utils/format";
 
 
 const ListViewBairro: React.FC = () => {
@@ -176,11 +178,37 @@ const ListViewBairro: React.FC = () => {
                 autoPageSizeOnDesktop
             />
             {
-                url && <PdfiumViewer pdfUrl={url} filename="relatorio_clientes" onClose={() => {
-                    URL.revokeObjectURL(url);
-                    setUrl(null);
-                }} />
-
+                url && <PdfiumViewer
+                    pdfUrl={url}
+                    filename="relatorio_bairros"
+                    onClose={() => {
+                        URL.revokeObjectURL(url);
+                        setUrl(null);
+                    }}
+                    excelDataset={{
+                        data: dados,
+                        columns: [
+                            { key: 'idBairro',     prefix: 'Código',         align: 'center' as const },
+                            { key: 'descricao',    prefix: 'Bairro' },
+                            { key: 'dataCadastro', prefix: 'Data Cadastro',   mask: 'date-time' as const, align: 'center' as const },
+                            { key: 'pausar',       prefix: 'Pausada',         pill: true, pillCases: [
+                                { case: 'true',  color: '#16a34a', transform: 'Sim' },
+                                { case: 'false', color: '#d97706', transform: 'Não' },
+                            ]},
+                            { key: 'taxaEntrega',  prefix: 'Taxa Entrega',    align: 'right' as const, mask: 'currency' as const },
+                        ] as TableHeaderDef[],
+                        fileName: 'bairros',
+                        sheetName: 'Bairros',
+                        logo: currLogoRelatorio,
+                        title: 'Relatório Bairros',
+                        subtitle: `${
+                            companyInfo?.cnpj
+                                ? (companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj))
+                                : ''
+                        }  ${companyInfo?.nomeCli ?? ''}`.trim(),
+                        headerBackgroundColor: '#404040',
+                    }}
+                />
             }
 
 

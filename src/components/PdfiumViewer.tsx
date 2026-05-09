@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "../contexts/AppContext";
 import { useResponsive } from "../hooks/useResponsive";
 import type { TableHeaderDef } from "../types/v3.types";
-import { exportToExcel } from "../utils/exportToExcel";
+import { exportToExcel, type MultiDataConfig } from "../utils/exportToExcel";
 import { getPdfiumEngine } from "../wasm/pdfiumEngine";
 import { FormButton } from "./Inputs/Button/FormButton";
 import Fluid from "./Layout/Fluid";
@@ -40,6 +40,10 @@ interface ExcelDataset {
   groupHeaderBackgroundColor?: string;
   /** Cor do texto da linha de grupo */
   groupHeaderTextColor?: string;
+  /** Label para grupos com valor nulo/vazio. Padrão: "(Sem dados)" */
+  nullGroupLabel?: string;
+  /** Quando informado, usa layout multi-bloco em vez de tabela plana */
+  multiData?: MultiDataConfig;
 }
 
 interface PdfiumViewerProps {
@@ -346,6 +350,8 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
                       groupPrefix:                 excelDataset.groupPrefix,
                       groupHeaderBackgroundColor:  excelDataset.groupHeaderBackgroundColor,
                       groupHeaderTextColor:        excelDataset.groupHeaderTextColor,
+                      nullGroupLabel:              excelDataset.nullGroupLabel,
+                      multiData:                   excelDataset.multiData,
                     })
                 }
               >

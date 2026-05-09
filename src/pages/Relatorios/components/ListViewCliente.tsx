@@ -222,15 +222,15 @@ const ListViewCliente: React.FC = () => {
                     }}
                     excelDataset={{
                         data: dados,
-                        columns: [
-                            { key: 'idCliente', prefix: 'Código' },
-                            { key: 'razaoSocial', prefix: 'Nome' },
-                            { key: 'bairro', prefix: 'Bairro' },
-                            { key: 'cidade', prefix: 'Cidade' },
-                            { key: 'dataCadastro', prefix: 'Cadastro', mask: 'date-time' },
-                            { key: 'celular', prefix: 'Celular' },
-                            { key: 'limiteCredito', prefix: 'Limite de Crédito', mask: 'currency' },
-                        ] as TableHeaderDef[],
+                        columns: tipo === ModeloRelatorio.Simplificado
+                            ? [
+                                { key: 'idCliente',     prefix: 'Código' },
+                                { key: 'razaoSocial',   prefix: 'Nome' },
+                                { key: 'dataCadastro',  prefix: 'Data Cadastro', mask: 'date-time' },
+                                { key: 'celular',       prefix: 'Celular',        align: 'center' as const },
+                                { key: 'limiteCredito', prefix: 'Saldo',          mask: 'currency',  align: 'center' as const },
+                            ] as TableHeaderDef[]
+                            : [] as TableHeaderDef[],
                         fileName: 'clientes',
                         sheetName: 'Clientes',
                         logo: currLogoRelatorio,
@@ -247,6 +247,30 @@ const ListViewCliente: React.FC = () => {
                             : agrupado === ClienteAgrupadoPor.Cidade
                             ? 'Cidade: '
                             : undefined,
+                        multiData: tipo === ModeloRelatorio.Detalhado ? {
+                            columns: 8,
+                            titleField: 'razaoSocial',
+                            titlePrefix: 'Cliente: ',
+                            titleBackgroundColor: '#404040',
+                            titleTextColor: '#ffffff',
+                            labelBackgroundColor: '#EEF1F6',
+                            labelColor: '#555e74',
+                            valueColor: '#1e222b',
+                            fields: [
+                                { key: 'idCliente',     prefix: 'Código' },
+                                { key: 'dataCadastro',  prefix: 'Data Cadastro',    mask: 'date-time' as const },
+                                { key: 'celular',       prefix: 'Celular' },
+                                { key: 'telefone',      prefix: 'Telefone',          mask: 'phone' as const },
+                                { key: 'limiteCredito', prefix: 'Limite de Crédito', mask: 'currency' as const, align: 'right' as const },
+                                { key: 'cnpjCpf',       prefix: 'CPF / CNPJ',        mask: 'cnpjCpf' as const },
+                                { key: 'email',         prefix: 'E-mail',             span: 2 },
+                                { key: 'logradouro',    prefix: 'Endereço',           span: 3 },
+                                { key: 'bairro',        prefix: 'Bairro',             span: 2 },
+                                { key: 'cidade',        prefix: 'Cidade' },
+                                { key: 'cep',           prefix: 'CEP',                mask: 'cep' as const },
+                                { key: 'uf',            prefix: 'UF' },
+                            ],
+                        } : undefined,
                     }}
                 />
 

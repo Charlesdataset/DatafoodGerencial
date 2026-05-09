@@ -17,6 +17,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { lembrar, credentials, saveCredentials, toggleLembrar } = useRememberMe();
   const nomeRef = useRef<HTMLInputElement>(null);
+  const senhaRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const {setIsAuthenticated, setUser} = useApp();
   useEffect(() => {
@@ -85,7 +86,7 @@ const Login = () => {
             ref={nomeRef}
             value={currUser.codigo}
             onChange={(e) => setcurrUser({ ...currUser, codigo: e.target.value })}
-            onKeyPress={(e) => e.key === 'Enter' && fazerLogin()}
+            onKeyPress={(e) => e.key === 'Enter' && senhaRef.current?.focus()}
           />
         </div>
         
@@ -96,6 +97,7 @@ const Login = () => {
           <input
             type="password"
             className="form-input"
+            ref={senhaRef}
             id="senha"
             value={currUser.senha}
             onChange={(e) => setcurrUser({ ...currUser, senha: e.target.value })}
