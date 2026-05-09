@@ -16,6 +16,8 @@ import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import { useApp } from "../../../contexts/AppContext";
 import { useNavigation } from "../../../contexts/NavigationContext";
 import handleGenerateClientReport, { ClienteAgrupadoPor, ModeloRelatorio } from "../../../reports/cliente/client.report";
+import type { TableHeaderDef } from "../../../types/v3.types";
+import { maskCnpj, maskCpf } from "../../../utils/format";
 import { api } from "../../../services/api";
 
 
@@ -211,10 +213,42 @@ const ListViewCliente: React.FC = () => {
                 autoPageSizeOnDesktop
             />
             {
-                url && <PdfiumViewer pdfUrl={url} filename="relatorio_clientes" onClose={() => {
-                    URL.revokeObjectURL(url);
-                    setUrl(null);
-                }} />
+                url && <PdfiumViewer
+                    pdfUrl={url}
+                    filename="relatorio_clientes"
+                    onClose={() => {
+                        URL.revokeObjectURL(url);
+                        setUrl(null);
+                    }}
+                    excelDataset={{
+                        data: dados,
+                        columns: [
+                            { key: 'idCliente', prefix: 'Código' },
+                            { key: 'razaoSocial', prefix: 'Nome' },
+                            { key: 'bairro', prefix: 'Bairro' },
+                            { key: 'cidade', prefix: 'Cidade' },
+                            { key: 'dataCadastro', prefix: 'Cadastro', mask: 'date-time' },
+                            { key: 'celular', prefix: 'Celular' },
+                            { key: 'limiteCredito', prefix: 'Limite de Crédito', mask: 'currency' },
+                        ] as TableHeaderDef[],
+                        fileName: 'clientes',
+                        sheetName: 'Clientes',
+                        logo: currLogoRelatorio,
+                        title: 'Relatório Clientes',
+                        subtitle: `${companyInfo?.cnpj
+                            ? (companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj))
+                            : ''}  ${companyInfo?.nomeCli ?? ''}`.trim(),
+                        headerBackgroundColor: '#404040',
+                        groupBy: agrupado !== ClienteAgrupadoPor.Nenhum
+                            ? (agrupado === ClienteAgrupadoPor.Bairro ? 'bairro' : 'cidade')
+                            : undefined,
+                        groupPrefix: agrupado === ClienteAgrupadoPor.Bairro
+                            ? 'Bairro: '
+                            : agrupado === ClienteAgrupadoPor.Cidade
+                            ? 'Cidade: '
+                            : undefined,
+                    }}
+                />
 
             }
 

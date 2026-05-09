@@ -49,6 +49,7 @@ export default defineConfig({
       "dayjs",
       "@embedpdf/engines",
       "@embedpdf/pdfium",
+      "exceljs",
     ],
     force: true,
   },

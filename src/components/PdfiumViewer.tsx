@@ -1,15 +1,46 @@
 import type { PdfEngine } from "@embedpdf/engines/pdfium";
 import type { ImageDataLike, PdfDocumentObject, PdfPageObject } from "@embedpdf/models";
 import { Rotation } from "@embedpdf/models";
-import { faClose, faDownload, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faDownload, faFileExcel, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "../contexts/AppContext";
 import { useResponsive } from "../hooks/useResponsive";
+import type { TableHeaderDef } from "../types/v3.types";
+import { exportToExcel } from "../utils/exportToExcel";
 import { getPdfiumEngine } from "../wasm/pdfiumEngine";
 import { FormButton } from "./Inputs/Button/FormButton";
 import Fluid from "./Layout/Fluid";
 import styles from "./PdfiumViewer.module.scss";
+
+interface ExcelDataset {
+  data: Record<string, unknown>[];
+  columns: TableHeaderDef[];
+  fileName?: string;
+  sheetName?: string;
+  /** URL ou data-URI da logo (canto superior esquerdo) */
+  logo?: string;
+  /** Título central do cabeçalho */
+  title?: string;
+  /** CNPJ + nome da empresa exibidos no canto superior direito (espelha o header do PDF) */
+  subtitle?: string;
+  /** Cor de fundo do cabeçalho — padrão: #26385E */
+  headerBackgroundColor?: string;
+  /** Cor do texto do cabeçalho — padrão: #FFFFFF */
+  headerTextColor?: string;
+  /** Cor de fundo das linhas alternadas — padrão: #F5F7FC */
+  zebraBackgroundColor?: string;
+  /** Cor do texto das linhas alternadas */
+  zebraTextColor?: string;
+  /** Campo do dataset para agrupar as linhas (igual ao groupBy do V3) */
+  groupBy?: string;
+  /** Prefixo da linha de grupo (ex: "Bairro: ") */
+  groupPrefix?: string;
+  /** Cor de fundo da linha de grupo */
+  groupHeaderBackgroundColor?: string;
+  /** Cor do texto da linha de grupo */
+  groupHeaderTextColor?: string;
+}
 
 interface PdfiumViewerProps {
   pdfUrl: string;
@@ -18,6 +49,8 @@ interface PdfiumViewerProps {
   filename?: string;
   /** Chamado quando o PDF falha ao carregar (ex: FPDF_LoadMemDocument failed) */
   onError?: (message: string) => void;
+  /** Se informado, exibe botão de download Excel na toolbar */
+  excelDataset?: ExcelDataset;
 }
 
 /**
@@ -63,7 +96,7 @@ function getTouchDistance(touches: TouchList) {
   return Math.hypot(dx, dy);
 }
 
-export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onError }: PdfiumViewerProps) {
+export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onError, excelDataset }: PdfiumViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({});
   const engineRef = useRef<PdfEngine<Blob> | null>(null);
@@ -267,7 +300,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
   return (
     <div className={styles.overlay} style={!isMobile ? (isCollapsed ? { width: width - 49 } : { width: width - 198 }) : { width: "100%" }}>
       <div className={styles.floatingToolbar}>
-        <Fluid xs={["expand", "auto", "auto", "auto", "auto"]}>
+        <Fluid xs={excelDataset ? ["expand", "auto", "auto", "auto", "auto", "auto"] : ["expand", "auto", "auto", "auto", "auto"]}>
           <div className="mx-6">
             <FormButton variant="icon" onClick={onClose}>
               <FontAwesomeIcon icon={faClose} size="xs" />
@@ -293,6 +326,33 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
               <FontAwesomeIcon icon={faDownload} size="xs" />
             </FormButton>
           </div>
+          {excelDataset && (
+            <div>
+              <FormButton
+                variant="icon"
+                title="Baixar Excel"
+                onClick={() =>
+                    exportToExcel(excelDataset.data, excelDataset.columns, {
+                      fileName:                   excelDataset.fileName ?? filename.replace(/\.pdf$/i, ""),
+                      sheetName:                  excelDataset.sheetName,
+                      logo:                       excelDataset.logo,
+                      title:                      excelDataset.title,
+                      subtitle:                   excelDataset.subtitle,
+                      headerBackgroundColor:       excelDataset.headerBackgroundColor,
+                      headerTextColor:             excelDataset.headerTextColor,
+                      zebraBackgroundColor:        excelDataset.zebraBackgroundColor,
+                      zebraTextColor:              excelDataset.zebraTextColor,
+                      groupBy:                     excelDataset.groupBy,
+                      groupPrefix:                 excelDataset.groupPrefix,
+                      groupHeaderBackgroundColor:  excelDataset.groupHeaderBackgroundColor,
+                      groupHeaderTextColor:        excelDataset.groupHeaderTextColor,
+                    })
+                }
+              >
+                <FontAwesomeIcon icon={faFileExcel} size="xs" />
+              </FormButton>
+            </div>
+          )}
         </Fluid>
       </div>
 
