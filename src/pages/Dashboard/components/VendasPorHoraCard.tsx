@@ -15,6 +15,12 @@ interface VendasPorHoraCardProps {
     data: VendasPorHoraData;
     titulo?: string;
     cor?: string;
+    /** Formata cada label do eixo X. Padrão: HH:mm a partir de ISO. */
+    labelFormatter?: (label: string) => string;
+    /** Formata o valor no tooltip. Padrão: moeda BRL. */
+    valueFormatter?: (value: number) => string;
+    /** Formata os ticks do eixo Y. Padrão: abreviação K/M. */
+    yAxisFormatter?: (value: number) => string;
 }
 
 const CHART_HEIGHT = 200;
@@ -25,13 +31,21 @@ export default function VendasPorHoraCard({
     data,
     titulo = "Vendas por Hora",
     cor = "#2C7BE5",
+    labelFormatter = formatHour,
+  
+    yAxisFormatter = formatEixo,
+
+    valueFormatter = formatCurrency,
+
 }: VendasPorHoraCardProps) {
     const { hours, values, period } = data;
     const scrollRef  = useRef<HTMLDivElement>(null);
     const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string; value: number } | null>(null);
 
     const maxVal   = Math.max(...values, 1);
-    const tickStep = Math.ceil(maxVal / TICK_COUNT / 100) * 100 || 1;
+    const rawStep  = maxVal / TICK_COUNT;
+    const mag      = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
+    const tickStep = Math.ceil(rawStep / mag) * mag || 1;
     const ticks    = Array.from({ length: TICK_COUNT + 1 }, (_, i) => i * tickStep);
     const maxTick  = ticks[ticks.length - 1];
 
@@ -43,7 +57,7 @@ export default function VendasPorHoraCard({
         x: i * colWidth + colWidth / 2,
         y: CHART_HEIGHT - (v / maxTick) * CHART_HEIGHT,
         value: v,
-        label: formatHour(hours[i]),
+        label: labelFormatter(hours[i]),
     }));
 
     // polyline e área de preenchimento
@@ -84,7 +98,7 @@ export default function VendasPorHoraCard({
                             <div className={styles.yAxisInner}>
                                 {[...ticks].reverse().map((t, i) => (
                                     <span key={i} className={styles.yLabel}>
-                                        {formatEixo(t)}
+                                        {yAxisFormatter(t)}
                                     </span>
                                 ))}
                             </div>
@@ -192,7 +206,7 @@ export default function VendasPorHoraCard({
                     >
                         <span className={styles.tooltipHour}>{tooltip.label}</span>
                         <span className={styles.tooltipValue} style={{ color: cor }}>
-                            {formatCurrency(tooltip.value)}
+                            {valueFormatter(tooltip.value)}
                         </span>
                     </div>
                 )}
