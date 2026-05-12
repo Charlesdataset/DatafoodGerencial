@@ -1,9 +1,4 @@
-import { faBullseye, faChartLine, faCreditCard, faFilter, faMoneyBill, faQrcode, faReceipt, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Card from '../../components/Card/Card';
-import { DateRangePicker } from '../../components/DatePicker/DateRangePicker';
-import { FormButton } from '../../components/Inputs/Button/FormButton';
-import { TextSearch } from '../../components/Inputs/TextSearch/TextSearch';
+import { faBullseye, faChartLine, faCreditCard, faMoneyBill, faQrcode, faReceipt, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import Fluid from '../../components/Layout/Fluid';
 import { useApp } from '../../contexts/AppContext';
 import ComparacaoMesAMesCard from './components/ComparacaoMesAMesCard';
@@ -93,16 +88,16 @@ const Dashboard: React.FC = () => {
 
 
     const topClientes = [
-        { clientId: 1,     client: 'CLIENTE DIVERSO',                                            value: 4364.25 },
-        { clientId: 3318,  client: 'GR ENGENHARIA',                                              value: 294     },
-        { clientId: 6454,  client: 'SINAURBE',                                                   value: 84      },
-        { clientId: 1145,  client: 'THIAGO BRESINSKI LAGE',                                      value: 76      },
-        { clientId: 4298,  client: 'IGOR',                                                       value: 70      },
-        { clientId: 44,    client: 'ESEC - EMPRESA DE SERVICOS ELETRICOS E CONSTRUCOES',         value: 61.95   },
-        { clientId: 9897,  client: 'JOÃO PEDRO',                                                value: 59      },
-        { clientId: 10447, client: 'ANNE KELLY KATHERINY',                                       value: 54      },
-        { clientId: 10413, client: 'SILVANIA FERRE',                                             value: 49      },
-        { clientId: 6173,  client: 'FABRICIO',                                                   value: 48      },
+        { clientId: 1, client: 'CLIENTE DIVERSO', value: 4364.25 },
+        { clientId: 3318, client: 'GR ENGENHARIA', value: 294 },
+        { clientId: 6454, client: 'SINAURBE', value: 84 },
+        { clientId: 1145, client: 'THIAGO BRESINSKI LAGE', value: 76 },
+        { clientId: 4298, client: 'IGOR', value: 70 },
+        { clientId: 44, client: 'ESEC - EMPRESA DE SERVICOS ELETRICOS E CONSTRUCOES', value: 61.95 },
+        { clientId: 9897, client: 'JOÃO PEDRO', value: 59 },
+        { clientId: 10447, client: 'ANNE KELLY KATHERINY', value: 54 },
+        { clientId: 10413, client: 'SILVANIA FERRE', value: 49 },
+        { clientId: 6173, client: 'FABRICIO', value: 48 },
     ];
 
     const vendasVendedor = [
@@ -111,39 +106,27 @@ const Dashboard: React.FC = () => {
     ];
 
     const vendasEntregador = [
-        { courier: null,                    value: 683.83, qtOrders: 0,  percentage: '41.12' },
-        { courier: 'RAFAEL - ENTREGADOR',   value: 603,    qtOrders: 10, percentage: '36.26' },
-        { courier: 'GUSTAVO - ENTREGADOR',  value: 376,    qtOrders: 11, percentage: '22.61' },
+        { courier: null, value: 683.83, qtOrders: 0, percentage: '41.12' },
+        { courier: 'RAFAEL - ENTREGADOR', value: 603, qtOrders: 10, percentage: '36.26' },
+        { courier: 'GUSTAVO - ENTREGADOR', value: 376, qtOrders: 11, percentage: '22.61' },
     ].map(d => ({
-        name:       d.courier ?? 'Sem entregador',
-        value:      d.value,
+        name: d.courier ?? 'Sem entregador',
+        value: d.value,
         percentage: parseFloat(d.percentage),
     }));
 
     const ganhoClientes = {
-        hours:  ['12/2025', '01/2026', '02/2026', '03/2026', '04/2026', '05/2026'],
+        hours: ['12/2025', '01/2026', '02/2026', '03/2026', '04/2026', '05/2026'],
         values: [24, 25, 24, 25, 12, 9],
         period: 'dez de 2025 a mai de 2026',
     };
 
     return (
         <div>
-            {/* Filtros */}
-            <Card>
-                <Card.Body>
-                    <Fluid xs={['auto', 'expand', 'auto']}>
-                        <DateRangePicker endDate={new Date()} startDate={new Date()} onChange={() => { }} />
-                        <TextSearch placeholder='Filtre por um turno específico' />
-                        <FormButton>
-                            <FontAwesomeIcon icon={faFilter} />
-                            Filtrar
-                        </FormButton>
-                    </Fluid>
-                </Card.Body>
-            </Card>
+
 
             {/* KPIs */}
-            <Fluid className='mt-4' xs={[25, 25, 25, 25]}>
+            <Fluid xs={[25, 25, 25, 25]}>
                 <InfoCards
                     titulo="Total de Vendas"
                     valor="R$ 91.200,00"
@@ -193,7 +176,7 @@ const Dashboard: React.FC = () => {
                             period: "mai/2026"
                         }}
                     />
-                  
+
                     <ContasPagarReceber data={{
                         toPay: 12400,
                         toReceive: 23800,
@@ -203,7 +186,7 @@ const Dashboard: React.FC = () => {
             </Fluid>
 
             {/* Vendas por hora */}
-            <Fluid className='mt-4' xs={[100,50,50,100,50,50]}>
+            <Fluid className='mt-4' xs={[100, 50, 50, 50, 50, 100, 50]}>
                 <VendasPorHoraCard
                     data={{
                         hours: [
@@ -252,17 +235,17 @@ const Dashboard: React.FC = () => {
                     cor1="#2C7BE5"
                     cor2="#FE8B43"
                 />
-                  <MetaVsReceitaCard
-                        data={{
-                            goal: 0,
-                            revenue: 9,
-                            period: "mai de 2026"
-                        }}
-                        titulo="Meta de Clientes"
-                        metaLabel="Meta"
-                        receitaLabel="Conquistados"
-                        formatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
-                    />
+                <MetaVsReceitaCard
+                    data={{
+                        goal: 0,
+                        revenue: 9,
+                        period: "mai de 2026"
+                    }}
+                    titulo="Meta de Clientes"
+                    metaLabel="Meta"
+                    receitaLabel="Conquistados"
+                    formatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
+                />
             </Fluid>
 
 
