@@ -1,0 +1,286 @@
+// FormasPagamentoCard.module.scss
+
+.formasPagamentoCard {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #fafbfc;
+    border-bottom: 1px solid #edf2f7;
+
+    .headerLeft {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        color: #475569;
+        font-size: 0.9rem;
+    }
+
+    .title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #1e293b;
+        letter-spacing: 0.2px;
+    }
+}
+
+.toggleContainer {
+    display: flex;
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 2px;
+
+    .toggleBtn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #64748b;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        svg {
+            font-size: 0.75rem;
+        }
+
+        &:hover {
+            color: #3b82f6;
+        }
+
+        &.active {
+            background: #ffffff;
+            color: #3b82f6;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+    }
+}
+
+.cardBody {
+    padding: 20px;
+}
+
+.totalSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #edf2f7;
+
+    .totalLabel {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .totalValue {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+}
+
+.contentArea {
+    margin-bottom: 20px;
+    min-height: 230px;
+}
+
+// Lista
+.listaSection {
+    .listaItem {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .listaItemLeft {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .posicao {
+            width: 32px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        .nome {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #334155;
+
+            .itemIcon {
+                width: 16px;
+                color: #94a3b8;
+            }
+        }
+
+        .listaItemRight {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .valor {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .percentual {
+            min-width: 60px;
+            text-align: right;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #10b981;
+        }
+    }
+}
+
+// Gráfico
+.graficoSection {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .barraWrapper {
+        .barraHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+
+            .barraNome {
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: #475569;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                .barraIcon {
+                    font-size: 0.7rem;
+                    color: #94a3b8;
+                }
+            }
+
+            .barraValue {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: #1e293b;
+            }
+        }
+
+        .barraBase {
+            height: 8px;
+            background: #eef2f6;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 6px;
+
+            .barraPreenchida {
+                height: 100%;
+                border-radius: 20px;
+                transition: width 0.4s ease;
+            }
+        }
+
+        .barraPercentual {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+    }
+}
+
+// Legendas
+.legendas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-top: 16px;
+    margin-top: 8px;
+    border-top: 1px solid #edf2f7;
+
+    .legendaItem {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .legendaCor {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .legendaNome {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+    }
+}
+
+// Responsivo
+@media (max-width: 640px) {
+    .cardHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .toggleContainer {
+        width: 100%;
+
+        .toggleBtn {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+
+    .listaItem {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px;
+
+        .listaItemRight {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+}

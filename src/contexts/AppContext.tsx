@@ -86,7 +86,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
 
     let franquia = companyInfo?.franquia || "";
-    //franquia = 'DATASET';
+    franquia = 'DATASET';
     //franquia = 'GIGABYTE';
     //franquia = 'ARS';
 
