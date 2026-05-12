@@ -10,7 +10,7 @@ export default defineConfig({
 
   server: {
     port: 3000,
-    host: "192.168.0.118",
+    host: "192.168.0.136",
     open: true,
     watch: {
       usePolling: false,
@@ -49,6 +49,7 @@ export default defineConfig({
       "dayjs",
       "@embedpdf/engines",
       "@embedpdf/pdfium",
+      "exceljs",
     ],
     force: true,
   },
