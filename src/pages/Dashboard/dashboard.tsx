@@ -44,6 +44,17 @@ const Dashboard: React.FC = () => {
         ] as [string, number, number][],
         period: "12/2025 a 05/2026"
     };
+    const dadosComparacaoMetaXVendas = {
+        items: [
+            ["12/2025", 7200, 5300],
+            ["01/2026", 8100, 6200],
+            ["02/2026", 7900, 5900],
+            ["03/2026", 8800, 6400],
+            ["04/2026", 8500, 6300],
+            ["05/2026", 9100, 6500],
+        ] as [string, number, number][],
+        period: "12/2025 a 05/2026"
+    };
 
     const dadosCancelados = [
         { id: 7124, product: 'SELF SERVICE KG', user: 'COSME F.', datetime: '12/05/2026 11:17', motivo: 'DESABILITADO PELO USUARIO' },
@@ -67,21 +78,22 @@ const Dashboard: React.FC = () => {
     ];
 
     const topProdutos = [
-        { id: 10,  name: 'SELF SERVICE KG',                          revenue: 2466.52, percentage: '40.51' },
-        { id: 241, name: 'MARMITEX N°8-750ML  G',                    revenue: 876,     percentage: '14.39' },
-        { id: 240, name: 'MARMITEX N°6-500ML M 01',                  revenue: 828,     percentage: '13.60' },
-        { id: 6,   name: '03-MARMITEX N°6-500ML M',                  revenue: 450,     percentage: '7.39'  },
-        { id: 97,  name: 'PRATO FEITO COMPLETO UN',                  revenue: 384,     percentage: '6.31'  },
-        { id: 7,   name: '02-MARMITEX N°8-750ML  G TAMANHO PADRAO',  revenue: 100,     percentage: '1.64'  },
-        { id: 3,   name: 'Refrigerante Pet 600ml Coca Cola',         revenue: 88,      percentage: '1.45'  },
-        { id: 4,   name: 'SABORES SUCO 450ML',                       revenue: 80,      percentage: '1.31'  },
-        { id: 11,  name: 'Refri coca 1l ultra retornavel',           revenue: 72,      percentage: '1.18'  },
-        { id: 285, name: 'MARMITEX 500ML - CARNES NOBRES.',          revenue: 70,      percentage: '1.15'  },
+        { id: 10, name: 'SELF SERVICE KG', revenue: 2466.52, percentage: '40.51' },
+        { id: 241, name: 'MARMITEX N°8-750ML  G', revenue: 876, percentage: '14.39' },
+        { id: 240, name: 'MARMITEX N°6-500ML M 01', revenue: 828, percentage: '13.60' },
+        { id: 6, name: '03-MARMITEX N°6-500ML M', revenue: 450, percentage: '7.39' },
+        { id: 97, name: 'PRATO FEITO COMPLETO UN', revenue: 384, percentage: '6.31' },
+        { id: 7, name: '02-MARMITEX N°8-750ML  G TAMANHO PADRAO', revenue: 100, percentage: '1.64' },
+        { id: 3, name: 'Refrigerante Pet 600ml Coca Cola', revenue: 88, percentage: '1.45' },
+        { id: 4, name: 'SABORES SUCO 450ML', revenue: 80, percentage: '1.31' },
+        { id: 11, name: 'Refri coca 1l ultra retornavel', revenue: 72, percentage: '1.18' },
+        { id: 285, name: 'MARMITEX 500ML - CARNES NOBRES.', revenue: 70, percentage: '1.15' },
     ];
 
+
     const vendasVendedor = [
-        { name: 'COSME F.',         value: 4020.7, percentage: 89 },
-        { name: 'JHONATAN GARÇOM', value: 513,    percentage: 11 },
+        { name: 'COSME F.', value: 4020.7, percentage: 89 },
+        { name: 'JHONATAN GARÇOM', value: 513, percentage: 11 },
     ];
 
     return (
@@ -140,8 +152,8 @@ const Dashboard: React.FC = () => {
             <Fluid className='mt-4' xs={[50, 50]}>
                 <FormasPagamentoCard dados={[
                     { nome: 'Cartão de Crédito', valor: 45500, percentual: 49.9, cor: '#2C7BE5', icon: faCreditCard, id: '1' },
-                    { nome: 'Dinheiro',           valor: 27360, percentual: 30.0, cor: '#10b981', icon: faMoneyBill,   id: '2' },
-                    { nome: 'Pix',                valor: 18340, percentual: 20.1, cor: '#f59e0b', icon: faQrcode,      id: '3' },
+                    { nome: 'Dinheiro', valor: 27360, percentual: 30.0, cor: '#10b981', icon: faMoneyBill, id: '2' },
+                    { nome: 'Pix', valor: 18340, percentual: 20.1, cor: '#f59e0b', icon: faQrcode, id: '3' },
                 ]} />
                 <Fluid xs={[100]}>
                     <MetaVsReceitaCard
@@ -160,7 +172,7 @@ const Dashboard: React.FC = () => {
             </Fluid>
 
             {/* Vendas por hora */}
-            <Fluid className='mt-4' xs={[100]}>
+            <Fluid className='mt-4' xs={[100, 50, 50, 100, 50, 50]}>
                 <VendasPorHoraCard
                     data={{
                         hours: [
@@ -178,10 +190,6 @@ const Dashboard: React.FC = () => {
                         period: "Hoje",
                     }}
                 />
-            </Fluid>
-
-            {/* Gráficos comparativos */}
-            <Fluid className='mt-4' xs={[50, 50,100]}>
                 <ComparacaoMesAMesCard
                     items={dadosMesAMes.items}
                     period={dadosMesAMes.period}
@@ -191,6 +199,10 @@ const Dashboard: React.FC = () => {
                     cor1="#2C7BE5"
                     cor2="#FE8B43"
                 />
+                <VendasPorVendedorCard data={vendasVendedor} period="Hoje" />
+                <ProdutosCanceladosCard data={dadosCancelados} period="Hoje" />
+                <TopProdutosCard data={topProdutos} period="Hoje" />
+
                 <ComparacaoMesAMesCard
                     items={dadosCanal.items}
                     period={dadosCanal.period}
@@ -200,14 +212,9 @@ const Dashboard: React.FC = () => {
                     cor1="#2C7BE5"
                     cor2="#FE8B43"
                 />
-                <ProdutosCanceladosCard data={dadosCancelados} period="Hoje" />
             </Fluid>
 
-            {/* Produtos cancelados + Top produtos + Vendedores */}
-            <Fluid className='mt-4' xs={[50,50]}>
-                <TopProdutosCard data={topProdutos} period="Hoje" />
-                <VendasPorVendedorCard data={vendasVendedor} period="Hoje" />
-            </Fluid>
+
         </div>
     );
 };

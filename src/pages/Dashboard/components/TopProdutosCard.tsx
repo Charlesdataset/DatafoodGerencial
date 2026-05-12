@@ -9,7 +9,7 @@ export interface TopProduto {
     id: number;
     name: string;
     revenue: number;
-    percentage: string;
+    percentage?: string;
 }
 
 interface TopProdutosCardProps {
@@ -47,7 +47,7 @@ export default function TopProdutosCard({
     const maxRevenue = data[0]?.revenue ?? 1;
 
     return (
-        <Card className={styles.card}>
+        <Card className={styles.card} >
             <Card.Header className={styles.cardHeader}>
                 <div className={styles.headerLeft}>
                     <span className={styles.icon} style={{ background: `${cor}1a`, color: cor }}>
@@ -58,8 +58,10 @@ export default function TopProdutosCard({
                 </div>
                 {period && <span className={styles.period}>{period}</span>}
             </Card.Header>
+            <div ref={ref}>
 
-            <Card.Body className={styles.cardBody} ref={ref as any}>
+            </div>
+            <Card.Body className={styles.cardBody} >
                 <ol className={styles.list}>
                     {data.map((item, index) => {
                         const medal = MEDALS[index];
@@ -125,7 +127,7 @@ const formatCurrency = (v: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 }).format(v);
 
 const medalGradient = (cls: string) => {
-    if (cls === "gold")   return "linear-gradient(90deg, #f59e0b, #fbbf24)";
+    if (cls === "gold") return "linear-gradient(90deg, #f59e0b, #fbbf24)";
     if (cls === "silver") return "linear-gradient(90deg, #94a3b8, #cbd5e1)";
     if (cls === "bronze") return "linear-gradient(90deg, #d97706, #f59e0b88)";
     return "#e2e8f0";
