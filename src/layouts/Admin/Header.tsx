@@ -3,6 +3,7 @@ import {
   faArrowRightFromBracket,
   faCancel,
   faChartPie,
+  faMobileRetro,
   faSave,
   faUser
 } from "@fortawesome/free-solid-svg-icons";
@@ -10,10 +11,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../components/Button";
+import { DateRangePicker } from "../../components/DatePicker/DateRangePicker";
 import { FormButton } from "../../components/Inputs/Button/FormButton";
+import MultiTextBox from "../../components/Inputs/MultiTextBox/MultiTextBox";
 import { Flex } from "../../components/Layout";
+import SelectModal from "../../components/Modal/SelectModal/SelectModal";
 import { useApp } from "../../contexts/AppContext";
 import { useNavigation } from "../../contexts/NavigationContext";
+import { api } from "../../services/api";
 import styles from "./Header.module.scss";
 
 interface HeaderProps {
@@ -37,7 +42,7 @@ const pageTitles: Record<string, string> = {
 export const Header = ({ onMenuClick }: HeaderProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, setIsAuthenticated } =
+  const { user, setIsAuthenticated, dataInicial, dataFinal, tipoTurnos, setTipoTurnos, turnosSelecionados, setTurnosSelecionados, setDataInicial, setDataFinal } =
     useApp();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -51,6 +56,9 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
 
   const { emit, subscribe } = useNavigation();
+
+
+
 
 
 
@@ -94,7 +102,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
       backAction();
     });
 
-    const usubscribeShowBackButton = subscribe("showBackButton",()=> {
+    const usubscribeShowBackButton = subscribe("showBackButton", () => {
       setShowBackButton(true);
     });
 
@@ -121,142 +129,198 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
     setIsAuthenticated(false)
     navigate(`/login?cnpj=${cnpj}`);
   };
+  const [isTipoTurnoSearchOpen, setIsTipoTurnoSearchOpen] = useState(false);
+
+
 
   return (
-    <header className={styles.header}>
-      <div className={styles.headerContent}>
-        <div className={styles.leftSection}>
-          <button
-            className={styles.hamburgerBtn}
-            onClick={onMenuClick}
-            aria-label="Menu"
-          >
-            <span className={styles.hamburgerIcon}>☰</span>
-          </button>
+    <>
+      <SelectModal
+        isOpen={isTipoTurnoSearchOpen}
+        onClose={() => {
+          setIsTipoTurnoSearchOpen(false);
+        }}
+        icon={<FontAwesomeIcon icon={faMobileRetro} />}
+        key={'id'}
+        keyShow={{
+          primary: [
+            {
+              key: "id",
+              prefix: "Cód.  ",
+              mask: "number",
+              padChar: "0",
+              padStart: 6,
+            },
 
-          {/* Logo centralizada no mobile */}
-          <div className={styles.mobileLogo}>
-            <span className={styles.mobileLogoIcon}>DataTicket</span>
-          </div>
+          ],
+          secondary: [{ key: "label", prefix: "Descrição : ", marginStart: 5 },]
 
-          {/* Título com ícone - visível apenas no desktop */}
-          <div className={styles.pageTitle}>
-            <span className={styles.pageIcon}>
-              {showBackButton &&
-                (
-                  <>
-                    <Button onClick={() => {
-                      emit('backView');
-                      setShowBackButton(false);
-                    }}>
+        }}
+        mode="multi"
+        selectedData={turnosSelecionados}
+        title="Selecione as turnos"
+        fetchItems={() =>
+          api.get(`/turnos/tipo-turnos`).then((r) => r.data.tipoTurnos.map(x => ({ id: x.value, label: x.name })) || [])
+        }
+        onMultiSelect={(e) => {
+          setTurnosSelecionados((prev) => [...prev, ...e.map((x) => x.raw)]);
+        }}
+      />
 
-
-                      <FontAwesomeIcon icon={faArrowLeft} />
-                      voltar
-                    </Button>
-                  </>
-                )}
-              <FontAwesomeIcon icon={currentIcon} />
-            </span>
-            <h1 className={styles.title}>{currentTitle}</h1>
-          </div>
-        </div>
-        {inAction && !isMobile ? (
-          <>
-            <Flex>
-              <FormButton
-                variant="secondary"
-                onClick={() => {
-                  emit("onRollback");
-                  setInAction(false);
-                  setInLoad(false);
-                  const params = new URLSearchParams(location.search);
-                  params.delete("action");
-                  navigate({
-                    pathname: location.pathname,
-                    search: params.toString(),
-                  });
-                }}
-              >
-                <FontAwesomeIcon icon={faCancel} />
-                Cancelar alterações
-              </FormButton>
-              <FormButton
-                variant="primary"
-                isLoading={inLoad}
-                onClick={() => {
-                  emit("onRequestCommit");
-                }}
-              >
-                <FontAwesomeIcon icon={faSave} />
-                Salvar
-              </FormButton>
-            </Flex>
-          </>
-        ) : null}
-
-        <div
-          className={styles.headerRight}
-          style={{ display: inAction && !isMobile ? "none" : undefined }}
-        >
-
-
-
-          {/* Dropdown do usuário - apenas avatar */}
-          <div className={styles.userDropdown} ref={dropdownRef}>
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
+          <div className={styles.leftSection}>
             <button
-              className={styles.userTrigger}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className={styles.hamburgerBtn}
+              onClick={onMenuClick}
+              aria-label="Menu"
             >
-              <div className={styles.userAvatar}>
-                <FontAwesomeIcon icon={faUser} />
-              </div>
+              <span className={styles.hamburgerIcon}>☰</span>
             </button>
 
-            {isDropdownOpen && (
-              <div className={styles.dropdownMenu}>
-                <div className={styles.dropdownHeader}>
-                  <h6>
-                    <span className={styles.welcomeText}>Olá, </span>
-                    <span className={styles.userNameText}>
-                      {user?.nomeUsuario || "Usuário"}
-                    </span>
-                  </h6>
-                </div>
+            {/* Logo centralizada no mobile */}
+            <div className={styles.mobileLogo}>
+              <span className={styles.mobileLogoIcon}>DataTicket</span>
+            </div>
 
-                <div className={styles.dropdownDivider} />
+            {/* Título com ícone - visível apenas no desktop */}
+            <div className={styles.pageTitle}>
+              <span className={styles.pageIcon}>
+                {showBackButton &&
+                  (
+                    <>
+                      <Button onClick={() => {
+                        emit('backView');
+                        setShowBackButton(false);
+                      }}>
 
-                <button
-                  className={`${styles.dropdownItem} ${styles.logoutItem}`}
-                  onClick={handleLogout}
+
+                        <FontAwesomeIcon icon={faArrowLeft} />
+                        voltar
+                      </Button>
+                    </>
+                  )}
+                <FontAwesomeIcon icon={currentIcon} />
+              </span>
+              <h1 className={styles.title}>{currentTitle}</h1>
+            </div>
+          </div>
+          {inAction && !isMobile ? (
+            <>
+              <Flex>
+                <FormButton
+                  variant="secondary"
+                  onClick={() => {
+                    emit("onRollback");
+                    setInAction(false);
+                    setInLoad(false);
+                    const params = new URLSearchParams(location.search);
+                    params.delete("action");
+                    navigate({
+                      pathname: location.pathname,
+                      search: params.toString(),
+                    });
+                  }}
                 >
-                  <FontAwesomeIcon
-                    icon={faArrowRightFromBracket}
-                    className={styles.dropdownIcon}
-                  />
-                  Sair
-                </button>
+                  <FontAwesomeIcon icon={faCancel} />
+                  Cancelar alterações
+                </FormButton>
+                <FormButton
+                  variant="primary"
+                  isLoading={inLoad}
+                  onClick={() => {
+                    emit("onRequestCommit");
+                  }}
+                >
+                  <FontAwesomeIcon icon={faSave} />
+                  Salvar
+                </FormButton>
+              </Flex>
+            </>
+          ) : null}
 
-                <div className={styles.dropdownDivider} />
+          <div
+            className={styles.headerRight}
+            style={{ display: inAction && !isMobile ? "none" : undefined }}
+          >
 
-                <div className={styles.dropdownFooter}>
-                  <div className={styles.footerContent}>
-                    <a
-                      href="https://datasetsistemas.com.br"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.footerLink}
-                    >
-                      DataSet Sistemas
-                    </a>
-                    <span className={styles.versionText}>V.1.0.0</span>
+
+            <MultiTextBox
+
+              colorMode="multicolor"
+              onChange={(labels) => {
+                setTurnosSelecionados((prev) =>
+                  prev.filter((t) => labels.includes(`${t.label}`))
+                )
+              }}
+              values={turnosSelecionados.map((t) => `${t.label}`)} boxHeight={40} className="mb-0" placeholder="Tipos de turnos"
+              onInputClick={() => {
+                setIsTipoTurnoSearchOpen(true);
+              }} />
+
+
+            <DateRangePicker startDate={dataInicial} endDate={dataFinal} onChange={(s, e) => {
+              setDataInicial(s);
+              setDataFinal(e)
+            }} />
+
+
+            {/* Dropdown do usuário - apenas avatar */}
+            <div className={styles.userDropdown} ref={dropdownRef}>
+              <button
+                className={styles.userTrigger}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                <div className={styles.userAvatar}>
+                  <FontAwesomeIcon icon={faUser} />
+                </div>
+              </button>
+
+              {isDropdownOpen && (
+                <div className={styles.dropdownMenu}>
+                  <div className={styles.dropdownHeader}>
+                    <h6>
+                      <span className={styles.welcomeText}>Olá, </span>
+                      <span className={styles.userNameText}>
+                        {user?.nomeUsuario || "Usuário"}
+                      </span>
+                    </h6>
+                  </div>
+
+                  <div className={styles.dropdownDivider} />
+
+                  <button
+                    className={`${styles.dropdownItem} ${styles.logoutItem}`}
+                    onClick={handleLogout}
+                  >
+                    <FontAwesomeIcon
+                      icon={faArrowRightFromBracket}
+                      className={styles.dropdownIcon}
+                    />
+                    Sair
+                  </button>
+
+                  <div className={styles.dropdownDivider} />
+
+                  <div className={styles.dropdownFooter}>
+                    <div className={styles.footerContent}>
+                      <a
+                        href="https://datasetsistemas.com.br"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.footerLink}
+                      >
+                        DataSet Sistemas
+                      </a>
+                      <span className={styles.versionText}>V.1.0.0</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 };

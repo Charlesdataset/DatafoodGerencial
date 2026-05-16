@@ -32,6 +32,14 @@ interface AppContextType {
   setIsMobile: (e: boolean) => void;
   isCollapsed: boolean;
   setIsCollapsed: (e: boolean) => void;
+  dataInicial: Date;
+  dataFinal: Date;
+  setDataInicial: (date: Date) => void;
+  setDataFinal: (date: Date) => void;
+  tipoTurnos: Array<any>;
+  setTipoTurnos: (turnos: Array<any>) => void;
+  turnosSelecionados: any;
+  setTurnosSelecionados: (turno: any) => void;
 }
 
 export interface CompanyInfo {
@@ -58,6 +66,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [secondaryColor, setSecondaryColor] = useState("#21455f");
   const [currLogo, setCurrLogo] = useState<string>(logoDataSet);
   const [currLogoRelatorio, setCurrLogoRelatorio] = useState<string>(logoArsRelatorio);
+  const [dataInicial, setDataInicial] = useState<Date>(null);
+  const [dataFinal, setDataFinal] = useState<Date>(null);
+  const [tipoTurnos, setTipoTurnos] = useState([]);
+  const [turnosSelecionados, setTurnosSelecionados] = useState([]);
 
   useEffect(() => {
     if (companyInfo) {
@@ -143,6 +155,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setIsMobile,
       isCollapsed,
       setIsCollapsed,
+      dataInicial,
+      dataFinal,
+      setDataInicial,
+      setDataFinal,
+      tipoTurnos,
+      setTipoTurnos,
+      turnosSelecionados,
+      setTurnosSelecionados
     }),
     [
       currLogo,
@@ -156,6 +176,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       isDark,
       isMobile,
       isCollapsed,
+      dataInicial,
+      dataFinal,
+      tipoTurnos,
+      turnosSelecionados,
+
     ],
   );
 

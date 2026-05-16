@@ -20,7 +20,6 @@
   }
 }
 
-
 .selectContainer {
   height: 40px;
   padding: 0 8px 0 12px;
@@ -37,7 +36,7 @@
   position: relative;
   transition: all 0.2s ease;
   box-shadow: $box-shadow-inputs;
-  
+
   &:hover:not(.disabled) {
     border-color: $primary;
   }
@@ -47,10 +46,9 @@
     box-shadow: 0 0 0 2px rgba($primary, 0.1);
   }
 
-  // Estilo para erro
   &.error {
     border-color: $danger;
-    
+
     &:focus {
       box-shadow: 0 0 0 2px rgba($danger, 0.1);
     }
@@ -62,6 +60,38 @@
     opacity: 0.7;
   }
 }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clearButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin: 0;
+  color: $gray;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+
+  &:hover {
+    color: $danger;
+    background: rgba($danger, 0.1);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba($danger, 0.3);
+  }
+}
+
 .arrow {
   font-size: 10px;
   color: $gray;
@@ -71,77 +101,6 @@
     transform: rotate(90deg);
   }
 }
-
-// CORREÇÃO DEFINITIVA
-.dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  background: $white;
-  border: 1px solid $border-color;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 9999;
-  
-  // 🔥 SOLUÇÃO CORRETA 🔥
-  width: max-content;
-  min-width: fit-content;
-  max-width: 90vw; // Limita a 90% da viewport width (opcional)
-}
-
-.dropdownList {
-  
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.dropdownItem {
-  padding: 10px 12px;
-  font-size: 14px;
-  color: $dark;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  // NÃO use white-space: nowrap aqui!
-  // Deixe o texto quebrar naturalmente se for muito longo
-  
-  &:hover {
-    background: $primary-light;
-    color: $white;
-  }
-
-  &.selected {
-    background: $primary;
-    color: $white;
-
-    &:hover {
-      background: $primary-dark;
-    }
-  }
-}
-
-// Scrollbar personalizada
-.dropdownList::-webkit-scrollbar {
-  width: 6px;
-}
-
-.dropdownList::-webkit-scrollbar-track {
-  background: $light;
-  border-radius: 3px;
-}
-
-.dropdownList::-webkit-scrollbar-thumb {
-  background: $border-color;
-  border-radius: 3px;
-
-  &:hover {
-    background: $gray;
-  }
-}
-
-
-
-
 
 .selectedValue {
   flex: 1;
@@ -152,16 +111,6 @@
 
   &.placeholder {
     color: $gray;
-  }
-}
-
-.arrow {
-  font-size: 10px;
-  color: $gray;
-  transition: transform 0.2s ease;
-
-  &.arrowUp {
-    transform: rotate(90deg);
   }
 }
 
@@ -190,7 +139,7 @@
   color: $dark;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: $primary-light;
     color: $white;
@@ -206,7 +155,6 @@
   }
 }
 
-// Mensagem de erro
 .errorMessage {
   position: absolute;
   display: block;
@@ -215,7 +163,6 @@
   margin-top: 4px;
 }
 
-// Scrollbar personalizada
 .dropdownList::-webkit-scrollbar {
   width: 6px;
 }

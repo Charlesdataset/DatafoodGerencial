@@ -1,4 +1,4 @@
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faChevronRight, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -12,15 +12,17 @@ export interface Option {
 interface SelectProps {
   required?: boolean;
   label?: string;
-  name?: string; // Adicionado suporte a name
+  name?: string;
   value: string;
   onChange: (value: string) => void;
   options: Option[];
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-  error?: string; // Mensagem de erro
-  onBlur?: () => void; // Evento de blur
+  error?: string;
+  onBlur?: () => void;
+  onClear?: () => void; // Função opcional para limpar o select
+  clearButtonLabel?: string; // Label acessível para o botão de limpar
 }
 
 export default function Select({
@@ -35,6 +37,8 @@ export default function Select({
   required = false,
   error,
   onBlur,
+  onClear,
+  clearButtonLabel = "Limpar seleção",
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({
@@ -46,7 +50,6 @@ export default function Select({
   const selectRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  // Ref para o input hidden que vai armazenar o valor
   const hiddenInputRef = useRef<HTMLInputElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
@@ -72,15 +75,30 @@ export default function Select({
     onChange(optionValue);
     setIsOpen(false);
     
-    // Atualizar o input hidden com o valor selecionado
     if (hiddenInputRef.current) {
       hiddenInputRef.current.value = optionValue;
-      // Disparar evento change para formulários React
       const changeEvent = new Event('change', { bubbles: true });
       hiddenInputRef.current.dispatchEvent(changeEvent);
     }
     
-    // Disparar onBlur após selecionar
+    if (onBlur) onBlur();
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evita que o clique abra/fecha o dropdown
+    
+    if (onClear) {
+      onClear();
+      onChange(""); // Opcional: limpar o valor também
+    }
+    
+    // Atualizar o input hidden
+    if (hiddenInputRef.current) {
+      hiddenInputRef.current.value = "";
+      const changeEvent = new Event('change', { bubbles: true });
+      hiddenInputRef.current.dispatchEvent(changeEvent);
+    }
+    
     if (onBlur) onBlur();
   };
 
@@ -127,8 +145,8 @@ export default function Select({
     };
   }, [isOpen]);
 
-  // Determinar se deve mostrar erro
   const showError = !!error;
+  const showClearButton = !!onClear && !!value && !disabled;
 
   return (
     <div className={`${styles.selectWrapper} ${className}`} ref={wrapperRef}>
@@ -139,7 +157,6 @@ export default function Select({
         </label>
       )}
       
-      {/* Input hidden para suportar formulários HTML nativos */}
       {name && (
         <input
           ref={hiddenInputRef}
@@ -150,7 +167,7 @@ export default function Select({
       )}
       
       <div
-        className={`${styles.selectContainer} ${disabled ? styles.disabled : ""} ${isOpen ? styles.open : ""} ${showError ? styles.error : ""}`}
+        className={`${styles.selectContainer} ${disabled ? styles.disabled : ""} ${isOpen ? styles.open : ""} ${showError ? styles.error : ""} ${showClearButton ? styles.hasClear : ""}`}
         onClick={handleOpen}
         ref={selectRef}
       >
@@ -159,44 +176,56 @@ export default function Select({
         >
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <span className={`${styles.arrow} ${isOpen ? styles.arrowUp : ""}`}>
-          <FontAwesomeIcon icon={faChevronRight} />
-        </span>
+        
+        <div className={styles.actions}>
+          {showClearButton && (
+            <button
+              type="button"
+              className={styles.clearButton}
+              onClick={handleClear}
+              aria-label={clearButtonLabel}
+              title={clearButtonLabel}
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
+          )}
+          
+          <span className={`${styles.arrow} ${isOpen ? styles.arrowUp : ""}`}>
+            <FontAwesomeIcon icon={faChevronRight} />
+          </span>
+        </div>
       </div>
 
-      {/* Mensagem de erro */}
       {showError && (
         <div className={styles.errorMessage}>{error}</div>
       )}
 
-      {isOpen &&
-        !disabled &&
-        createPortal(
-          <div
-            ref={dropdownRef}
-            className={styles.dropdown}
-            style={{
-              position: "absolute",
-              top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`,
-              width: `${dropdownPosition.width}px`,
-              zIndex: 9999,
-            }}
-          >
-            <div className={styles.dropdownList}>
-              {options.map((option) => (
-                <div
-                  key={option.value}
-                  className={`${styles.dropdownItem} ${option.value === value ? styles.selected : ""}`}
-                  onClick={() => handleSelect(option.value)}
-                >
-                  {option.label}
-                </div>
-              ))}
-            </div>
-          </div>,
-          document.body,
-        )}
+      {isOpen && !disabled && createPortal(
+        <div
+          ref={dropdownRef}
+          className={styles.dropdown}
+          style={{
+            position: "absolute",
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`,
+            zIndex: 9999,
+          }}
+        >
+          <div className={styles.dropdownList}>
+            {options.map((option) => (
+              <div
+                key={option.value}
+                className={`${styles.dropdownItem} ${option.value === value ? styles.selected : ""}`}
+                onClick={() => handleSelect(option.value)}
+              >
+                {option.label}
+              </div>
+            ))}
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }
