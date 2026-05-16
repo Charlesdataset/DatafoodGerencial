@@ -49,8 +49,9 @@ export default function VendasPorHoraCard({
     const ticks    = Array.from({ length: TICK_COUNT + 1 }, (_, i) => i * tickStep);
     const maxTick  = ticks[ticks.length - 1];
 
-    const colWidth  = Math.max(MIN_COL_W, 800 / hours.length);
-    const svgWidth  = colWidth * hours.length;
+    const colWidth  = Math.max(MIN_COL_W, 800 / Math.max(hours.length, 1));
+    const svgWidth  = colWidth * Math.max(hours.length, 1);
+    const hasData   = hours.length > 0 && values.length > 0;
 
     // pontos normalizados
     const points = values.map((v, i) => ({
@@ -61,13 +62,13 @@ export default function VendasPorHoraCard({
     }));
 
     // polyline e área de preenchimento
-    const pointsStr = points.map(p => `${p.x},${p.y}`).join(" ");
-    const areaPath  = [
+    const pointsStr = points.length > 0 ? points.map(p => `${p.x},${p.y}`).join(" ") : "";
+    const areaPath  = points.length > 0 ? [
         `M ${points[0].x},${CHART_HEIGHT}`,
         ...points.map(p => `L ${p.x},${p.y}`),
         `L ${points[points.length - 1].x},${CHART_HEIGHT}`,
         "Z",
-    ].join(" ");
+    ].join(" ") : "";
 
     // scroll para o final ao montar
     useEffect(() => {
@@ -90,11 +91,12 @@ export default function VendasPorHoraCard({
             </Card.Header>
 
             <Card.Body className={styles.cardBody}>
-                <div className={styles.scrollWrapper}>
-                    <div className={styles.chartArea}>
+                {hasData ? (
+                    <div className={styles.scrollWrapper}>
+                        <div className={styles.chartArea}>
 
-                        {/* Eixo Y sticky */}
-                        <div className={styles.yAxis}>
+                            {/* Eixo Y sticky */}
+                            <div className={styles.yAxis}>
                             <div className={styles.yAxisInner}>
                                 {[...ticks].reverse().map((t, i) => (
                                     <span key={i} className={styles.yLabel}>
@@ -197,6 +199,11 @@ export default function VendasPorHoraCard({
                         </div>
                     </div>
                 </div>
+                ) : (
+                    <div className={styles.emptyState}>
+                        Sem dados para exibir neste período.
+                    </div>
+                )}
 
                 {/* Tooltip */}
                 {tooltip && (

@@ -77,7 +77,11 @@ export default function FormasPagamentoCard({
 
                 {/* Conteúdo que alterna entre Lista e Gráfico */}
                 <div className={styles.contentArea}>
-                    {visao === 'lista' ? (
+                    {dadosOrdenados.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            Nenhuma forma de pagamento encontrada.
+                        </div>
+                    ) : visao === 'lista' ? (
                         <div className={styles.listaSection}>
                             {dadosOrdenados.map((item, index) => (
                                 <div key={item.id} className={styles.listaItem}>

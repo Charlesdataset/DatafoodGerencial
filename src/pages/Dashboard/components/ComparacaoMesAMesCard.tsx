@@ -90,18 +90,24 @@ export default function ComparacaoMesAMesCard({
             </Card.Header>
 
             <Card.Body className={styles.cardBody}>
-                <div className={styles.legends}>
-                    <div className={styles.legendItem}>
-                        <span className={styles.legendDot} style={{ backgroundColor: cor1 }} />
-                        <span className={styles.legendText}>{label1}</span>
+                {items.length === 0 ? (
+                    <div className={styles.emptyState}>
+                        Sem dados para comparar.
                     </div>
-                    <div className={styles.legendItem}>
-                        <span className={styles.legendDot} style={{ backgroundColor: cor2 }} />
-                        <span className={styles.legendText}>{label2}</span>
-                    </div>
-                </div>
+                ) : (
+                    <>
+                        <div className={styles.legends}>
+                            <div className={styles.legendItem}>
+                                <span className={styles.legendDot} style={{ backgroundColor: cor1 }} />
+                                <span className={styles.legendText}>{label1}</span>
+                            </div>
+                            <div className={styles.legendItem}>
+                                <span className={styles.legendDot} style={{ backgroundColor: cor2 }} />
+                                <span className={styles.legendText}>{label2}</span>
+                            </div>
+                        </div>
 
-                {/* Container com scroll horizontal */}
+                        {/* Container com scroll horizontal */}
                 <div className={styles.scrollWrapper}>
                     <div className={styles.chartArea}>
                         {/* Eixo Y - STICKY */}
@@ -176,6 +182,8 @@ export default function ComparacaoMesAMesCard({
                         </div>
                     </div>
                 </div>
+                    </>
+                )}
             </Card.Body>
         </Card>
     );

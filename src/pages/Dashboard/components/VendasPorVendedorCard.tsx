@@ -1,7 +1,7 @@
-// VendasPorVendedorCard.tsx
+﻿// VendasPorVendedorCard.tsx
 import { faUsers } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import Card from "../../../components/Card/Card";
 import styles from "./VendasPorVendedorCard.module.scss";
 
@@ -17,7 +17,6 @@ interface VendasPorVendedorCardProps {
     period?: string;
 }
 
-// Paleta de cores por posição
 const COLORS = [
     { bar: "linear-gradient(90deg, #2C7BE5, #60a5fa)", text: "#2C7BE5", bg: "#eff6ff" },
     { bar: "linear-gradient(90deg, #10b981, #34d399)", text: "#10b981", bg: "#ecfdf5" },
@@ -27,28 +26,69 @@ const COLORS = [
     { bar: "linear-gradient(90deg, #06b6d4, #22d3ee)", text: "#0891b2", bg: "#ecfeff" },
 ];
 
-// Gera iniciais do nome
 const initials = (name: string) =>
-    name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
+    name
+        .split(" ")
+        .slice(0, 2)
+        .map((word) => word[0])
+        .join("")
+        .toUpperCase();
 
-export default function VendasPorVendedorCard({
-    data,
-    titulo = "Vendas por Vendedores",
-    period,
-}: VendasPorVendedorCardProps) {
-    const [animated, setAnimated] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
+function VendedorItem({
+    item,
+    index,
+    maxValue,
+}: {
+    item: VendedorData;
+    index: number;
+    maxValue: number;
+}) {
+    const color = COLORS[index % COLORS.length];
+    const barWidth = (item.value / maxValue) * 100;
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => { if (entry.isIntersecting) setAnimated(true); },
-            { threshold: 0.2 }
-        );
-        if (ref.current) observer.observe(ref.current);
-        return () => observer.disconnect();
-    }, []);
+    return (
+        <li
+            key={item.name}
+            className={styles.item}
+            style={{ animationDelay: String(index * 80) + "ms" }}
+        >
+            <div className={styles.avatarWrapper}>
+                <div className={styles.avatar} style={{ background: color.bg, color: color.text }}>
+                    {initials(item.name)}
+                </div>
+                <span className={styles.rankBadge}>{index + 1}°</span>
+            </div>
+            <div className={styles.content}>
+                <div className={styles.topRow}>
+                    <span className={styles.name}>{item.name}</span>
+                    <div className={styles.stats}>
+                        <span className={styles.value} style={{ color: color.text }}>
+                            {formatCurrency(item.value)}
+                        </span>
+                        <span className={styles.pctBadge} style={{ background: color.bg, color: color.text }}>
+                            {item.percentage}%
+                        </span>
+                    </div>
+                </div>
+                <div className={styles.barTrack}>
+                    <div
+                        className={styles.barFill}
+                        style={{
+                            width: String(barWidth) + "%",
+                            background: color.bar,
+                            transitionDelay: String(index * 80) + "ms",
+                        }}
+                    >
+                        <span className={styles.shimmer} />
+                    </div>
+                </div>
+            </div>
+        </li>
+    );
+}
 
-    const sorted = [...data].sort((a, b) => b.value - a.value);
+export default function VendasPorVendedorCard({ data, titulo = "Vendas por Vendedores", period }: VendasPorVendedorCardProps) {
+    const sorted = useMemo(() => [...data].sort((a, b) => b.value - a.value), [data]);
     const maxValue = sorted[0]?.value ?? 1;
 
     return (
@@ -65,66 +105,16 @@ export default function VendasPorVendedorCard({
                     <span className={styles.totalBadge}>{data.length} vendedores</span>
                 </div>
             </Card.Header>
-
-            <Card.Body className={styles.cardBody} ref={ref as any}>
-                <ol className={styles.list}>
-                    {sorted.map((item, index) => {
-                        const color = COLORS[index % COLORS.length];
-                        const barWidth = (item.value / maxValue) * 100;
-
-                        return (
-                            <li
-                                key={item.name}
-                                className={styles.item}
-                                style={{ animationDelay: `${index * 80}ms` }}
-                            >
-                                {/* Avatar + ranking */}
-                                <div className={styles.avatarWrapper}>
-                                    <div
-                                        className={styles.avatar}
-                                        style={{ background: color.bg, color: color.text }}
-                                    >
-                                        {initials(item.name)}
-                                    </div>
-                                    <span className={styles.rankBadge}>{index + 1}°</span>
-                                </div>
-
-                                {/* Conteúdo */}
-                                <div className={styles.content}>
-                                    <div className={styles.topRow}>
-                                        <span className={styles.name}>{item.name}</span>
-                                        <div className={styles.stats}>
-                                            <span className={styles.value} style={{ color: color.text }}>
-                                                {formatCurrency(item.value)}
-                                            </span>
-                                            <span
-                                                className={styles.pctBadge}
-                                                style={{ background: color.bg, color: color.text }}
-                                            >
-                                                {item.percentage}%
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Barra racing */}
-                                    <div className={styles.barTrack}>
-                                        <div
-                                            className={styles.barFill}
-                                            style={{
-                                                width: animated ? `${barWidth}%` : "0%",
-                                                background: color.bar,
-                                                transitionDelay: `${index * 80}ms`,
-                                            }}
-                                        >
-                                            {/* Brilho animado */}
-                                            <span className={styles.shimmer} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ol>
+            <Card.Body className={styles.cardBody}>
+                {sorted.length === 0 ? (
+                    <div className={styles.emptyState}>Nenhum vendedor encontrado.</div>
+                ) : (
+                    <ol className={styles.list}>
+                        {sorted.map((item, index) => (
+                            <VendedorItem key={item.name} item={item} index={index} maxValue={maxValue} />
+                        ))}
+                    </ol>
+                )}
             </Card.Body>
         </Card>
     );

@@ -12,386 +12,375 @@ import MetaVsReceitaCard from './components/MetaVsReceitaCard';
 import ProdutosCanceladosCard from './components/ProdutosCanceladosCard';
 import TopClientesCard from './components/TopClientesCard';
 import TopProdutosCard from './components/TopProdutosCard';
+import type { TopProduto } from './components/TopProdutosCard';
+import type { TopCliente } from './components/TopClientesCard';
+import type { VendedorData } from './components/VendasPorVendedorCard';
 import VendasPorHoraCard from './components/VendasPorHoraCard';
 import VendasPorVendedorCard from './components/VendasPorVendedorCard';
 
+interface VendasPorHoraData {
+    hours: string[];
+    values: number[];
+    period: string;
+}
 
+interface RecebimentoResponse {
+    type: string;
+    value: number;
+    id_turno: number;
+    name: string;
+    percentage: string;
+}
+
+interface FormaPagamentoItem {
+    id: string;
+    nome: string;
+    valor: number;
+    percentual: number;
+    cor?: string;
+    icon: any;
+}
+
+interface ProdutoCancelado {
+    id: number;
+    product: string;
+    user: string;
+    datetime: string;
+    motivo: string;
+}
+
+interface TopProdutoResponse {
+    idProduto: number;
+    nomeProduto: string;
+    valorTotal: number;
+    participacao: string;
+}
+
+interface TopClienteResponse {
+    idCliente: number;
+    nomeCliente: string;
+    valorTotal: number;
+    participacao: string;
+}
+
+interface VendasPorCanalItem {
+    posicao: number;
+    canal: string;
+    nome: string;
+    cor?: string;
+    valorTotal: number;
+    quantidadePedidos: number;
+    ticketMedio: number;
+    participacao: string;
+}
+
+const VENDAS_POR_HORA_EMPTY: VendasPorHoraData = {
+    hours: [],
+    values: [],
+    period: ""
+};
+
+const getRecebimentoIcon = (type: string) => {
+    if (type === "DIN") return faMoneyBill;
+    if (type === "CRE" || type === "DEB") return faCreditCard;
+    if (type === "PIX") return faQrcode;
+    if (type === "COR") return faReceipt;
+    return faMoneyBill;
+};
+
+const getRecebimentoColor = (type: string) => {
+    if (type === "DIN") return '#10b981';
+    if (type === "CRE" || type === "DEB") return '#2C7BE5';
+    if (type === "PIX") return '#f59e0b';
+    if (type === "COR") return '#8b5cf6';
+    return '#6b7280';
+};
+
+const normalizeVendedor = (item: any): VendedorData => ({
+    name: item.nomeVendedor ?? item.nome ?? '—',
+    value: Number(item.valorTotal ?? item.valor ?? 0),
+    percentage: Number(item.participacao ?? item.percentual ?? 0),
+});
+
+const normalizeTopProduto = (item: any): TopProduto => ({
+    id: item.idProduto ?? item.id ?? 0,
+    name: item.nomeProduto ?? item.name ?? '—',
+    revenue: Number(item.valorTotal ?? item.revenue ?? 0),
+    percentage: item.participacao ?? item.percentage ?? '0',
+});
+
+const normalizeTopCliente = (item: any): TopCliente => ({
+    clientId: item.idCliente ?? item.id ?? 0,
+    client: item.nomeCliente ?? item.client ?? '—',
+    value: Number(item.valorTotal ?? item.value ?? 0),
+});
+
+const normalizeVendasPorCanal = (item: any): VendasPorCanalItem => ({
+    posicao: Number(item.posicao ?? 0),
+    canal: item.canal ?? item.name ?? '—',
+    nome: item.nome ?? item.canal ?? '—',
+    cor: item.cor,
+    valorTotal: Number(item.valorTotal ?? item.value ?? 0),
+    quantidadePedidos: Number(item.quantidadePedidos ?? 0),
+    ticketMedio: Number(item.ticketMedio ?? 0),
+    participacao: item.participacao ?? '0',
+});
+
+const mapRecebimentoToFormaPagamento = (item: RecebimentoResponse): FormaPagamentoItem => ({
+    id: `${item.type}-${item.id_turno}`,
+    nome: item.name,
+    valor: item.value,
+    percentual: Number(item.percentage) || 0,
+    cor: getRecebimentoColor(item.type),
+    icon: getRecebimentoIcon(item.type),
+});
 
 const Dashboard: React.FC = () => {
-    const [resumo, setResumo] = useState(null);
-    const [vendasPorHora, setVendasPorHora] = useState(null);
-    const [vendasPorFormaPagto, setVendasPorFormaPagto] = useState(null);
-    const [ganhoClientes, setGanhoClientes] = useState(null);
-    const [vendasPorVendedor, setVendasPorVendedor] = useState(null);
-    const [vendasPorEntregador, setVendasPorEntregador] = useState(null);
-    const [produtosCancelados, setProdutosCancelados] = useState(null);
-    const [topProdutos, setTopProdutos] = useState(null);
-    const [topClientes, setTopClientes] = useState(null);
-    const [vendasPorCanal, setVendasPorCanal] = useState(null);
+    const [resumo, setResumo] = useState<any>(null);
+    const [vendasPorHora, setVendasPorHora] = useState<VendasPorHoraData>(VENDAS_POR_HORA_EMPTY);
+    const [vendasPorFormaPagto, setVendasPorFormaPagto] = useState<FormaPagamentoItem[]>([]);
+    const [ganhoClientes, setGanhoClientes] = useState<VendasPorHoraData>(VENDAS_POR_HORA_EMPTY);
+    const [vendasPorVendedor, setVendasPorVendedor] = useState<VendedorData[]>([]);
+    const [vendasPorEntregador, setVendasPorEntregador] = useState<VendedorData[]>([]);
+    const [produtosCancelados, setProdutosCancelados] = useState<ProdutoCancelado[]>([]);
+    const [topProdutos, setTopProdutos] = useState<TopProduto[]>([]);
+    const [topClientes, setTopClientes] = useState<TopCliente[]>([]);
+    const [vendasPorCanal, setVendasPorCanal] = useState<VendasPorCanalItem[]>([]);
     const [hasLoaded, setHasLoaded] = useState(false);
 
-
-    const { primaryColor, dataInicial, dataFinal, turnosSelecionados } = useApp();
-
+    const { dataInicial, dataFinal, turnosSelecionados } = useApp();
 
     const findAllData = async () => {
         try {
-            // Converter turnos para o formato correto (array de IDs ou string)
             const turnosIds = turnosSelecionados.map(t => t.id);
             const tipoTurnoParam = turnosIds.length > 0 ? turnosIds : undefined;
+            const params = {
+                dataInicio: dataInicial?.toISOString(),
+                dataFim: dataFinal?.toISOString(),
+                tipoTurno: tipoTurnoParam
+            };
 
+            const [
+                resumoResult,
+                vendasPorHoraResult,
+                vendasPorFormaPagtoResult,
+                ganhoClientesResult,
+                vendasPorVendedorResult,
+                vendasPorEntregadorResult,
+                produtosCanceladosResult,
+                topProdutosResult,
+                topClientesResult,
+                vendasPorCanalResult
+            ] = await Promise.allSettled([
+                api.get(`/dashboard/resumo`, { params }),
+                api.get(`/dashboard/vendas-por-hora`, { params }),
+                api.get(`/dashboard/vendas-por-recebimento`, { params }),
+                api.get(`/dashboard/ganho-clientes`, { params }),
+                api.get(`/dashboard/top-vendedores`, { params }),
+                api.get(`/dashboard/top-entregadores`, { params }),
+                api.get(`/dashboard/produtos-cancelados`, { params }),
+                api.get(`/dashboard/top-produtos-vendidos`, { params }),
+                api.get(`/dashboard/top-clientes`, { params }),
+                api.get(`/dashboard/vendas-canais`, { params }),
+            ]);
 
-            // Buscar resumo
-            const resumoResponse = await api.get(`/dashboard/resumo`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (resumoResponse?.status === 200) {
-                setResumo(resumoResponse.data);
+            if (resumoResult.status === 'fulfilled' && resumoResult.value.status === 200) {
+                setResumo(resumoResult.value.data);
             }
 
-            // Buscar vendas por hora
-            const vendasPorHoraResponse = await api.get(`/dashboard/vendas-por-hora`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (vendasPorHoraResponse?.status === 200) {
-                setVendasPorHora(vendasPorHoraResponse.data);
+            if (vendasPorHoraResult.status === 'fulfilled' && vendasPorHoraResult.value.status === 200) {
+                setVendasPorHora(vendasPorHoraResult.value.data ?? VENDAS_POR_HORA_EMPTY);
             }
 
-            // Buscar vendas por formas de pagamentos
-            const vendasPorFormaPagtoResponse = await api.get(`/dashboard/vendas-por-recebimento`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (vendasPorFormaPagtoResponse?.status === 200) {
-                setVendasPorFormaPagto(vendasPorFormaPagtoResponse.data);
+            if (vendasPorFormaPagtoResult.status === 'fulfilled' && vendasPorFormaPagtoResult.value.status === 200) {
+                const receipts = vendasPorFormaPagtoResult.value.data?.receipts ?? [];
+                setVendasPorFormaPagto(receipts.map(mapRecebimentoToFormaPagamento));
             }
 
-            // Buscar ganho de clientes
-            const ganhoClientesResponse = await api.get(`/dashboard/ganho-clientes`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (ganhoClientesResponse?.status === 200) {
-                setGanhoClientes(ganhoClientesResponse.data);
+            if (ganhoClientesResult.status === 'fulfilled' && ganhoClientesResult.value.status === 200) {
+                setGanhoClientes(ganhoClientesResult.value.data ?? VENDAS_POR_HORA_EMPTY);
             }
 
-            // Buscar vendas por vendedores
-            const vendasPorVendedorResponse = await api.get(`/dashboard/top-vendedores`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (vendasPorVendedorResponse?.status === 200) {
-                setVendasPorVendedor(vendasPorVendedorResponse.data);
+            if (vendasPorVendedorResult.status === 'fulfilled' && vendasPorVendedorResult.value.status === 200) {
+                setVendasPorVendedor((vendasPorVendedorResult.value.data ?? []).map(normalizeVendedor));
             }
 
-            // Buscar vendas por entregadores
-            const vendasPorEntregadorResponse = await api.get(`/dashboard/top-entregadores`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (vendasPorEntregadorResponse?.status === 200) {
-                setVendasPorEntregador(vendasPorEntregadorResponse.data);
+            if (vendasPorEntregadorResult.status === 'fulfilled' && vendasPorEntregadorResult.value.status === 200) {
+                setVendasPorEntregador((vendasPorEntregadorResult.value.data ?? []).map(normalizeVendedor));
             }
 
-            // Buscar produtos cancelados
-            const produtosCanceladosResponse = await api.get(`/dashboard/produtos-cancelados`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (produtosCanceladosResponse?.status === 200) {
-                setProdutosCancelados(produtosCanceladosResponse.data);
+            if (produtosCanceladosResult.status === 'fulfilled' && produtosCanceladosResult.value.status === 200) {
+                setProdutosCancelados(produtosCanceladosResult.value.data ?? []);
             }
 
-            // Buscar top produtos
-            const topProdutosResponse = await api.get(`/dashboard/top-produtos-vendidos`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (topProdutosResponse?.status === 200) {
-                setTopProdutos(topProdutosResponse.data);
+            if (topProdutosResult.status === 'fulfilled' && topProdutosResult.value.status === 200) {
+                setTopProdutos((topProdutosResult.value.data ?? []).map(normalizeTopProduto));
             }
 
-            // Buscar top clientes
-            const topClientesResponse = await api.get(`/dashboard/top-clientes`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (topClientesResponse?.status === 200) {
-                setTopClientes(topClientesResponse.data);
+            if (topClientesResult.status === 'fulfilled' && topClientesResult.value.status === 200) {
+                setTopClientes((topClientesResult.value.data ?? []).map(normalizeTopCliente));
             }
 
-            // Buscar vendas por canal
-            const vendasPorCanalResponse = await api.get(`/dashboard/vendas-canais`, {
-                params: {
-                    dataInicio: dataInicial?.toISOString(),
-                    dataFim: dataFinal?.toISOString(),
-                    tipoTurno: tipoTurnoParam
-                }
-            });
-            if (vendasPorCanalResponse?.status === 200) {
-                setVendasPorCanal(vendasPorCanalResponse.data);
+            if (vendasPorCanalResult.status === 'fulfilled' && vendasPorCanalResult.value.status === 200) {
+                setVendasPorCanal((vendasPorCanalResult.value.data ?? []).map(normalizeVendasPorCanal));
             }
+
             setHasLoaded(true);
         }
         catch (error: any) {
             console.log("Erro ao buscar dados do dashboard:", error);
-            setHasLoaded(true)
+            setHasLoaded(true);
         }
-        finally {
-
-        }
-
-
-
-
     };
 
     useEffect(() => {
-        findAllData();
-    }, [])
+    findAllData();
+}, [dataInicial, dataFinal, turnosSelecionados]);
+
+const dadosMesAMes = {
+    items: [
+        ["12/2025", 12500, 15320],
+        ["01/2026", 14300, 16780],
+        ["02/2026", 13800, 15900],
+        ["03/2026", 15200, 18250],
+        ["04/2026", 14800, 17500],
+        ["05/2026", 15600, 19120],
+    ] as [string, number, number][],
+    period: "12/2025 a 05/2026"
+};
+
+const dadosCanal = {
+    items: [
+        ["12/2025", 7200, 5300],
+        ["01/2026", 8100, 6200],
+        ["02/2026", 7900, 5900],
+        ["03/2026", 8800, 6400],
+        ["04/2026", 8500, 6300],
+        ["05/2026", 9100, 6500],
+    ] as [string, number, number][],
+    period: "12/2025 a 05/2026"
+};
+
+const vendasCanalItems = vendasPorCanal.length > 0
+    ? vendasPorCanal.map((item) => [item.nome, item.valorTotal, item.quantidadePedidos] as [string, number, number])
+    : dadosCanal.items;
+
+return (
+    <>
+        {!hasLoaded && <GlobalLoading />}
+        {hasLoaded && (
+            <div>
 
 
+                {/* KPIs */}
+                <Fluid xs={[25, 25, 25, 25]}>
+                    <InfoCards
+                        titulo="Total de Vendas"
+                        valor={resumo?.vendas.atual}
+                        tendencia={resumo?.vendas.crescimento}
+                        subtitulo="vs. período anterior"
+                        icon={faChartLine}
+                        cor="#2C7BE5"
+                    />
+                    <InfoCards
+                        titulo="Nº de Pedidos"
+                        valor={resumo?.pedidos.atual}
+                        tendencia={resumo?.pedidos.crescimento}
+                        subtitulo="vs. período anterior"
+                        icon={faShoppingCart}
+                        cor="#10b981"
+                    />
+                    <InfoCards
+                        titulo="Ticket Médio"
+                        valor={resumo?.ticketMedio.atual}
+                        tendencia={resumo?.ticketMedio.crescimento}
+                        subtitulo="vs. período anterior"
+                        icon={faReceipt}
+                        cor="#f59e0b"
+                    />
+                    <InfoCards
+                        titulo="Meta Mensal"
+                        valor="182%"
+                        tendencia={82}
+                        subtitulo="acima da meta"
+                        icon={faBullseye}
+                        cor="#8b5cf6"
+                    />
+                </Fluid>
 
-
-    const dadosMesAMes = {
-        items: [
-            ["12/2025", 12500, 15320],
-            ["01/2026", 14300, 16780],
-            ["02/2026", 13800, 15900],
-            ["03/2026", 15200, 18250],
-            ["04/2026", 14800, 17500],
-            ["05/2026", 15600, 19120],
-        ] as [string, number, number][],
-        period: "12/2025 a 05/2026"
-    };
-
-    const dadosCanal = {
-        items: [
-            ["12/2025", 7200, 5300],
-            ["01/2026", 8100, 6200],
-            ["02/2026", 7900, 5900],
-            ["03/2026", 8800, 6400],
-            ["04/2026", 8500, 6300],
-            ["05/2026", 9100, 6500],
-        ] as [string, number, number][],
-        period: "12/2025 a 05/2026"
-    };
-    const dadosComparacaoMetaXVendas = {
-        items: [
-            ["12/2025", 7200, 5300],
-            ["01/2026", 8100, 6200],
-            ["02/2026", 7900, 5900],
-            ["03/2026", 8800, 6400],
-            ["04/2026", 8500, 6300],
-            ["05/2026", 9100, 6500],
-        ] as [string, number, number][],
-        period: "12/2025 a 05/2026"
-    };
-
-    const dadosCancelados = [
-        { id: 7124, product: 'SELF SERVICE KG', user: 'COSME F.', datetime: '12/05/2026 11:17', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7125, product: 'SELF SERVICE KG', user: 'COSME F.', datetime: '12/05/2026 11:17', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7126, product: 'SELF SERVICE KG', user: 'COSME F.', datetime: '12/05/2026 12:15', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7127, product: 'SELF SERVICE KG', user: 'COSME F.', datetime: '12/05/2026 12:15', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7128, product: 'MARMITEX N°8-750ML  G', user: 'COSME F.', datetime: '12/05/2026 12:15', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7129, product: 'SELF SERVICE KG', user: 'COSME F.', datetime: '12/05/2026 12:24', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7130, product: 'PRATO FEITO COMPLETO UN', user: 'COSME F.', datetime: '12/05/2026 12:48', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7131, product: 'SABORES SUCO 450ML', user: 'COSME F.', datetime: '12/05/2026 12:48', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7132, product: 'SELF SERVICE KG', user: 'COSME F.', datetime: '12/05/2026 12:54', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7133, product: 'SELF SERVICE KG', user: 'COSME F.', datetime: '12/05/2026 12:54', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7134, product: 'Coca Cola Ks 290ml', user: 'COSME F.', datetime: '12/05/2026 12:54', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7135, product: 'Refri coca 1l ultra retornavel', user: 'COSME F.', datetime: '12/05/2026 13:05', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7136, product: 'Cerveja Antarctica Pilsen Retornável 600ml un', user: 'COSME F.', datetime: '12/05/2026 13:40', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7137, product: 'MARMITEX N°6-500ML M 01', user: 'COSME F.', datetime: '12/05/2026 13:53', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7138, product: 'PRATO FEITO COMPLETO UN', user: 'COSME F.', datetime: '12/05/2026 14:09', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7139, product: 'Refri coca 1l ultra retornavel', user: 'COSME F.', datetime: '12/05/2026 14:09', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7140, product: 'SELF SERVICE KG', user: 'COSME F.', datetime: '12/05/2026 14:09', motivo: 'DESABILITADO PELO USUARIO' },
-        { id: 7141, product: 'COCA COLA LATA 350ML', user: 'COSME F.', datetime: '12/05/2026 14:09', motivo: 'DESABILITADO PELO USUARIO' },
-    ];
-
-
-    const vendasVendedor = [
-        { name: 'COSME F.', value: 4020.7, percentage: 89 },
-        { name: 'JHONATAN GARÇOM', value: 513, percentage: 11 },
-    ];
-
-    const vendasEntregador = [
-        { courier: null, value: 683.83, qtOrders: 0, percentage: '41.12' },
-        { courier: 'RAFAEL - ENTREGADOR', value: 603, qtOrders: 10, percentage: '36.26' },
-        { courier: 'GUSTAVO - ENTREGADOR', value: 376, qtOrders: 11, percentage: '22.61' },
-    ].map(d => ({
-        name: d.courier ?? 'Sem entregador',
-        value: d.value,
-        percentage: parseFloat(d.percentage),
-    }));
-
-
-
-    return (
-        <>
-            {!hasLoaded && <GlobalLoading />}
-            {hasLoaded && (
-                <div>
-
-
-                    {/* KPIs */}
-                    <Fluid xs={[25, 25, 25, 25]}>
-                        <InfoCards
-                            titulo="Total de Vendas"
-                            valor={resumo?.vendas.atual}
-                            tendencia={resumo?.vendas.crescimento}
-                            subtitulo="vs. período anterior"
-                            icon={faChartLine}
-                            cor="#2C7BE5"
-                        />
-                        <InfoCards
-                            titulo="Nº de Pedidos"
-                            valor={resumo?.pedidos.atual}
-                            tendencia={resumo?.pedidos.crescimento}
-                            subtitulo="vs. período anterior"
-                            icon={faShoppingCart}
-                            cor="#10b981"
-                        />
-                        <InfoCards
-                            titulo="Ticket Médio"
-                            valor={resumo?.ticketMedio.atual}
-                            tendencia={resumo?.ticketMedio.crescimento}
-                            subtitulo="vs. período anterior"
-                            icon={faReceipt}
-                            cor="#f59e0b"
-                        />
-                        <InfoCards
-                            titulo="Meta Mensal"
-                            valor="182%"
-                            tendencia={82}
-                            subtitulo="acima da meta"
-                            icon={faBullseye}
-                            cor="#8b5cf6"
-                        />
-                    </Fluid>
-
-                    {/* Recebimentos + Meta + Contas */}
-                    <Fluid className='mt-4' xs={[100, 50, 50]}>
-                        <VendasPorHoraCard
-                            data={{
-                                hours: [
-                                    "2026-05-11 17:43:28", "2026-05-11 18:43:28", "2026-05-11 19:43:28",
-                                    "2026-05-11 20:43:28", "2026-05-11 21:43:28", "2026-05-11 22:43:28",
-                                    "2026-05-11 23:43:28", "2026-05-12 00:43:28", "2026-05-12 01:43:28",
-                                    "2026-05-12 02:43:28", "2026-05-12 03:43:28", "2026-05-12 04:43:28",
-                                    "2026-05-12 05:43:28", "2026-05-12 06:43:28", "2026-05-12 07:43:28",
-                                    "2026-05-12 08:43:28", "2026-05-12 09:43:28", "2026-05-12 10:43:28",
-                                    "2026-05-12 11:43:28", "2026-05-12 12:43:28", "2026-05-12 13:43:28",
-                                    "2026-05-12 14:43:28", "2026-05-12 15:43:28", "2026-05-12 16:43:28",
-                                    "2026-05-12 17:43:28",
-                                ],
-                                values: [0, 0, 0, 0, 366, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 637.35, 1717.95, 2424.975, 1054.85, 235.4, 0, 0, 0],
-                                period: "Hoje",
-                            }}
-                        />
-                        <FormasPagamentoCard dados={[
-                            { nome: 'Cartão de Crédito', valor: 45500, percentual: 49.9, cor: '#2C7BE5', icon: faCreditCard, id: '1' },
-                            { nome: 'Dinheiro', valor: 27360, percentual: 30.0, cor: '#10b981', icon: faMoneyBill, id: '2' },
-                            { nome: 'Pix', valor: 18340, percentual: 20.1, cor: '#f59e0b', icon: faQrcode, id: '3' },
-                        ]} />
-                        <Fluid xs={[100]}>
-                            <MetaVsReceitaCard
-                                data={{
-                                    goal: 50000,
-                                    revenue: 91200,
-                                    period: "mai/2026"
-                                }}
-                            />
-
-                            <ContasPagarReceber data={{
-                                toPay: 12400,
-                                toReceive: 23800,
-                                period: "mai/2026"
-                            }} />
-                        </Fluid>
-                    </Fluid>
-
-                    {/* Vendas por hora */}
-                    <Fluid className='mt-4' xs={[100, 50, 50, 50, 50, 100, 50]}>
-
-                        <VendasPorHoraCard
-                            data={ganhoClientes}
-                            titulo="Ganho de Clientes"
-                            cor="#10b981"
-                            labelFormatter={(l) => l}
-                            valueFormatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
-                            yAxisFormatter={(v) => String(v)}
-                        />
-                        <ComparacaoMesAMesCard
-                            items={dadosMesAMes.items}
-                            period={dadosMesAMes.period}
-                            titulo="Comparativo: Mês x Mês Anterior"
-                            label1="Mês Atual"
-                            label2="Mês Anterior"
-                            cor1="#2C7BE5"
-                            cor2="#FE8B43"
-                        />
-                        <VendasPorVendedorCard data={vendasVendedor} period="Hoje" />
-                        <VendasPorVendedorCard data={vendasEntregador} titulo="Vendas por Entregador" period="Hoje" />
-                        <ProdutosCanceladosCard data={dadosCancelados} period="Hoje" />
-                        <TopProdutosCard data={topProdutos} period="Hoje" />
-                        <TopClientesCard data={topClientes} period="Hoje" />
-                        <ComparacaoMesAMesCard
-                            items={dadosCanal.items}
-                            period={dadosCanal.period}
-                            titulo="Vendas por Canal"
-                            label1="Pedido Balcão"
-                            label2="Delivery"
-                            cor1="#2C7BE5"
-                            cor2="#FE8B43"
-                        />
+                {/* Recebimentos + Meta + Contas */}
+                <Fluid className='mt-4' xs={[100, 50, 50]}>
+                    <VendasPorHoraCard data={vendasPorHora} />
+                    <FormasPagamentoCard dados={vendasPorFormaPagto} />
+                    <Fluid xs={[100]}>
                         <MetaVsReceitaCard
                             data={{
-                                goal: 0,
-                                revenue: 9,
-                                period: "mai de 2026"
+                                goal: 50000,
+                                revenue: 91200,
+                                period: "mai/2026"
                             }}
-                            titulo="Meta de Clientes"
-                            metaLabel="Meta"
-                            receitaLabel="Conquistados"
-                            formatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
                         />
+
+                        <ContasPagarReceber data={{
+                            toPay: 12400,
+                            toReceive: 23800,
+                            period: "mai/2026"
+                        }} />
                     </Fluid>
+                </Fluid>
+
+                {/* Vendas por hora */}
+                <Fluid className='mt-4' xs={[100, 50, 50, 50, 50, 100, 50]}>
+
+                    <VendasPorHoraCard
+                        data={ganhoClientes}
+                        titulo="Ganho de Clientes"
+                        cor="#10b981"
+                        labelFormatter={(l) => l}
+                        valueFormatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
+                        yAxisFormatter={(v) => String(v)}
+                    />
+                    <ComparacaoMesAMesCard
+                        items={dadosMesAMes.items}
+                        period={dadosMesAMes.period}
+                        titulo="Comparativo: Mês x Mês Anterior"
+                        label1="Mês Atual"
+                        label2="Mês Anterior"
+                        cor1="#2C7BE5"
+                        cor2="#FE8B43"
+                    />
+                    <VendasPorVendedorCard data={vendasPorVendedor} period="Hoje" />
+                    <VendasPorVendedorCard data={vendasPorEntregador} titulo="Vendas por Entregador" period="Hoje" />
+                    <ProdutosCanceladosCard data={produtosCancelados} period="Hoje" />
+                    <TopProdutosCard data={topProdutos} period="Hoje" />
+                    <TopClientesCard data={topClientes} period="Hoje" />
+                    <ComparacaoMesAMesCard
+                        items={vendasCanalItems}
+                        period={vendasPorCanal.length > 0 ? 'Período selecionado' : dadosCanal.period}
+                        titulo="Vendas por Canal"
+                        label1="Valor Total"
+                        label2="Pedidos"
+                        cor1="#2C7BE5"
+                        cor2="#FE8B43"
+                    />
+                    <MetaVsReceitaCard
+                        data={{
+                            goal: 0,
+                            revenue: 9,
+                            period: "mai de 2026"
+                        }}
+                        titulo="Meta de Clientes"
+                        metaLabel="Meta"
+                        receitaLabel="Conquistados"
+                        formatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
+                    />
+                </Fluid>
 
 
-                </div>
-            )}
-        </>
+            </div>
+        )}
+    </>
 
-    );
+);
 };
 export default Dashboard;
