@@ -1,9 +1,9 @@
 // ComparacaoMesAMesCard.tsx (com scroll sticky)
 import { faChartSimple } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useRef } from "react";
 import Card from "../../../components/Card/Card";
 import styles from './ComparacaoMesAMesCard.module.scss';
-import { useEffect, useRef } from "react";
 
 interface DadosMes {
     mes: string;
@@ -21,6 +21,8 @@ interface BarChartLadoALadoProps {
     cor2?: string;
     formatador?: (value: number) => string;
     formatadorEixo?: (value: number) => string;
+    value1Format?: string;
+    value2Format?: string;
 }
 
 export default function ComparacaoMesAMesCard({
@@ -33,6 +35,9 @@ export default function ComparacaoMesAMesCard({
     cor2 = "#f59e0b",
     formatador = formatCurrency,
     formatadorEixo = formatEixoY,
+    value1Format = "currency",
+    value2Format = "currency",
+
 }: BarChartLadoALadoProps) {
 
     const chartRef = useRef<HTMLDivElement>(null);
@@ -108,80 +113,80 @@ export default function ComparacaoMesAMesCard({
                         </div>
 
                         {/* Container com scroll horizontal */}
-                <div className={styles.scrollWrapper}>
-                    <div className={styles.chartArea}>
-                        {/* Eixo Y - STICKY */}
-                        <div className={styles.yAxisSticky}>
-                            <div className={styles.yAxisInner}>
-                                {[...ticks].reverse().map((tick, i) => (
-                                    <span key={i} className={styles.yLabel}>
-                                        {formatadorEixo(tick)}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Container rolável */}
-                        <div 
-                            className={styles.scrollContainer} 
-                            ref={scrollContainerRef}
-                            onWheel={(e) => {
-                                // Scroll horizontal com wheel
-                                if (scrollContainerRef.current) {
-                                    scrollContainerRef.current.scrollLeft += e.deltaY;
-                                    e.preventDefault();
-                                }
-                            }}
-                        >
-                            <div className={styles.chartInner} ref={chartRef}>
-                                {/* Linhas de grade */}
-                                <div className={styles.gridLines}>
-                                    {ticks.map((_, i) => (
-                                        <div key={i} className={styles.gridLine} />
-                                    ))}
+                        <div className={styles.scrollWrapper}>
+                            <div className={styles.chartArea}>
+                                {/* Eixo Y - STICKY */}
+                                <div className={styles.yAxisSticky}>
+                                    <div className={styles.yAxisInner}>
+                                        {[...ticks].reverse().map((tick, i) => (
+                                            <span key={i} className={styles.yLabel}>
+                                                {formatadorEixo(tick)}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
 
-                                {/* Barras */}
-                                <div className={styles.chartContainer}>
-                                    {dados.map((item, idx) => {
-                                        const altura1 = (item.valor1 / maxTick) * 100;
-                                        const altura2 = (item.valor2 / maxTick) * 100;
+                                {/* Container rolável */}
+                                <div
+                                    className={styles.scrollContainer}
+                                    ref={scrollContainerRef}
+                                    onWheel={(e) => {
+                                        // Scroll horizontal com wheel
+                                        if (scrollContainerRef.current) {
+                                            scrollContainerRef.current.scrollLeft += e.deltaY;
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                >
+                                    <div className={styles.chartInner} ref={chartRef}>
+                                        {/* Linhas de grade */}
+                                        <div className={styles.gridLines}>
+                                            {ticks.map((_, i) => (
+                                                <div key={i} className={styles.gridLine} />
+                                            ))}
+                                        </div>
 
-                                        return (
-                                            <div key={idx} className={styles.barGroup}>
-                                                <div className={styles.bars}>
-                                                    {[
-                                                        { altura: altura1, valor: item.valor1, cor: cor1 },
-                                                        { altura: altura2, valor: item.valor2, cor: cor2 },
-                                                    ].map((b, bi) => (
-                                                        <div key={bi} className={styles.barWrapper}>
-                                                            <div
-                                                                className={styles.bar}
-                                                                data-height={b.altura}
-                                                                style={{
-                                                                    height: `${b.altura}%`,
-                                                                    backgroundColor: b.cor,
-                                                                    minHeight: b.valor > 0 ? '4px' : '0',
-                                                                }}
-                                                            >
-                                                                {b.valor > 0 && (
-                                                                    <span className={styles.barValue}>
-                                                                        {formatador(b.valor)}
-                                                                    </span>
-                                                                )}
-                                                            </div>
+                                        {/* Barras */}
+                                        <div className={styles.chartContainer}>
+                                            {dados.map((item, idx) => {
+                                                const altura1 = (item.valor1 / maxTick) * 100;
+                                                const altura2 = (item.valor2 / maxTick) * 100;
+
+                                                return (
+                                                    <div key={idx} className={styles.barGroup}>
+                                                        <div className={styles.bars}>
+                                                            {[
+                                                                { altura: altura1, valor: item.valor1, cor: cor1 },
+                                                                { altura: altura2, valor: item.valor2, cor: cor2 },
+                                                            ].map((b, bi) => (
+                                                                <div key={bi} className={styles.barWrapper}>
+                                                                    <div
+                                                                        className={styles.bar}
+                                                                        data-height={b.altura}
+                                                                        style={{
+                                                                            height: `${b.altura}%`,
+                                                                            backgroundColor: b.cor,
+                                                                            minHeight: '4px',
+                                                                        }}
+                                                                    >
+                                                                        <span className={styles.barValue}>
+                                                                            {((bi / 2) % 2 === 0) ? value1Format === 'currency' ? formatador(b.valor) : b.valor : value2Format === 'currency' ? formatador(b.valor) : b.valor}
+                                                                        </span>
+                                                                        {/* {b.valor > 0 && (
+                                                                        )} */}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))}
-                                                </div>
-                                                <div className={styles.mesLabel}>{item.mes}</div>
-                                            </div>
-                                        );
-                                    })}
+                                                        <div className={styles.mesLabel}>{item.mes}</div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
                     </>
                 )}
             </Card.Body>

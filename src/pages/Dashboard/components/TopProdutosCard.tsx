@@ -19,10 +19,49 @@ interface TopProdutosCardProps {
     cor?: string;
 }
 
-const MEDALS: Record<number, { label: string; className: string }> = {
-    0: { label: "🥇", className: "gold" },
-    1: { label: "🥈", className: "silver" },
-    2: { label: "🥉", className: "bronze" },
+const MEDALS: Record<number, { label: any; className: string }> = {
+    0: {
+        label: <FontAwesomeIcon icon={faTrophy} color="#f59e0b" gradientFill={{
+            type: 'linear',
+            id: 'trophy-gradient', 
+            x1: '0%',
+            y1: '0%',
+            x2: '100%',
+            y2: '0%',
+            stops: [
+                { offset: '0%', color: '#f59e0b', opacity: 1 },
+                { offset: '100%', color: '#fbbf24', opacity: 1 }
+            ]
+        }} />, className: "gold"
+    },
+    1: {
+        label: <FontAwesomeIcon icon={faTrophy} color="#f59e0b" gradientFill={{
+            type: 'linear',
+            id: 'trophy-gradient-2', 
+            x1: '0%',
+            y1: '0%',
+            x2: '100%',
+            y2: '0%',
+            stops: [
+                { offset: '0%', color: '#94a3b8', opacity: 1 },
+                { offset: '100%', color: '#cbd5e1', opacity: 1 }
+            ]
+        }} />, className: "silver"
+    },
+    2: {
+        label: <FontAwesomeIcon icon={faTrophy} color="#f59e0b" gradientFill={{
+            type: 'linear',
+            id: 'trophy-gradient-3', 
+            x1: '0%',
+            y1: '0%',
+            x2: '100%',
+            y2: '0%',
+            stops: [
+                { offset: '0%', color: '#d97706', opacity: 1 },
+                { offset: '100%', color: '#f59e0b88', opacity: 1 }
+            ]
+        }} />, className: "bronze"
+    },
 };
 
 function ProdutoItem({

@@ -1,5 +1,5 @@
 ﻿// TopClientesCard.tsx
-import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faTrophy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
 import Card from "../../../components/Card/Card";
@@ -18,11 +18,52 @@ interface TopClientesCardProps {
     cor?: string;
 }
 
-const MEDALS: Record<number, { label: string; cls: string }> = {
-    0: { label: "🥇", cls: "gold" },
-    1: { label: "🥈", cls: "silver" },
-    2: { label: "🥉", cls: "bronze" },
+
+const MEDALS: Record<number, { label: any; className: string }> = {
+    0: {
+        label: <FontAwesomeIcon icon={faTrophy} color="#f59e0b" gradientFill={{
+            type: 'linear',
+            id: 'trophy-gradient',
+            x1: '0%',
+            y1: '0%',
+            x2: '100%',
+            y2: '0%',
+            stops: [
+                { offset: '0%', color: '#f59e0b', opacity: 1 },
+                { offset: '100%', color: '#fbbf24', opacity: 1 }
+            ]
+        }} />, className: "gold"
+    },
+    1: {
+        label: <FontAwesomeIcon icon={faTrophy} color="#f59e0b" gradientFill={{
+            type: 'linear',
+            id: 'trophy-gradient-2',
+            x1: '0%',
+            y1: '0%',
+            x2: '100%',
+            y2: '0%',
+            stops: [
+                { offset: '0%', color: '#94a3b8', opacity: 1 },
+                { offset: '100%', color: '#cbd5e1', opacity: 1 }
+            ]
+        }} />, className: "silver"
+    },
+    2: {
+        label: <FontAwesomeIcon icon={faTrophy} color="#f59e0b" gradientFill={{
+            type: 'linear',
+            id: 'trophy-gradient-3',
+            x1: '0%',
+            y1: '0%',
+            x2: '100%',
+            y2: '0%',
+            stops: [
+                { offset: '0%', color: '#d97706', opacity: 1 },
+                { offset: '100%', color: '#f59e0b88', opacity: 1 }
+            ]
+        }} />, className: "bronze"
+    },
 };
+
 
 function ClienteItem({
     item,

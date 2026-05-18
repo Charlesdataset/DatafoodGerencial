@@ -10,13 +10,11 @@ import FormasPagamentoCard from './components/FormaPagamentoCard';
 import InfoCards from './components/InfoCards';
 import MetaVsReceitaCard from './components/MetaVsReceitaCard';
 import ProdutosCanceladosCard from './components/ProdutosCanceladosCard';
-import TopClientesCard from './components/TopClientesCard';
-import TopProdutosCard from './components/TopProdutosCard';
-import type { TopProduto } from './components/TopProdutosCard';
 import type { TopCliente } from './components/TopClientesCard';
-import type { VendedorData } from './components/VendasPorVendedorCard';
+import TopClientesCard from './components/TopClientesCard';
+import type { TopProduto } from './components/TopProdutosCard';
+import TopProdutosCard from './components/TopProdutosCard';
 import VendasPorHoraCard from './components/VendasPorHoraCard';
-import VendasPorVendedorCard from './components/VendasPorVendedorCard';
 
 interface VendasPorHoraData {
     hours: string[];
@@ -96,9 +94,14 @@ const getRecebimentoColor = (type: string) => {
     return '#6b7280';
 };
 
-const normalizeVendedor = (item: any): VendedorData => ({
+const normalizeVendedor = (item: any) => ({
     name: item.nomeVendedor ?? item.nome ?? '—',
-    value: Number(item.valorTotal ?? item.valor ?? 0),
+    revenue: Number(item.valorTotal ?? item.valor ?? 0),
+    percentage: Number(item.participacao ?? item.percentual ?? 0),
+});
+const normalizeEntregador = (item: any) => ({
+    name: item.nomeEntregador ?? '—',
+    revenue: Number(item.valorTotal ?? item.valor ?? 0),
     percentage: Number(item.participacao ?? item.percentual ?? 0),
 });
 
@@ -140,8 +143,8 @@ const Dashboard: React.FC = () => {
     const [vendasPorHora, setVendasPorHora] = useState<VendasPorHoraData>(VENDAS_POR_HORA_EMPTY);
     const [vendasPorFormaPagto, setVendasPorFormaPagto] = useState<FormaPagamentoItem[]>([]);
     const [ganhoClientes, setGanhoClientes] = useState<VendasPorHoraData>(VENDAS_POR_HORA_EMPTY);
-    const [vendasPorVendedor, setVendasPorVendedor] = useState<VendedorData[]>([]);
-    const [vendasPorEntregador, setVendasPorEntregador] = useState<VendedorData[]>([]);
+    const [vendasPorVendedor, setVendasPorVendedor] = useState<any[]>([]);
+    const [vendasPorEntregador, setVendasPorEntregador] = useState<any[]>([]);
     const [produtosCancelados, setProdutosCancelados] = useState<ProdutoCancelado[]>([]);
     const [topProdutos, setTopProdutos] = useState<TopProduto[]>([]);
     const [topClientes, setTopClientes] = useState<TopCliente[]>([]);
@@ -206,7 +209,7 @@ const Dashboard: React.FC = () => {
             }
 
             if (vendasPorEntregadorResult.status === 'fulfilled' && vendasPorEntregadorResult.value.status === 200) {
-                setVendasPorEntregador((vendasPorEntregadorResult.value.data ?? []).map(normalizeVendedor));
+                setVendasPorEntregador((vendasPorEntregadorResult.value.data ?? []).map(normalizeEntregador));
             }
 
             if (produtosCanceladosResult.status === 'fulfilled' && produtosCanceladosResult.value.status === 200) {
@@ -234,153 +237,157 @@ const Dashboard: React.FC = () => {
     };
 
     useEffect(() => {
-    findAllData();
-}, [dataInicial, dataFinal, turnosSelecionados]);
+        findAllData();
+    }, [dataInicial, dataFinal, turnosSelecionados]);
 
-const dadosMesAMes = {
-    items: [
-        ["12/2025", 12500, 15320],
-        ["01/2026", 14300, 16780],
-        ["02/2026", 13800, 15900],
-        ["03/2026", 15200, 18250],
-        ["04/2026", 14800, 17500],
-        ["05/2026", 15600, 19120],
-    ] as [string, number, number][],
-    period: "12/2025 a 05/2026"
-};
+    const dadosMesAMes = {
+        items: [
+            ["12/2025", 12500, 15320],
+            ["01/2026", 14300, 16780],
+            ["02/2026", 13800, 15900],
+            ["03/2026", 15200, 18250],
+            ["04/2026", 14800, 17500],
+            ["05/2026", 15600, 19120],
+        ] as [string, number, number][],
+        period: "12/2025 a 05/2026"
+    };
 
-const dadosCanal = {
-    items: [
-        ["12/2025", 7200, 5300],
-        ["01/2026", 8100, 6200],
-        ["02/2026", 7900, 5900],
-        ["03/2026", 8800, 6400],
-        ["04/2026", 8500, 6300],
-        ["05/2026", 9100, 6500],
-    ] as [string, number, number][],
-    period: "12/2025 a 05/2026"
-};
+    const dadosCanal = {
+        items: [
+            ["12/2025", 7200, 5300],
+            ["01/2026", 8100, 6200],
+            ["02/2026", 7900, 5900],
+            ["03/2026", 8800, 6400],
+            ["04/2026", 8500, 6300],
+            ["05/2026", 9100, 6500],
+        ] as [string, number, number][],
+        period: "12/2025 a 05/2026"
+    };
 
-const vendasCanalItems = vendasPorCanal.length > 0
-    ? vendasPorCanal.map((item) => [item.nome, item.valorTotal, item.quantidadePedidos] as [string, number, number])
-    : dadosCanal.items;
+    const vendasCanalItems = vendasPorCanal.length > 0
+        ? vendasPorCanal.map((item) => [item.nome, item.valorTotal, item.quantidadePedidos] as [string, number, number])
+        : dadosCanal.items;
 
-return (
-    <>
-        {!hasLoaded && <GlobalLoading />}
-        {hasLoaded && (
-            <div>
+    return (
+        <>
+            {!hasLoaded && <GlobalLoading />}
+            {hasLoaded && (
+                <div>
 
 
-                {/* KPIs */}
-                <Fluid xs={[25, 25, 25, 25]}>
-                    <InfoCards
-                        titulo="Total de Vendas"
-                        valor={resumo?.vendas.atual}
-                        tendencia={resumo?.vendas.crescimento}
-                        subtitulo="vs. período anterior"
-                        icon={faChartLine}
-                        cor="#2C7BE5"
-                    />
-                    <InfoCards
-                        titulo="Nº de Pedidos"
-                        valor={resumo?.pedidos.atual}
-                        tendencia={resumo?.pedidos.crescimento}
-                        subtitulo="vs. período anterior"
-                        icon={faShoppingCart}
-                        cor="#10b981"
-                    />
-                    <InfoCards
-                        titulo="Ticket Médio"
-                        valor={resumo?.ticketMedio.atual}
-                        tendencia={resumo?.ticketMedio.crescimento}
-                        subtitulo="vs. período anterior"
-                        icon={faReceipt}
-                        cor="#f59e0b"
-                    />
-                    <InfoCards
-                        titulo="Meta Mensal"
-                        valor="182%"
-                        tendencia={82}
-                        subtitulo="acima da meta"
-                        icon={faBullseye}
-                        cor="#8b5cf6"
-                    />
-                </Fluid>
+                    {/* KPIs */}
+                    <Fluid xs={[25, 25, 25, 25]}>
+                        <InfoCards
+                            titulo="Total de Vendas"
+                            valor={resumo?.vendas.atual}
+                            tendencia={resumo?.vendas.crescimento}
+                            subtitulo="vs. período anterior"
+                            icon={faChartLine}
+                            cor="#2C7BE5"
+                        />
+                        <InfoCards
+                            titulo="Nº de Pedidos"
+                            valor={resumo?.pedidos.atual}
+                            tendencia={resumo?.pedidos.crescimento}
+                            subtitulo="vs. período anterior"
+                            icon={faShoppingCart}
+                            cor="#10b981"
+                        />
+                        <InfoCards
+                            titulo="Ticket Médio"
+                            valor={resumo?.ticketMedio.atual}
+                            tendencia={resumo?.ticketMedio.crescimento}
+                            subtitulo="vs. período anterior"
+                            icon={faReceipt}
+                            cor="#f59e0b"
+                        />
+                        <InfoCards
+                            titulo="Meta Mensal"
+                            valor="182%"
+                            tendencia={82}
+                            subtitulo="acima da meta"
+                            icon={faBullseye}
+                            cor="#8b5cf6"
+                        />
+                    </Fluid>
 
-                {/* Recebimentos + Meta + Contas */}
-                <Fluid className='mt-4' xs={[100, 50, 50]}>
-                    <VendasPorHoraCard data={vendasPorHora} />
-                    <FormasPagamentoCard dados={vendasPorFormaPagto} />
-                    <Fluid xs={[100]}>
-                        <MetaVsReceitaCard
-                            data={{
-                                goal: 50000,
-                                revenue: 91200,
+                    {/* Recebimentos + Meta + Contas */}
+                    <Fluid className='mt-4' xs={[100, 50, 50]}>
+                        <VendasPorHoraCard data={vendasPorHora} />
+                        <FormasPagamentoCard dados={vendasPorFormaPagto} />
+                        <Fluid xs={[100]}>
+                            <MetaVsReceitaCard
+                                data={{
+                                    goal: 50000,
+                                    revenue: 91200,
+                                    period: "mai/2026"
+                                }}
+                            />
+
+                            <ContasPagarReceber data={{
+                                toPay: 12400,
+                                toReceive: 23800,
                                 period: "mai/2026"
-                            }}
+                            }} />
+                        </Fluid>
+                    </Fluid>
+
+                    {/* Vendas por hora */}
+                    <Fluid className='mt-4' xs={[50, 50, 100, 50, 50, 50, 50, 50, 50]}>
+
+                        <VendasPorHoraCard
+                            data={ganhoClientes}
+                            titulo="Ganho de Clientes"
+                            cor="#10b981"
+                            labelFormatter={(l) => l}
+                            valueFormatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
+                            yAxisFormatter={(v) => String(v)}
+                        />
+                        <ComparacaoMesAMesCard
+                            items={dadosMesAMes.items}
+                            period={dadosMesAMes.period}
+                            titulo="Comparativo: Mês x Mês Anterior"
+                            label1="Mês Atual"
+                            label2="Mês Anterior"
+                            cor1="#2C7BE5"
+                            cor2="#FE8B43"
                         />
 
-                        <ContasPagarReceber data={{
-                            toPay: 12400,
-                            toReceive: 23800,
-                            period: "mai/2026"
-                        }} />
+                        <ProdutosCanceladosCard data={produtosCancelados} period="Hoje" />
+                        <TopProdutosCard data={topProdutos} period="Hoje" />
+                        <TopClientesCard data={topClientes} period="Hoje" />
+                        <TopProdutosCard data={vendasPorVendedor} period="Hoje" titulo='Vendas por vendedores' />
+                        <TopProdutosCard data={vendasPorEntregador} titulo="Vendas por Entregador" period="Hoje" />
+                        <ComparacaoMesAMesCard
+                            items={vendasCanalItems}
+                            period={vendasPorCanal.length > 0 ? 'Período selecionado' : dadosCanal.period}
+                            titulo="Vendas por Canal"
+                            label1="Valor Total"
+                            label2="Pedidos"
+                            cor1="#2C7BE5"
+                            cor2="#FE8B43"
+                            value1Format='currency'
+                            value2Format='number'
+                        />
+                        <MetaVsReceitaCard
+                            data={{
+                                goal: 0,
+                                revenue: 9,
+                                period: "mai de 2026"
+                            }}
+                            titulo="Meta de Clientes"
+                            metaLabel="Meta"
+                            receitaLabel="Conquistados"
+                            formatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
+                        />
+
                     </Fluid>
-                </Fluid>
-
-                {/* Vendas por hora */}
-                <Fluid className='mt-4' xs={[100, 50, 50, 50, 50, 100, 50]}>
-
-                    <VendasPorHoraCard
-                        data={ganhoClientes}
-                        titulo="Ganho de Clientes"
-                        cor="#10b981"
-                        labelFormatter={(l) => l}
-                        valueFormatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
-                        yAxisFormatter={(v) => String(v)}
-                    />
-                    <ComparacaoMesAMesCard
-                        items={dadosMesAMes.items}
-                        period={dadosMesAMes.period}
-                        titulo="Comparativo: Mês x Mês Anterior"
-                        label1="Mês Atual"
-                        label2="Mês Anterior"
-                        cor1="#2C7BE5"
-                        cor2="#FE8B43"
-                    />
-                    <VendasPorVendedorCard data={vendasPorVendedor} period="Hoje" />
-                    <VendasPorVendedorCard data={vendasPorEntregador} titulo="Vendas por Entregador" period="Hoje" />
-                    <ProdutosCanceladosCard data={produtosCancelados} period="Hoje" />
-                    <TopProdutosCard data={topProdutos} period="Hoje" />
-                    <TopClientesCard data={topClientes} period="Hoje" />
-                    <ComparacaoMesAMesCard
-                        items={vendasCanalItems}
-                        period={vendasPorCanal.length > 0 ? 'Período selecionado' : dadosCanal.period}
-                        titulo="Vendas por Canal"
-                        label1="Valor Total"
-                        label2="Pedidos"
-                        cor1="#2C7BE5"
-                        cor2="#FE8B43"
-                    />
-                    <MetaVsReceitaCard
-                        data={{
-                            goal: 0,
-                            revenue: 9,
-                            period: "mai de 2026"
-                        }}
-                        titulo="Meta de Clientes"
-                        metaLabel="Meta"
-                        receitaLabel="Conquistados"
-                        formatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
-                    />
-                </Fluid>
 
 
-            </div>
-        )}
-    </>
+                </div>
+            )}
+        </>
 
-);
+    );
 };
 export default Dashboard;
