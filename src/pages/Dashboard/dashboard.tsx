@@ -9,8 +9,8 @@ import ContasPagarReceber from './components/ContasPagarReceberCard';
 import FormasPagamentoCard from './components/FormaPagamentoCard';
 import InfoCards from './components/InfoCards';
 import MetaVsReceitaCard from './components/MetaVsReceitaCard';
-import MultiSeriesBarCard from './components/MultiSeriesBarCard';
 import type { MultiSeriesBarData } from './components/MultiSeriesBarCard';
+import MultiSeriesBarCard from './components/MultiSeriesBarCard';
 import ProdutosCanceladosCard from './components/ProdutosCanceladosCard';
 import type { TopCliente } from './components/TopClientesCard';
 import TopClientesCard from './components/TopClientesCard';
@@ -184,7 +184,8 @@ const Dashboard: React.FC = () => {
             }
 
             if (ganhoClientesResult.status === 'fulfilled' && ganhoClientesResult.value.status === 200) {
-                setGanhoClientes(ganhoClientesResult.value.data ?? VENDAS_POR_HORA_EMPTY);
+                setGanhoClientes(ganhoClientesResult.value.data && ganhoClientesResult.value.data?.values.length ?
+                    ganhoClientesResult.value.data : VENDAS_POR_HORA_EMPTY);
             }
 
             if (vendasPorVendedorResult.status === 'fulfilled' && vendasPorVendedorResult.value.status === 200) {
