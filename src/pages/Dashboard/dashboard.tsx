@@ -148,8 +148,9 @@ const Dashboard: React.FC = () => {
     const [produtosCancelados, setProdutosCancelados] = useState<ProdutoCancelado[]>([]);
     const [topProdutos, setTopProdutos] = useState<TopProduto[]>([]);
     const [topClientes, setTopClientes] = useState<TopCliente[]>([]);
-    const [vendasPorCanal, setVendasPorCanal] = useState<VendasPorCanalItem[]>([]);
+    const [vendasPorCanal, setVendasPorCanal] = useState<any>([]);
     const [hasLoaded, setHasLoaded] = useState(false);
+    const [comparacaoMes, setComparacaoMes] = useState<any>(null);
 
     const { dataInicial, dataFinal, turnosSelecionados, primaryColor } = useApp();
 
@@ -173,7 +174,8 @@ const Dashboard: React.FC = () => {
                 produtosCanceladosResult,
                 topProdutosResult,
                 topClientesResult,
-                vendasPorCanalResult
+                vendasPorCanalResult,
+                comparacaoMesResult,
             ] = await Promise.allSettled([
                 api.get(`/dashboard/resumo`, { params }),
                 api.get(`/dashboard/vendas-por-hora`, { params }),
@@ -185,6 +187,7 @@ const Dashboard: React.FC = () => {
                 api.get(`/dashboard/top-produtos-vendidos`, { params }),
                 api.get(`/dashboard/top-clientes`, { params }),
                 api.get(`/dashboard/vendas-canais`, { params }),
+                api.get(`/dashboard/comparacao-mes`, { params }),
             ]);
 
             if (resumoResult.status === 'fulfilled' && resumoResult.value.status === 200) {
@@ -227,6 +230,9 @@ const Dashboard: React.FC = () => {
             if (vendasPorCanalResult.status === 'fulfilled' && vendasPorCanalResult.value.status === 200) {
                 setVendasPorCanal((vendasPorCanalResult.value.data ?? []).map(normalizeVendasPorCanal));
             }
+            if (comparacaoMesResult.status === 'fulfilled' && comparacaoMesResult.value.status === 200) {
+                setComparacaoMes(comparacaoMesResult.value.data);
+            }
 
             setHasLoaded(true);
         }
@@ -240,33 +246,10 @@ const Dashboard: React.FC = () => {
         findAllData();
     }, [dataInicial, dataFinal, turnosSelecionados]);
 
-    const dadosMesAMes = {
-        items: [
-            ["12/2025", 12500, 15320],
-            ["01/2026", 14300, 16780],
-            ["02/2026", 13800, 15900],
-            ["03/2026", 15200, 18250],
-            ["04/2026", 14800, 17500],
-            ["05/2026", 15600, 19120],
-        ] as [string, number, number][],
-        period: "12/2025 a 05/2026"
-    };
 
-    const dadosCanal = {
-        items: [
-            ["12/2025", 7200, 5300],
-            ["01/2026", 8100, 6200],
-            ["02/2026", 7900, 5900],
-            ["03/2026", 8800, 6400],
-            ["04/2026", 8500, 6300],
-            ["05/2026", 9100, 6500],
-        ] as [string, number, number][],
-        period: "12/2025 a 05/2026"
-    };
 
-    const vendasCanalItems = vendasPorCanal.length > 0
-        ? vendasPorCanal.map((item) => [item.nome, item.valorTotal, item.quantidadePedidos] as [string, number, number])
-        : dadosCanal.items;
+
+
 
     return (
         <>
@@ -345,8 +328,8 @@ const Dashboard: React.FC = () => {
                             yAxisFormatter={(v) => String(v)}
                         />
                         <ComparacaoMesAMesCard
-                            items={dadosMesAMes.items}
-                            period={dadosMesAMes.period}
+                            items={comparacaoMes?.items}
+                            period={comparacaoMes?.period}
                             titulo="Comparativo: Mês x Mês Anterior"
                             label1="Mês Atual"
                             label2="Mês Anterior"
@@ -360,8 +343,8 @@ const Dashboard: React.FC = () => {
                         <TopProdutosCard data={vendasPorVendedor} period="Hoje" titulo='Vendas por vendedores' cor={primaryColor} />
                         <TopProdutosCard data={vendasPorEntregador} titulo="Vendas por Entregador" period="Hoje" cor={primaryColor} />
                         <ComparacaoMesAMesCard
-                            items={vendasCanalItems}
-                            period={vendasPorCanal.length > 0 ? 'Período selecionado' : dadosCanal.period}
+                            items={vendasPorCanal}
+                            period={vendasPorCanal.length > 0 ? 'Período selecionado' : vendasPorCanal?.period}
                             titulo="Vendas por Canal"
                             label1="Valor Total"
                             label2="Pedidos"
