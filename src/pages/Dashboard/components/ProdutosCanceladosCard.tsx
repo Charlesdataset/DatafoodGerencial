@@ -17,6 +17,7 @@ interface ProdutosCanceladosCardProps {
     data: ProdutoCancelado[];
     titulo?: string;
     period?: string;
+    primaryColor?: string;
 }
 
 const PAGE_SIZE = 7;
@@ -25,6 +26,7 @@ export default function ProdutosCanceladosCard({
     data,
     titulo = "Produtos Cancelados",
     period,
+    primaryColor = "#2C7BE5",
 }: ProdutosCanceladosCardProps) {
     const [page, setPage] = useState(0);
     const totalPages = Math.ceil(data.length / PAGE_SIZE);
@@ -34,7 +36,7 @@ export default function ProdutosCanceladosCard({
         <Card className={styles.card}>
             <Card.Header className={styles.cardHeader}>
                 <div className={styles.headerLeft}>
-                    <span className={styles.icon}>
+                    <span className={styles.icon} style={{ background: `${primaryColor}1a`, color: primaryColor }}>
                         <FontAwesomeIcon icon={faBan} />
                     </span>
                     <span className={styles.title}>{titulo}</span>

@@ -86,7 +86,7 @@ export default function ComparacaoMesAMesCard({
         <Card className={styles.barChartCard}>
             <Card.Header className={styles.cardHeader}>
                 <div className={styles.headerLeft}>
-                    <span className={styles.icon}>
+                    <span className={styles.icon} style={{ background: `${cor1}1a`, color: cor1 }}>
                         <FontAwesomeIcon icon={faChartSimple} />
                     </span>
                     <span className={styles.title}>{titulo}</span>

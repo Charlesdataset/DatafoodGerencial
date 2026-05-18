@@ -18,6 +18,7 @@ interface FormasPagamentoCardProps {
     titulo?: string;
     dados: FormaPagamento[];
     totalVendas?: number;
+    primaryColor?: string;
 }
 
 type VisaoType = 'lista' | 'grafico';
@@ -25,7 +26,8 @@ type VisaoType = 'lista' | 'grafico';
 export default function FormasPagamentoCard({
     titulo = "Formas de Recebimento",
     dados,
-    totalVendas
+    totalVendas,
+    primaryColor = "#2C7BE5",
 }: FormasPagamentoCardProps) {
 
     const [visao, setVisao] = useState<VisaoType>('lista');
@@ -41,7 +43,7 @@ export default function FormasPagamentoCard({
         <Card className={styles.formasPagamentoCard}>
             <Card.Header className={styles.cardHeader}>
                 <div className={styles.headerLeft}>
-                    <span className={styles.icon}>
+                    <span className={styles.icon} style={{ background: `${primaryColor}1a`, color: primaryColor }}>
                         <FontAwesomeIcon icon={faCreditCard} />
                     </span>
                     <span className={styles.title}>{titulo}</span>

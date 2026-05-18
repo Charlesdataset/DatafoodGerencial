@@ -15,13 +15,15 @@ interface ContasPagarReceberProps {
     titulo?: string;
     pagarLabel?: string;
     receberLabel?: string;
+    primaryColor?: string;
 }
 
 export default function ContasPagarReceber({
     data,
     titulo = "Contas a Pagar e Receber",
     pagarLabel = "A Pagar",
-    receberLabel = "A Receber"
+    receberLabel = "A Receber",
+    primaryColor = "#10b981",
 }: ContasPagarReceberProps) {
 
     const { toPay, toReceive, period } = data;
@@ -39,7 +41,7 @@ export default function ContasPagarReceber({
         <Card className={styles.contasCard}>
             <Card.Header className={styles.cardHeader}>
                 <div className={styles.headerLeft}>
-                    <span className={styles.icon}>
+                    <span className={styles.icon} style={{ background: `${primaryColor}1a`, color: primaryColor }}>
                         <FontAwesomeIcon icon={faWallet} />
                     </span>
                     <span className={styles.title}>{titulo}</span>
@@ -71,7 +73,7 @@ export default function ContasPagarReceber({
 
                         <div className={styles.valueCard}>
                             <div className={styles.valueHeader}>
-                                <FontAwesomeIcon icon={faArrowTrendUp} className={styles.receberIcon} />
+                                <FontAwesomeIcon icon={faArrowTrendUp} className={styles.receberIcon} style={{ color: primaryColor }} />
                                 <span className={styles.valueLabel}>{receberLabel}</span>
                                 <div className={styles.valueFooter}>
                                     <span className={styles.percentLabel}>
@@ -95,7 +97,7 @@ export default function ContasPagarReceber({
                             />
                             <div
                                 className={styles.progressReceber}
-                                style={{ width: `${percentualReceber}%` }}
+                                style={{ width: `${percentualReceber}%`, background: primaryColor }}
                             />
                         </div>
                     )}

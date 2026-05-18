@@ -39,21 +39,36 @@ export default function VendasPorHoraCard({
 
 }: VendasPorHoraCardProps) {
     const { hours, values, period } = data;
-    const scrollRef  = useRef<HTMLDivElement>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [containerW, setContainerW] = useState(0);
     const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string; value: number } | null>(null);
+
+    // mede a largura do scrollContainer (largura estável, não muda com o conteúdo)
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const ro = new ResizeObserver(entries => {
+            setContainerW(entries[0].contentRect.width);
+        });
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, []);
+
+    const count     = Math.max(hours.length, 1);
+    // só usa MIN_COL_W (e ativa scroll) se as colunas não couberem no container
+    const colWidth  = containerW > 0 && containerW / count >= MIN_COL_W
+        ? containerW / count
+        : MIN_COL_W;
+    const svgWidth  = colWidth * count;
+    const needsScroll = containerW > 0 && svgWidth > containerW + 1;
 
     const maxVal   = Math.max(...values, 1);
     const rawStep  = maxVal / TICK_COUNT;
-    const mag      = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
-    const tickStep = Math.ceil(rawStep / mag) * mag || 1;
-    const ticks    = Array.from({ length: TICK_COUNT + 1 }, (_, i) => i * tickStep);
+    const mag      = Math.pow(10, Math.floor(Math.log10(Math.max(rawStep, 1))));
+    const tickStep = Math.max(1, Math.ceil(rawStep / mag) * mag) || 1;
+    const ticks    = Array.from({ length: TICK_COUNT + 1 }, (_, i) => Math.round(i * tickStep));
     const maxTick  = ticks[ticks.length - 1];
-
-    const colWidth  = Math.max(MIN_COL_W, 800 / Math.max(hours.length, 1));
-    const svgWidth  = colWidth * Math.max(hours.length, 1);
-    const hasData   = hours.length > 0 && values.length > 0;
-
-    // pontos normalizados
+    const hasData  = hours.length > 0 && values.length > 0;
     const points = values.map((v, i) => ({
         x: i * colWidth + colWidth / 2,
         y: CHART_HEIGHT - (v / maxTick) * CHART_HEIGHT,
@@ -70,13 +85,14 @@ export default function VendasPorHoraCard({
         "Z",
     ].join(" ") : "";
 
-    // scroll para o final ao montar
+    // scroll para o final ao montar (só quando há scroll)
     useEffect(() => {
+        if (!needsScroll) return;
         setTimeout(() => {
             if (scrollRef.current)
                 scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
         }, 80);
-    }, [data]);
+    }, [data, needsScroll]);
 
     return (
         <Card className={styles.card}>
@@ -110,12 +126,13 @@ export default function VendasPorHoraCard({
                         <div
                             className={styles.scrollContainer}
                             ref={scrollRef}
+                            style={{ overflowX: needsScroll ? 'auto' : 'hidden' }}
                             onWheel={e => {
-                                if (scrollRef.current) scrollRef.current.scrollLeft += e.deltaY;
-                                e.preventDefault();
+                                if (needsScroll && scrollRef.current) scrollRef.current.scrollLeft += e.deltaY;
+                                if (needsScroll) e.preventDefault();
                             }}
                         >
-                            <div className={styles.chartInner} style={{ width: svgWidth }}>
+                            <div className={styles.chartInner} style={{ width: '100%', minWidth: needsScroll ? svgWidth : undefined }}>
 
                                 {/* SVG com linha e área */}
                                 <svg
@@ -189,7 +206,10 @@ export default function VendasPorHoraCard({
                                         <span
                                             key={i}
                                             className={styles.xLabel}
-                                            style={{ width: colWidth, left: i * colWidth }}
+                                            style={{
+                                                width: colWidth,
+                                                left: i * colWidth,
+                                            }}
                                         >
                                             {p.label}
                                         </span>

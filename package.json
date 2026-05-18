@@ -23,6 +23,7 @@
     "pdfjs-dist": "^5.6.205",
     "qrcode": "^1.5.4",
     "react": "^19.2.4",
+    "react-countup": "^6.5.3",
     "react-dom": "^19.2.4",
     "react-router-dom": "^6.30.3",
     "react-toastify": "^11.0.5",

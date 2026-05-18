@@ -86,9 +86,9 @@ const getRecebimentoIcon = (type: string) => {
     return faMoneyBill;
 };
 
-const getRecebimentoColor = (type: string) => {
+const getRecebimentoColor = (type: string, primaryColor: string) => {
     if (type === "DIN") return '#10b981';
-    if (type === "CRE" || type === "DEB") return '#2C7BE5';
+    if (type === "CRE" || type === "DEB") return primaryColor;
     if (type === "PIX") return '#f59e0b';
     if (type === "COR") return '#8b5cf6';
     return '#6b7280';
@@ -129,12 +129,12 @@ const normalizeVendasPorCanal = (item: any): VendasPorCanalItem => ({
     participacao: item.participacao ?? '0',
 });
 
-const mapRecebimentoToFormaPagamento = (item: RecebimentoResponse): FormaPagamentoItem => ({
+const mapRecebimentoToFormaPagamento = (item: RecebimentoResponse, primaryColor: string): FormaPagamentoItem => ({
     id: `${item.type}-${item.id_turno}`,
     nome: item.name,
     valor: item.value,
     percentual: Number(item.percentage) || 0,
-    cor: getRecebimentoColor(item.type),
+    cor: getRecebimentoColor(item.type, primaryColor),
     icon: getRecebimentoIcon(item.type),
 });
 
@@ -151,7 +151,7 @@ const Dashboard: React.FC = () => {
     const [vendasPorCanal, setVendasPorCanal] = useState<VendasPorCanalItem[]>([]);
     const [hasLoaded, setHasLoaded] = useState(false);
 
-    const { dataInicial, dataFinal, turnosSelecionados } = useApp();
+    const { dataInicial, dataFinal, turnosSelecionados, primaryColor } = useApp();
 
     const findAllData = async () => {
         try {
@@ -197,7 +197,7 @@ const Dashboard: React.FC = () => {
 
             if (vendasPorFormaPagtoResult.status === 'fulfilled' && vendasPorFormaPagtoResult.value.status === 200) {
                 const receipts = vendasPorFormaPagtoResult.value.data?.receipts ?? [];
-                setVendasPorFormaPagto(receipts.map(mapRecebimentoToFormaPagamento));
+                setVendasPorFormaPagto(receipts.map(item => mapRecebimentoToFormaPagamento(item, primaryColor)));
             }
 
             if (ganhoClientesResult.status === 'fulfilled' && ganhoClientesResult.value.status === 200) {
@@ -283,7 +283,7 @@ const Dashboard: React.FC = () => {
                             tendencia={resumo?.vendas.crescimento}
                             subtitulo="vs. período anterior"
                             icon={faChartLine}
-                            cor="#2C7BE5"
+                            cor={primaryColor}
                         />
                         <InfoCards
                             titulo="Nº de Pedidos"
@@ -313,8 +313,8 @@ const Dashboard: React.FC = () => {
 
                     {/* Recebimentos + Meta + Contas */}
                     <Fluid className='mt-4' xs={[100, 50, 50]}>
-                        <VendasPorHoraCard data={vendasPorHora} />
-                        <FormasPagamentoCard dados={vendasPorFormaPagto} />
+                        <VendasPorHoraCard data={vendasPorHora} cor={primaryColor} />
+                        <FormasPagamentoCard dados={vendasPorFormaPagto} primaryColor={primaryColor} />
                         <Fluid xs={[100]}>
                             <MetaVsReceitaCard
                                 data={{
@@ -322,13 +322,14 @@ const Dashboard: React.FC = () => {
                                     revenue: 91200,
                                     period: "mai/2026"
                                 }}
+                                primaryColor={primaryColor}
                             />
 
                             <ContasPagarReceber data={{
                                 toPay: 12400,
                                 toReceive: 23800,
                                 period: "mai/2026"
-                            }} />
+                            }} primaryColor={primaryColor} />
                         </Fluid>
                     </Fluid>
 
@@ -338,7 +339,7 @@ const Dashboard: React.FC = () => {
                         <VendasPorHoraCard
                             data={ganhoClientes}
                             titulo="Ganho de Clientes"
-                            cor="#10b981"
+                            cor={primaryColor}
                             labelFormatter={(l) => l}
                             valueFormatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
                             yAxisFormatter={(v) => String(v)}
@@ -349,22 +350,22 @@ const Dashboard: React.FC = () => {
                             titulo="Comparativo: Mês x Mês Anterior"
                             label1="Mês Atual"
                             label2="Mês Anterior"
-                            cor1="#2C7BE5"
+                            cor1={primaryColor}
                             cor2="#FE8B43"
                         />
 
-                        <ProdutosCanceladosCard data={produtosCancelados} period="Hoje" />
-                        <TopProdutosCard data={topProdutos} period="Hoje" />
-                        <TopClientesCard data={topClientes} period="Hoje" />
-                        <TopProdutosCard data={vendasPorVendedor} period="Hoje" titulo='Vendas por vendedores' />
-                        <TopProdutosCard data={vendasPorEntregador} titulo="Vendas por Entregador" period="Hoje" />
+                        <ProdutosCanceladosCard data={produtosCancelados} period="Hoje" primaryColor={primaryColor} />
+                        <TopProdutosCard data={topProdutos} period="Hoje" cor={primaryColor} />
+                        <TopClientesCard data={topClientes} period="Hoje" cor={primaryColor} />
+                        <TopProdutosCard data={vendasPorVendedor} period="Hoje" titulo='Vendas por vendedores' cor={primaryColor} />
+                        <TopProdutosCard data={vendasPorEntregador} titulo="Vendas por Entregador" period="Hoje" cor={primaryColor} />
                         <ComparacaoMesAMesCard
                             items={vendasCanalItems}
                             period={vendasPorCanal.length > 0 ? 'Período selecionado' : dadosCanal.period}
                             titulo="Vendas por Canal"
                             label1="Valor Total"
                             label2="Pedidos"
-                            cor1="#2C7BE5"
+                            cor1={primaryColor}
                             cor2="#FE8B43"
                             value1Format='currency'
                             value2Format='number'
@@ -379,6 +380,7 @@ const Dashboard: React.FC = () => {
                             metaLabel="Meta"
                             receitaLabel="Conquistados"
                             formatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
+                            primaryColor={primaryColor}
                         />
 
                     </Fluid>

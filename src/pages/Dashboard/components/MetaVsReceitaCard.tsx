@@ -17,6 +17,7 @@ interface MetaVsReceitaCompactProps {
     receitaLabel?: string;
     /** Formata os valores exibidos. Padrão: moeda BRL. */
     formatter?: (value: number) => string;
+    primaryColor?: string;
 }
 
 const RADIUS = 40;
@@ -28,6 +29,7 @@ export default function MetaVsReceitaCard({
     metaLabel = "Meta",
     receitaLabel = "Realizado",
     formatter = formatCurrency,
+    primaryColor = "#10b981",
 }: MetaVsReceitaCompactProps) {
 
     const { goal, revenue, period } = data;
@@ -44,7 +46,7 @@ export default function MetaVsReceitaCard({
 
     const getCorPrincipal = () => {
         if (semMeta)               return '#94a3b8';
-        if (percentualReal >= 100) return '#10b981';
+        if (percentualReal >= 100) return primaryColor;
         if (percentualReal >= 75)  return '#f59e0b';
         if (percentualReal >= 50)  return '#f97316';
         return '#ef4444';
@@ -144,8 +146,8 @@ export default function MetaVsReceitaCard({
                             <div
                                 className={styles.resultBadge}
                                 style={{
-                                    background: metaAtingida ? '#ecfdf5' : '#fef2f2',
-                                    color:      metaAtingida ? '#059669' : '#dc2626',
+                                    background: metaAtingida ? `${primaryColor}1a` : '#fef2f2',
+                                    color:      metaAtingida ? primaryColor : '#dc2626',
                                 }}
                             >
                                 <FontAwesomeIcon icon={metaAtingida ? faArrowTrendUp : faArrowTrendDown} />
