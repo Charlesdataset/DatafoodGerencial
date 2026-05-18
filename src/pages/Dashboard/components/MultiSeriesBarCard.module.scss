@@ -1,0 +1,297 @@
+// MultiSeriesBarCard.module.scss
+
+.card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e9ecef;
+    height: 100%;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: #fafbfc;
+    border-bottom: 1px solid #edf2f7;
+    border-radius: 16px 16px 0 0 !important;
+
+    .headerLeft {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .title {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .period {
+        font-size: 0.68rem;
+        font-weight: 500;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: #f1f5f9;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+}
+
+.cardBody {
+    padding: 16px 18px;
+    position: relative;
+}
+
+// ─── Legenda ─────────────────────────────────────────────
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin-bottom: 12px;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.legendDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+// ─── Área do gráfico ─────────────────────────────────────
+.chartArea {
+    display: flex;
+    align-items: stretch;
+}
+
+// ─── Eixo Y ──────────────────────────────────────────────
+.yAxis {
+    flex-shrink: 0;
+    width: 44px;
+    padding-right: 8px;
+    border-right: 1px solid #edf2f7;
+}
+
+.yAxisInner {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 160px;
+    padding-bottom: 28px; // espaço para eixo X
+}
+
+.yLabel {
+    font-size: 0.62rem;
+    color: #94a3b8;
+    font-weight: 500;
+    text-align: right;
+    display: block;
+    line-height: 1;
+}
+
+// ─── Scroll container ────────────────────────────────────
+.scrollContainer {
+    flex: 1;
+    overflow-y: visible;
+    cursor: default;
+
+    &::-webkit-scrollbar       { height: 4px; }
+    &::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+    &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+}
+
+.chartInner {
+    position: relative;
+}
+
+// ─── SVG ─────────────────────────────────────────────────
+.svg {
+    display: block;
+    overflow: visible;
+}
+
+.barGroup {
+    cursor: pointer;
+
+    rect {
+        transition: opacity 0.12s;
+    }
+
+    &:hover rect {
+        opacity: 0.72;
+    }
+}
+
+// ─── Eixo X ──────────────────────────────────────────────
+.xAxis {
+    position: relative;
+    height: 28px;
+}
+
+.xLabel {
+    position: absolute;
+    text-align: center;
+    font-size: 0.62rem;
+    color: #94a3b8;
+    font-weight: 500;
+    line-height: 28px;
+    user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// ─── Tooltip ─────────────────────────────────────────────
+.tooltip {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    background: #ffffff;
+    border: 1.5px solid;
+    border-radius: 10px;
+    padding: 9px 13px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.11);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 20;
+    min-width: 160px;
+}
+
+.tooltipDate {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 2px;
+}
+
+.tooltipRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+}
+
+.tooltipDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.tooltipName {
+    flex: 1;
+    color: #475569;
+    font-weight: 400;
+}
+
+.tooltipVal {
+    font-weight: 600;
+}
+
+.tooltipTotal {
+    font-size: 0.78rem;
+    color: #1e293b;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 5px;
+    margin-top: 2px;
+}
+
+// ─── Faixa de totais ─────────────────────────────────────
+.totalsStrip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.totalPill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #edf2f7;
+    border-radius: 10px;
+    padding: 8px 11px;
+    flex: 1 1 calc(33.33% - 8px);
+    min-width: 120px;
+    transition: background 0.15s;
+
+    &:hover {
+        background: #f1f5f9;
+    }
+}
+
+.totalDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.totalInfo {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.totalNome {
+    font-size: 0.68rem;
+    color: #64748b;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.totalValor {
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-top: 1px;
+}
+
+.totalPct {
+    font-size: 0.70rem;
+    font-weight: 600;
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+// ─── Empty state ─────────────────────────────────────────
+.emptyState {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+    font-size: 0.82rem;
+}

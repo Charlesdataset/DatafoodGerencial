@@ -3,6 +3,7 @@ import { faStar, faTrophy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
 import Card from "../../../components/Card/Card";
+import NoData from "../../../components/NoData/NoData";
 import styles from "./TopClientesCard.module.scss";
 
 export interface TopCliente {
@@ -139,7 +140,7 @@ export default function TopClientesCard({
 
             <Card.Body className={styles.cardBody}>
                 {sorted.length === 0 ? (
-                    <div className={styles.emptyState}>Nenhum cliente encontrado.</div>
+                    <NoData message="Sem clientes" subtext="Nenhum cliente encontrado no período selecionado." />
                 ) : (
                     <ol className={styles.list}>
                         {sorted.map((item, index) => (

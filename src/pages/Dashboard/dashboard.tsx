@@ -9,6 +9,8 @@ import ContasPagarReceber from './components/ContasPagarReceberCard';
 import FormasPagamentoCard from './components/FormaPagamentoCard';
 import InfoCards from './components/InfoCards';
 import MetaVsReceitaCard from './components/MetaVsReceitaCard';
+import MultiSeriesBarCard from './components/MultiSeriesBarCard';
+import type { MultiSeriesBarData } from './components/MultiSeriesBarCard';
 import ProdutosCanceladosCard from './components/ProdutosCanceladosCard';
 import type { TopCliente } from './components/TopClientesCard';
 import TopClientesCard from './components/TopClientesCard';
@@ -61,17 +63,6 @@ interface TopClienteResponse {
     participacao: string;
 }
 
-interface VendasPorCanalItem {
-    posicao: number;
-    canal: string;
-    nome: string;
-    cor?: string;
-    valorTotal: number;
-    quantidadePedidos: number;
-    ticketMedio: number;
-    participacao: string;
-}
-
 const VENDAS_POR_HORA_EMPTY: VendasPorHoraData = {
     hours: [],
     values: [],
@@ -118,17 +109,6 @@ const normalizeTopCliente = (item: any): TopCliente => ({
     value: Number(item.valorTotal ?? item.value ?? 0),
 });
 
-const normalizeVendasPorCanal = (item: any): VendasPorCanalItem => ({
-    posicao: Number(item.posicao ?? 0),
-    canal: item.canal ?? item.name ?? '—',
-    nome: item.nome ?? item.canal ?? '—',
-    cor: item.cor,
-    valorTotal: Number(item.valorTotal ?? item.value ?? 0),
-    quantidadePedidos: Number(item.quantidadePedidos ?? 0),
-    ticketMedio: Number(item.ticketMedio ?? 0),
-    participacao: item.participacao ?? '0',
-});
-
 const mapRecebimentoToFormaPagamento = (item: RecebimentoResponse, primaryColor: string): FormaPagamentoItem => ({
     id: `${item.type}-${item.id_turno}`,
     nome: item.name,
@@ -148,7 +128,7 @@ const Dashboard: React.FC = () => {
     const [produtosCancelados, setProdutosCancelados] = useState<ProdutoCancelado[]>([]);
     const [topProdutos, setTopProdutos] = useState<TopProduto[]>([]);
     const [topClientes, setTopClientes] = useState<TopCliente[]>([]);
-    const [vendasPorCanal, setVendasPorCanal] = useState<any>([]);
+    const [vendasPorCanal, setVendasPorCanal] = useState<MultiSeriesBarData | null>(null);
     const [hasLoaded, setHasLoaded] = useState(false);
     const [comparacaoMes, setComparacaoMes] = useState<any>(null);
 
@@ -228,7 +208,7 @@ const Dashboard: React.FC = () => {
             }
 
             if (vendasPorCanalResult.status === 'fulfilled' && vendasPorCanalResult.value.status === 200) {
-                setVendasPorCanal((vendasPorCanalResult.value.data ?? []).map(normalizeVendasPorCanal));
+                setVendasPorCanal(vendasPorCanalResult.value.data ?? null);
             }
             if (comparacaoMesResult.status === 'fulfilled' && comparacaoMesResult.value.status === 200) {
                 setComparacaoMes(comparacaoMesResult.value.data);
@@ -342,16 +322,10 @@ const Dashboard: React.FC = () => {
                         <TopClientesCard data={topClientes} period="Hoje" cor={primaryColor} />
                         <TopProdutosCard data={vendasPorVendedor} period="Hoje" titulo='Vendas por vendedores' cor={primaryColor} />
                         <TopProdutosCard data={vendasPorEntregador} titulo="Vendas por Entregador" period="Hoje" cor={primaryColor} />
-                        <ComparacaoMesAMesCard
-                            items={vendasPorCanal}
-                            period={vendasPorCanal.length > 0 ? 'Período selecionado' : vendasPorCanal?.period}
+                        <MultiSeriesBarCard
+                            data={vendasPorCanal}
                             titulo="Vendas por Canal"
-                            label1="Valor Total"
-                            label2="Pedidos"
-                            cor1={primaryColor}
-                            cor2="#FE8B43"
-                            value1Format='currency'
-                            value2Format='number'
+                            cor={primaryColor}
                         />
                         <MetaVsReceitaCard
                             data={{

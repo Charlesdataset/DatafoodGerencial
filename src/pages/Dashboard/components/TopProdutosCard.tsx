@@ -3,6 +3,7 @@ import { faTrophy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
 import Card from "../../../components/Card/Card";
+import NoData from "../../../components/NoData/NoData";
 import styles from "./TopProdutosCard.module.scss";
 
 export interface TopProduto {
@@ -141,7 +142,7 @@ export default function TopProdutosCard({
             </Card.Header>
             <Card.Body className={styles.cardBody}>
                 {sorted.length === 0 ? (
-                    <div className={styles.emptyState}>Nenhum produto encontrado.</div>
+                    <NoData message="Sem produtos" subtext="Nenhum produto encontrado no período selecionado." />
                 ) : (
                     <ol className={styles.list}>
                         {sorted.map((item, index) => (

@@ -112,7 +112,7 @@ export default function InfoCards({
                                 <FontAwesomeIcon
                                     icon={tendenciaPositiva ? faArrowTrendUp : faArrowTrendDown}
                                 />
-                                {Math.abs(tendencia)}%
+                                {Math.abs(tendencia).toFixed(1).replace(/\.0$/, '')}%
                             </span>
                         )}
                         {subtitulo && (

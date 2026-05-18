@@ -3,6 +3,7 @@ import { faUsers } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
 import Card from "../../../components/Card/Card";
+import NoData from "../../../components/NoData/NoData";
 import styles from "./VendasPorVendedorCard.module.scss";
 
 export interface VendedorData {
@@ -107,7 +108,7 @@ export default function VendasPorVendedorCard({ data, titulo = "Vendas por Vende
             </Card.Header>
             <Card.Body className={styles.cardBody}>
                 {sorted.length === 0 ? (
-                    <div className={styles.emptyState}>Nenhum vendedor encontrado.</div>
+                    <NoData message="Sem vendedores" subtext="Nenhum vendedor encontrado no período selecionado." />
                 ) : (
                     <ol className={styles.list}>
                         {sorted.map((item, index) => (
