@@ -3,6 +3,7 @@ import { faChartLine } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useRef, useState } from "react";
 import Card from "../../../components/Card/Card";
+import NoData from "../../../components/NoData/NoData";
 import styles from "./VendasPorHoraCard.module.scss";
 
 interface VendasPorHoraData {
@@ -220,9 +221,7 @@ export default function VendasPorHoraCard({
                         </div>
                     </div>
                 ) : (
-                    <div className={styles.emptyState}>
-                        Sem dados para exibir neste período.
-                    </div>
+                    <NoData message="Sem dados" subtext="Nenhum dado encontrado para o período selecionado." />
                 )}
 
                 {/* Tooltip */}

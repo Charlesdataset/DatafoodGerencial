@@ -3,6 +3,7 @@ import { faChartSimple, faCreditCard, faList } from "@fortawesome/free-solid-svg
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import Card from "../../../components/Card/Card";
+import NoData from "../../../components/NoData/NoData";
 import styles from './FormaPagamentoCard.module.scss';
 
 interface FormaPagamento {
@@ -80,9 +81,7 @@ export default function FormasPagamentoCard({
                 {/* Conteúdo que alterna entre Lista e Gráfico */}
                 <div className={styles.contentArea}>
                     {dadosOrdenados.length === 0 ? (
-                        <div className={styles.emptyState}>
-                            Nenhuma forma de pagamento encontrada.
-                        </div>
+                        <NoData message="Sem formas de recebimento" subtext="Nenhuma forma de pagamento encontrada no período selecionado." />
                     ) : visao === 'lista' ? (
                         <div className={styles.listaSection}>
                             {dadosOrdenados.map((item, index) => (
