@@ -160,7 +160,19 @@ const AuthSimpleLayout = ({
   const [currentTheme, setCurrentTheme] = useState<LoginTheme>(theme);
   const [canShow, setChanShow] = useState(false);
   const [companyValidated, setCompanyValidated] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const {isAuthenticated, setCompanyInfo} = useApp();
+
+  useEffect(() => {
+    const onFocusIn  = (e: FocusEvent) => { if ((e.target as HTMLInputElement)?.type === 'password') setPasswordFocused(true);  };
+    const onFocusOut = (e: FocusEvent) => { if ((e.target as HTMLInputElement)?.type === 'password') setPasswordFocused(false); };
+    document.addEventListener('focusin',  onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    return () => {
+      document.removeEventListener('focusin',  onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+    };
+  }, []);
   useEffect(() => {
     if(!isAuthenticated) {
       
