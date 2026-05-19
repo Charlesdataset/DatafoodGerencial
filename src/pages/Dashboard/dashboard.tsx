@@ -13,7 +13,6 @@ import type { MultiSeriesBarData } from './components/MultiSeriesBarCard';
 import MultiSeriesBarCard from './components/MultiSeriesBarCard';
 import ProdutosCanceladosCard from './components/ProdutosCanceladosCard';
 import type { TopCliente } from './components/TopClientesCard';
-import TopClientesCard from './components/TopClientesCard';
 import type { TopProduto } from './components/TopProdutosCard';
 import TopProdutosCard from './components/TopProdutosCard';
 import VendasPorHoraCard from './components/VendasPorHoraCard';
@@ -48,13 +47,20 @@ interface ProdutoCancelado {
     datetime: string;
     motivo: string;
 }
-
-interface TopProdutoResponse {
-    idProduto: number;
-    nomeProduto: string;
-    valorTotal: number;
-    participacao: string;
+interface ProdutoCanceladoResponse {
+    itens: Array<ProdutoCancelado>
+    period: string;
 }
+
+
+interface TopResonse {
+    itens: Array<TopProduto>;
+    period: string;
+}
+
+
+
+
 
 interface TopClienteResponse {
     idCliente: number;
@@ -96,12 +102,7 @@ const normalizeEntregador = (item: any) => ({
     percentage: Number(item.participacao ?? item.percentual ?? 0),
 });
 
-const normalizeTopProduto = (item: any): TopProduto => ({
-    id: item.idProduto ?? item.id ?? 0,
-    name: item.nomeProduto ?? item.name ?? '—',
-    revenue: Number(item.valorTotal ?? item.revenue ?? 0),
-    percentage: item.participacao ?? item.percentage ?? '0',
-});
+
 
 const normalizeTopCliente = (item: any): TopCliente => ({
     clientId: item.idCliente ?? item.id ?? 0,
@@ -123,11 +124,11 @@ const Dashboard: React.FC = () => {
     const [vendasPorHora, setVendasPorHora] = useState<VendasPorHoraData>(VENDAS_POR_HORA_EMPTY);
     const [vendasPorFormaPagto, setVendasPorFormaPagto] = useState<FormaPagamentoItem[]>([]);
     const [ganhoClientes, setGanhoClientes] = useState<VendasPorHoraData>(VENDAS_POR_HORA_EMPTY);
-    const [vendasPorVendedor, setVendasPorVendedor] = useState<any[]>([]);
-    const [vendasPorEntregador, setVendasPorEntregador] = useState<any[]>([]);
-    const [produtosCancelados, setProdutosCancelados] = useState<ProdutoCancelado[]>([]);
-    const [topProdutos, setTopProdutos] = useState<TopProduto[]>([]);
-    const [topClientes, setTopClientes] = useState<TopCliente[]>([]);
+    const [vendasPorVendedor, setVendasPorVendedor] = useState<TopResonse>(null);
+    const [vendasPorEntregador, setVendasPorEntregador] = useState<TopResonse>(null);
+    const [produtosCancelados, setProdutosCancelados] = useState<ProdutoCanceladoResponse>(null);
+    const [topProdutos, setTopProdutos] = useState<TopResonse>(null);
+    const [topClientes, setTopClientes] = useState<TopResonse>(null);
     const [vendasPorCanal, setVendasPorCanal] = useState<MultiSeriesBarData | null>(null);
     const [hasLoaded, setHasLoaded] = useState(false);
     const [comparacaoMes, setComparacaoMes] = useState<any>(null);
@@ -137,12 +138,30 @@ const Dashboard: React.FC = () => {
     const findAllData = async () => {
         try {
             const turnosIds = turnosSelecionados.map(t => t.id);
-            const tipoTurnoParam = turnosIds.length > 0 ? turnosIds : undefined;
-            const params = {
-                dataInicio: dataInicial?.toISOString(),
-                dataFim: dataFinal?.toISOString(),
-                tipoTurno: tipoTurnoParam
-            };
+            console.log('Turnos selecionados IDs:', turnosIds);
+
+            // Construir URLSearchParams para garantir o formato correto
+            const searchParams = new URLSearchParams();
+
+            if (dataInicial) {
+                searchParams.append('dataInicio', dataInicial.toISOString());
+            }
+            if (dataFinal) {
+                searchParams.append('dataFim', dataFinal.toISOString());
+            }
+
+            // Adiciona cada turno como parâmetro separado
+            if (turnosIds.length > 0) {
+                turnosIds.forEach(id => {
+                    searchParams.append('tipoTurnos', id.toString());
+                });
+            }
+
+            const queryString = searchParams.toString();
+            console.log('Query string:', queryString);
+
+            // // Usar a query string diretamente
+            // const baseUrl = `/dashboard/resumo${queryString ? `?${queryString}` : ''}`;
 
             const [
                 resumoResult,
@@ -157,17 +176,17 @@ const Dashboard: React.FC = () => {
                 vendasPorCanalResult,
                 comparacaoMesResult,
             ] = await Promise.allSettled([
-                api.get(`/dashboard/resumo`, { params }),
-                api.get(`/dashboard/vendas-por-hora`, { params }),
-                api.get(`/dashboard/vendas-por-recebimento`, { params }),
-                api.get(`/dashboard/ganho-clientes`, { params }),
-                api.get(`/dashboard/top-vendedores`, { params }),
-                api.get(`/dashboard/top-entregadores`, { params }),
-                api.get(`/dashboard/produtos-cancelados`, { params }),
-                api.get(`/dashboard/top-produtos-vendidos`, { params }),
-                api.get(`/dashboard/top-clientes`, { params }),
-                api.get(`/dashboard/vendas-canais`, { params }),
-                api.get(`/dashboard/comparacao-mes`, { params }),
+                api.get(`/dashboard/resumo${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/vendas-por-hora${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/vendas-por-recebimento${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/ganho-clientes${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/top-vendedores${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/top-entregadores${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/produtos-cancelados${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/top-produtos-vendidos${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/top-clientes${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/vendas-canais${queryString ? `?${queryString}` : ''}`),
+                api.get(`/dashboard/comparacao-mes${queryString ? `?${queryString}` : ''}`),
             ]);
 
             if (resumoResult.status === 'fulfilled' && resumoResult.value.status === 200) {
@@ -189,23 +208,23 @@ const Dashboard: React.FC = () => {
             }
 
             if (vendasPorVendedorResult.status === 'fulfilled' && vendasPorVendedorResult.value.status === 200) {
-                setVendasPorVendedor((vendasPorVendedorResult.value.data ?? []).map(normalizeVendedor));
+                setVendasPorVendedor((vendasPorVendedorResult.value.data ?? []));
             }
 
             if (vendasPorEntregadorResult.status === 'fulfilled' && vendasPorEntregadorResult.value.status === 200) {
-                setVendasPorEntregador((vendasPorEntregadorResult.value.data ?? []).map(normalizeEntregador));
+                setVendasPorEntregador((vendasPorEntregadorResult.value.data ?? []));
             }
 
             if (produtosCanceladosResult.status === 'fulfilled' && produtosCanceladosResult.value.status === 200) {
-                setProdutosCancelados(produtosCanceladosResult.value.data ?? []);
+                setProdutosCancelados(produtosCanceladosResult.value.data ?? null);
             }
 
             if (topProdutosResult.status === 'fulfilled' && topProdutosResult.value.status === 200) {
-                setTopProdutos((topProdutosResult.value.data ?? []).map(normalizeTopProduto));
+                setTopProdutos((topProdutosResult.value.data));
             }
 
             if (topClientesResult.status === 'fulfilled' && topClientesResult.value.status === 200) {
-                setTopClientes((topClientesResult.value.data ?? []).map(normalizeTopCliente));
+                setTopClientes((topClientesResult.value.data ?? []));
             }
 
             if (vendasPorCanalResult.status === 'fulfilled' && vendasPorCanalResult.value.status === 200) {
@@ -318,11 +337,11 @@ const Dashboard: React.FC = () => {
                             cor2="#FE8B43"
                         />
 
-                        <ProdutosCanceladosCard data={produtosCancelados} period="Hoje" primaryColor={primaryColor} />
-                        <TopProdutosCard data={topProdutos} period="Hoje" cor={primaryColor} />
-                        <TopClientesCard data={topClientes} period="Hoje" cor={primaryColor} />
-                        <TopProdutosCard data={vendasPorVendedor} period="Hoje" titulo='Vendas por vendedores' cor={primaryColor} />
-                        <TopProdutosCard data={vendasPorEntregador} titulo="Vendas por Entregador" period="Hoje" cor={primaryColor} />
+                        <ProdutosCanceladosCard data={produtosCancelados.itens ?? []} period={produtosCancelados.period} primaryColor={primaryColor} />
+                        <TopProdutosCard data={topProdutos.itens ?? []} period={topProdutos.period} cor={primaryColor}  />
+                        <TopProdutosCard data={topClientes.itens ?? []} period="Hoje" cor={primaryColor} titulo='Top Clientes' />
+                        <TopProdutosCard data={vendasPorVendedor.itens ?? []} period="Hoje" titulo='Top Vendedores' cor={primaryColor} />
+                        <TopProdutosCard data={vendasPorEntregador.itens ?? []} titulo="Top Entregadores" period="Hoje" cor={primaryColor} />
                         <MultiSeriesBarCard
                             data={vendasPorCanal}
                             titulo="Vendas por Canal"

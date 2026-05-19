@@ -24,7 +24,7 @@ const MEDALS: Record<number, { label: any; className: string }> = {
     0: {
         label: <FontAwesomeIcon icon={faTrophy} color="#f59e0b" gradientFill={{
             type: 'linear',
-            id: 'trophy-gradient', 
+            id: 'trophy-gradient',
             x1: '0%',
             y1: '0%',
             x2: '100%',
@@ -38,7 +38,7 @@ const MEDALS: Record<number, { label: any; className: string }> = {
     1: {
         label: <FontAwesomeIcon icon={faTrophy} color="#f59e0b" gradientFill={{
             type: 'linear',
-            id: 'trophy-gradient-2', 
+            id: 'trophy-gradient-2',
             x1: '0%',
             y1: '0%',
             x2: '100%',
@@ -52,7 +52,7 @@ const MEDALS: Record<number, { label: any; className: string }> = {
     2: {
         label: <FontAwesomeIcon icon={faTrophy} color="#f59e0b" gradientFill={{
             type: 'linear',
-            id: 'trophy-gradient-3', 
+            id: 'trophy-gradient-3',
             x1: '0%',
             y1: '0%',
             x2: '100%',
