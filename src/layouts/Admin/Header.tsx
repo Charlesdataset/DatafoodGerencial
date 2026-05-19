@@ -42,7 +42,7 @@ const pageTitles: Record<string, string> = {
 export const Header = ({ onMenuClick }: HeaderProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, setIsAuthenticated, dataInicial, dataFinal, tipoTurnos, setTipoTurnos, turnosSelecionados, setTurnosSelecionados, setDataInicial, setDataFinal } =
+  const { user, setIsAuthenticated, dataInicial, dataFinal, tipoTurnos, setTipoTurnos, turnosSelecionados, setTurnosSelecionados, setDataInicial, setDataFinal, currLogo, currLogoRelatorio } =
     useApp();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -154,7 +154,6 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
           ],
           secondary: [{ key: "label", prefix: "Descrição : ", marginStart: 5 },]
-
         }}
         mode="multi"
         selectedData={turnosSelecionados}
@@ -180,7 +179,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
             {/* Logo centralizada no mobile */}
             <div className={styles.mobileLogo}>
-              <span className={styles.mobileLogoIcon}>DataTicket</span>
+              <span ><img src={currLogoRelatorio} style={{ width: 150 }} /></span>
             </div>
 
             {/* Título com ícone - visível apenas no desktop */}
@@ -244,25 +243,30 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             style={{ display: inAction && !isMobile ? "none" : undefined }}
           >
 
+            {!isMobile && (
+              <>
 
-            <MultiTextBox
+                <MultiTextBox
 
-              colorMode="multicolor"
-              onChange={(labels) => {
-                setTurnosSelecionados((prev) =>
-                  prev.filter((t) => labels.includes(`${t.label}`))
-                )
-              }}
-              values={turnosSelecionados.map((t) => `${t.label}`)} boxHeight={40} className="mb-0" placeholder="Tipos de turnos"
-              onInputClick={() => {
-                setIsTipoTurnoSearchOpen(true);
-              }} />
+                  colorMode="multicolor"
+                  onChange={(labels) => {
+                    setTurnosSelecionados((prev) =>
+                      prev.filter((t) => labels.includes(`${t.label}`))
+                    )
+                  }}
+                  values={turnosSelecionados.map((t) => `${t.label}`)} boxHeight={40} className="mb-0" placeholder="Tipos de turnos"
+                  onInputClick={() => {
+                    setIsTipoTurnoSearchOpen(true);
+                  }} />
 
 
-            <DateRangePicker startDate={dataInicial} endDate={dataFinal} onChange={(s, e) => {
-              setDataInicial(s);
-              setDataFinal(e)
-            }} />
+                <DateRangePicker startDate={dataInicial} endDate={dataFinal} onChange={(s, e) => {
+                  setDataInicial(s);
+                  setDataFinal(e)
+                }} />
+              </>
+
+            )}
 
 
             {/* Dropdown do usuário - apenas avatar */}

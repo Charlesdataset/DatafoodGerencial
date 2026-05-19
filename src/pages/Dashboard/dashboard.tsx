@@ -259,7 +259,13 @@ const Dashboard: React.FC = () => {
 
 
                     {/* KPIs */}
-                    <Fluid xs={[25, 25, 25, 25]}>
+                    <Fluid
+                        xs={[100, 100, 100, 100]}
+                        sm={[50, 50, 50, 50]}
+                        lg={[25, 25, 25, 25]}
+
+
+                    >
                         <InfoCards
                             titulo="Total de Vendas"
                             valor={resumo?.vendas.atual}
@@ -295,7 +301,11 @@ const Dashboard: React.FC = () => {
                     </Fluid>
 
                     {/* Recebimentos + Meta + Contas */}
-                    <Fluid className='mt-4' xs={[100, 50, 50]}>
+                    <Fluid className='mt-4'
+                        xs={[100, 100, 100]}
+                        sm={[100, 50, 50]}
+                        lg={[100, 50, 50]}
+                    >
                         <VendasPorHoraCard data={vendasPorHora} cor={primaryColor} />
                         <FormasPagamentoCard dados={vendasPorFormaPagto} primaryColor={primaryColor} />
                         <Fluid xs={[100]}>
@@ -317,7 +327,11 @@ const Dashboard: React.FC = () => {
                     </Fluid>
 
                     {/* Vendas por hora */}
-                    <Fluid className='mt-4' xs={[50, 50, 100, 50, 50, 50, 50, 50, 50]}>
+                    <Fluid className='mt-4'
+                        xs={[100, 100, 100, 100, 100, 100, 100, 100, 100]}
+                        sm={[100, 50, 50, 50, 50, 50, 50, 50, 50]}
+                        lg={[50, 50, 100, 50, 50, 50, 50, 50, 50]}
+                    >
 
                         <VendasPorHoraCard
                             data={ganhoClientes}
@@ -338,7 +352,7 @@ const Dashboard: React.FC = () => {
                         />
 
                         <ProdutosCanceladosCard data={produtosCancelados.itens ?? []} period={produtosCancelados.period} primaryColor={primaryColor} />
-                        <TopProdutosCard data={topProdutos.itens ?? []} period={topProdutos.period} cor={primaryColor}  />
+                        <TopProdutosCard data={topProdutos.itens ?? []} period={topProdutos.period} cor={primaryColor} />
                         <TopProdutosCard data={topClientes.itens ?? []} period="Hoje" cor={primaryColor} titulo='Top Clientes' />
                         <TopProdutosCard data={vendasPorVendedor.itens ?? []} period="Hoje" titulo='Top Vendedores' cor={primaryColor} />
                         <TopProdutosCard data={vendasPorEntregador.itens ?? []} titulo="Top Entregadores" period="Hoje" cor={primaryColor} />

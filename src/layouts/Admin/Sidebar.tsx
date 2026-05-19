@@ -66,7 +66,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed, onCollapsedChange, isMob
         <aside className={`${styles.sidebar} ${isCollapsed && !isMobile ? styles.collapsed : ""} ${isOpen && isMobile ? styles.mobileOpen : ""}`}>
           <div className={styles.sidebarHeader}>
             <Link to="/" className={styles.logo} onClick={handleLinkClick}>
-              {isCollapsed ? <img src={currLogo} alt="Logo" style={{ width: 35 }} /> : <img src={!isCollapsed || isMobile ? currLogo : currLogo} alt="Logo" style={{ width: 180 }} />}
+              {isCollapsed ? <img src={currLogo} alt="Logo" style={{ width: 35 }} /> : <img src={!isCollapsed || isMobile ? currLogo : currLogo} alt="Logo" style={{ width: 150 }} />}
             </Link>
           </div>
 
