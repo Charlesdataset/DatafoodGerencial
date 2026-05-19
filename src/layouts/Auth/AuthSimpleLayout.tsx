@@ -43,7 +43,7 @@ interface Dot {
   maxLife: number;
 }
 
-function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>, ready: boolean) {
   const dotsRef = useRef<Dot[]>([]);
   const animFrameRef = useRef<number>(0);
   const isInitializedRef = useRef(false);
@@ -146,7 +146,7 @@ function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       }
       isInitializedRef.current = false;
     };
-  }, [canvasRef, initDots, newDot]);
+  }, [canvasRef, initDots, newDot, ready]);
 }
 
 /* ===== COMPONENTE ===== */
@@ -205,7 +205,7 @@ const AuthSimpleLayout = ({
   }
 
 
-  useCanvasDots(canvasRef);
+  useCanvasDots(canvasRef, canShow);
 
   const t = THEMES[currentTheme];
 
