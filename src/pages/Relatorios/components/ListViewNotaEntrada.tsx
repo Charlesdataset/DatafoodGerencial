@@ -68,6 +68,62 @@ export const ListViewNotaEntreda = () => {
             textAlign: 'left',
 
         },
+        {
+            accessorKey: 'dataEntrada',
+            header: 'Entrada',
+            width: 'expand',
+            textAlign: 'left',
+
+        },
+        {
+            accessorKey: 'vlrIpi',
+            header: 'PIS',
+            width: 'expand',
+            textAlign: 'left',
+
+        },
+        {
+            accessorKey: 'vlrCofins',
+            header: 'COFINS',
+            width: 'expand',
+            textAlign: 'left',
+
+        },
+        {
+            accessorKey: 'vlrIcms',
+            header: 'ICMS',
+            width: 'expand',
+            textAlign: 'left',
+
+        },
+        {
+            accessorKey: 'vlrIpi',
+            header: 'IPI',
+            width: 'expand',
+            textAlign: 'left',
+
+        },
+        {
+            accessorKey: 'vlrIcmsSt',
+            header: 'ICMS ST',
+            width: 'expand',
+            textAlign: 'left',
+
+        },
+        {
+            accessorKey: 'vlrProdutos',
+            header: 'VALOR PRODUTOS',
+            width: 'expand',
+            textAlign: 'left',
+
+        },
+        {
+            accessorKey: 'vlrTotal',
+            header: 'VALOR TOTAL',
+            width: 'expand',
+            textAlign: 'left',
+
+        },
 
 
     ]
