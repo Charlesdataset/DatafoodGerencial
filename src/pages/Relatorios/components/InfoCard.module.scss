@@ -1,0 +1,57 @@
+@use '../../../styles/abstracts/variables' as *;
+
+.card {
+    background-color: $white ;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+
+    display: flex;
+    position: relative;
+    border: 2px solid var(--acccent);
+}
+
+.content {
+    padding: 18px;
+    display: flex;
+    justify-content: space-between;
+    flex: 1;
+
+    .values {
+
+        display: flex;
+        flex-direction: column;
+
+        .title {
+            font-size: 12px;
+            font-weight: 700;
+            color: $gray-600;
+
+        }
+
+        .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--acccent);
+
+        }
+    }
+
+    .iconContainer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .pill {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: var(--accent-pill);
+            color: $white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+    }
+}

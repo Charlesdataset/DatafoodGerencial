@@ -6,6 +6,7 @@ import Card from '../../components/Card/Card';
 import Fluid from '../../components/Layout/Fluid';
 import ListViewBairro from './components/ListViewBairro';
 import ListViewCliente from './components/ListViewCliente';
+import { ListViewNotaEntreda } from './components/ListViewNotaEntrada';
 import ListViewProduto from './components/ListViewProduto';
 import ReportList from './components/ReportList';
 
@@ -33,6 +34,8 @@ const Relatorios: React.FC = () => {
                 return <ListViewBairro />;
             case 'produto':
                 return <ListViewProduto />;
+            case 'nota-entrada':
+                return <ListViewNotaEntreda />;
             default:
                 return null;
         }
@@ -43,7 +46,7 @@ const Relatorios: React.FC = () => {
             {!listing && (
                 <Card>
                     <Card.Body>
-                        <Fluid>
+                        <Fluid xs={[50, 50]}>
                             <ReportList
                                 icon={faFileAlt}
                                 title="Cadastros"
@@ -53,6 +56,26 @@ const Relatorios: React.FC = () => {
                                     {
                                         name: "Clientes",
                                         onClick: () => handleNavigateToListing('cliente')
+                                    },
+                                    {
+                                        name: "Bairros",
+                                        onClick: () => handleNavigateToListing('bairro')
+                                    },
+                                    {
+                                        name: "Produtos",
+                                        onClick: () => handleNavigateToListing('produto')
+                                    },
+                                ]}
+                            />
+                            <ReportList
+                                icon={faFileAlt}
+                                title="Fiscais"
+                                accentColor="#185FA5"
+                                accentBg="rgba(24, 95, 165, 0.12)"
+                                reports={[
+                                    {
+                                        name: "Nota Entrada",
+                                        onClick: () => handleNavigateToListing('nota-entrada')
                                     },
                                     {
                                         name: "Bairros",

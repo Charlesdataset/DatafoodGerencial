@@ -97,6 +97,7 @@ export interface DataGridProps<T extends object> {
   actions?: React.ReactNode;
   refreshKey?: number;
   autoPageSizeOnDesktop?: boolean;
+  offsets?: number;
 }
 
 // ============================================
@@ -105,14 +106,14 @@ export interface DataGridProps<T extends object> {
 const applyPredefinedMask = (value: any, maskType: string): string => {
   if (value === undefined || value === null) return "";
   const strValue = String(value);
-  
+
   // Para tipos monetários, NÃO remover pontos e vírgulas
   if (maskType === "monetary" || maskType === "monetary-clear") {
     // Apenas substitui vírgula por ponto para parseFloat funcionar
     let normalized = strValue.replace(",", ".");
     let num = parseFloat(normalized);
     if (isNaN(num)) return "";
-    
+
     if (maskType === "monetary") {
       return num.toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
@@ -127,10 +128,10 @@ const applyPredefinedMask = (value: any, maskType: string): string => {
       });
     }
   }
-  
+
   // Para os demais tipos, remove não-dígitos normalmente
   const numbers = strValue.replace(/\D/g, "");
-  
+
   switch (maskType) {
     case "cpf":
       return numbers
@@ -143,11 +144,11 @@ const applyPredefinedMask = (value: any, maskType: string): string => {
     case "document":
       return numbers.length <= 11
         ? numbers
-            .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
-            .slice(0, 14)
+          .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
+          .slice(0, 14)
         : numbers
-            .replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")
-            .slice(0, 18);
+          .replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")
+          .slice(0, 18);
     case "phone":
       return numbers.length <= 10
         ? numbers.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3")
@@ -361,7 +362,7 @@ const IconSettings = () => (
     />
   </svg>
 );
-const IconPin = () => (
+export const IconPin = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
     <path
       d="M7.5 1L11 4.5L8.5 7L7.5 9L6 7.5L3 11L1.5 9.5L4.5 6.5L3 5L5.5 4L7.5 1Z"
@@ -371,7 +372,7 @@ const IconPin = () => (
     />
   </svg>
 );
-const IconPinOff = () => (
+export const IconPinOff = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
     <path
       d="M7.5 1L11 4.5L8.5 7L7.5 9L6 7.5L3 11L1.5 9.5L4.5 6.5L3 5L5.5 4L7.5 1Z"
@@ -491,6 +492,7 @@ const DataGrid = <T extends object>({
   actions,
   refreshKey,
   autoPageSizeOnDesktop = false,
+  offsets = 0
 }: DataGridProps<T>) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -556,7 +558,7 @@ const DataGrid = <T extends object>({
     const bottomGap = 80;
 
     const rootAvailableHeight =
-      height - rootEl.getBoundingClientRect().top - bottomGap + 60;
+      height - rootEl.getBoundingClientRect().top - bottomGap + 60 - offsets;
     const bodyAvailableHeight =
       rootAvailableHeight - toolbarHeight - footerHeight - headerHeight;
     const computedRows = Math.max(
@@ -566,7 +568,7 @@ const DataGrid = <T extends object>({
 
     setCalculatedPageSize(computedRows);
     setGridHeight(Math.max(rootAvailableHeight, rowHeightValue * 2));
-  }, [autoPageSizeOnDesktop, up, height, rowHeight, pageSize, loading]);
+  }, [autoPageSizeOnDesktop, up, height, rowHeight, pageSize, loading, offsets]);
 
   const effectivePageSize =
     autoPageSizeOnDesktop && up("nt") && calculatedPageSize
@@ -911,35 +913,35 @@ const DataGrid = <T extends object>({
         showExport ||
         actions ||
         (showRowSelection && selectedCount > 0)) && (
-        <div className={styles.toolbar}>
-          <div className={styles.toolbarLeft}>
-            {(title || subtitle) && (
-              <div className={styles.titleBlock}>
-                {title && <h2 className={styles.title}>{title}</h2>}
-                {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-              </div>
-            )}
+          <div className={styles.toolbar}>
+            <div className={styles.toolbarLeft}>
+              {(title || subtitle) && (
+                <div className={styles.titleBlock}>
+                  {title && <h2 className={styles.title}>{title}</h2>}
+                  {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+                </div>
+              )}
+            </div>
+            <div className={styles.toolbarRight}>
+              {showRowSelection && selectedCount > 0 && (
+                <span className={styles.selectionBadge}>
+                  {selectedCount} selecionado{selectedCount > 1 ? "s" : ""}
+                </span>
+              )}
+              {showExport && (
+                <button
+                  className={styles.toolBtn}
+                  onClick={handleExport}
+                  title="Exportar CSV"
+                >
+                  <IconDownload />
+                  <span>Exportar</span>
+                </button>
+              )}
+              {actions && <div className={styles.toolbarActions}>{actions}</div>}
+            </div>
           </div>
-          <div className={styles.toolbarRight}>
-            {showRowSelection && selectedCount > 0 && (
-              <span className={styles.selectionBadge}>
-                {selectedCount} selecionado{selectedCount > 1 ? "s" : ""}
-              </span>
-            )}
-            {showExport && (
-              <button
-                className={styles.toolBtn}
-                onClick={handleExport}
-                title="Exportar CSV"
-              >
-                <IconDownload />
-                <span>Exportar</span>
-              </button>
-            )}
-            {actions && <div className={styles.toolbarActions}>{actions}</div>}
-          </div>
-        </div>
-      )}
+        )}
 
       {/* TABELA */}
       <div className={styles.tableWrap}>
@@ -1006,8 +1008,8 @@ const DataGrid = <T extends object>({
                         style={{
                           justifyContent: mapAlign(
                             colDef.headerAlign ??
-                              colDef.textAlign ??
-                              headerAlign,
+                            colDef.textAlign ??
+                            headerAlign,
                           ),
                         }}
                       >
@@ -1015,9 +1017,9 @@ const DataGrid = <T extends object>({
                           {header.isPlaceholder
                             ? null
                             : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
                         </span>
                         {side && (
                           <span className={styles.frozenIndicator}>
