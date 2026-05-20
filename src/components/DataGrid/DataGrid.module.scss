@@ -411,7 +411,8 @@ $surface-2:     #f1f0ed;   // hover secundário, inputs
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
-  font-size: $font-size-sm;
+  font-size: $font-size-xs;
+  font-weight: bold;
   background: inherit;
 }
 
@@ -441,6 +442,8 @@ $surface-2:     #f1f0ed;   // hover secundário, inputs
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 500;
+  color: $gray-600;
 }
 
 .cellWithBadge {

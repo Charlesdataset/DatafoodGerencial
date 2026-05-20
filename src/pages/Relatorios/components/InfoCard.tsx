@@ -9,13 +9,15 @@ export interface InfoCardProps {
     accent?: string;
     accentPill?: string;
     value: number;
+    icone?: any;
 }
 
 export const InfoCard: React.FC<InfoCardProps> = (
     { title = 'Total ICMS ST',
         accent = 'rgb(238, 136, 40)',
         accentPill = 'rgba(238, 136, 40, 0.2)',
-        value = 0 }: InfoCardProps
+        value = 0,
+        icone = faFile }: InfoCardProps
 ) => {
 
 
@@ -30,7 +32,7 @@ export const InfoCard: React.FC<InfoCardProps> = (
                     </div>
                     <div className={styles.iconContainer}>
                         <div className={styles.pill}>
-                            <FontAwesomeIcon icon={faFile} color={accent} />
+                            <FontAwesomeIcon icon={icone} color={accent} />
                         </div>
                     </div>
                 </div>

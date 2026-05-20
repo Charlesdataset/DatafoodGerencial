@@ -66,10 +66,10 @@ export type ExtendedColumnDef<T> = ColumnDef<T> & {
 export interface DataGridServerSideProps<T extends object> {
     data: T[];
     columns: ExtendedColumnDef<T>[];
-    totalRows: number; // Total de registros no backend
-    limit: number; // PageSize atual
-    offset: number; // Offset atual
-    onPaginationChange: (limit: number, offset: number) => void; // Callback quando mudar página/pageSize
+    totalRows: number;
+    limit: number;
+    offset: number;
+    onPaginationChange: (limit: number, offset: number) => void;
     pageSizeOptions?: number[];
     showPagination?: boolean;
     showPageSizeSelector?: boolean;
@@ -102,7 +102,7 @@ export interface DataGridServerSideProps<T extends object> {
 }
 
 // ============================================
-// FORMATAÇÃO (mesma do original)
+// FORMATAÇÃO
 // ============================================
 const applyPredefinedMask = (value: any, maskType: string): string => {
     if (value === undefined || value === null) return "";
@@ -197,7 +197,7 @@ const formatCellValue = (
 };
 
 // ============================================
-// ÍCONES (mesmos do original)
+// ÍCONES
 // ============================================
 const IconSort = () => (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -435,7 +435,7 @@ const Badge: React.FC<{ label: string; color: string }> = React.memo(
 );
 
 // ============================================
-// COMPONENTE PRINCIPAL (SERVER SIDE)
+// COMPONENTE PRINCIPAL (SERVER SIDE) - CORRIGIDO
 // ============================================
 const DataGridServerSide = <T extends object>({
     data,
@@ -497,15 +497,16 @@ const DataGridServerSide = <T extends object>({
     const [colWidths, setColWidths] = useState<Record<string, number>>({});
     const [calculatedLimit, setCalculatedLimit] = useState<number | undefined>(undefined);
     const [gridHeight, setGridHeight] = useState<number | undefined>(undefined);
+    const [isAutoSizeReady, setIsAutoSizeReady] = useState(false);
     const tableRef = useRef<HTMLTableElement>(null);
     const rootRef = useRef<HTMLDivElement>(null);
     const cogMenuRef = useRef<HTMLDivElement>(null);
+    const resizeObserverRef = useRef<ResizeObserver | null>(null);
     const { height, up } = useResponsive();
 
     const effectiveLimit =
         autoPageSizeOnDesktop && up("nt") && calculatedLimit ? calculatedLimit : limit;
 
-    // Cálculo da página atual baseado em offset e limit
     const currentPage = Math.floor(offset / effectiveLimit) + 1;
     const totalPages = Math.ceil(totalRows / effectiveLimit);
 
@@ -519,48 +520,92 @@ const DataGridServerSide = <T extends object>({
         return () => document.removeEventListener("mousedown", handler);
     }, []);
 
+    // Cálculo do auto page size com ResizeObserver e debounce
     useEffect(() => {
         if (!autoPageSizeOnDesktop || !up("nt") || !rootRef.current) {
             setCalculatedLimit(undefined);
             setGridHeight(undefined);
+            setIsAutoSizeReady(false);
             return;
         }
 
-        const rootEl = rootRef.current;
-        const toolbarEl = rootEl.querySelector(`.${styles.toolbar}`) as HTMLElement | null;
-        const footerEl = rootEl.querySelector(`.${styles.footer}`) as HTMLElement | null;
-        const theadEl = tableRef.current?.querySelector("thead") as HTMLElement | null;
+        let timeoutId: NodeJS.Timeout;
+        let isMounted = true;
 
-        const toolbarHeight = toolbarEl?.offsetHeight ?? 0;
-        const footerHeight = footerEl?.offsetHeight ?? 0;
-        const headerHeight = theadEl?.offsetHeight ?? 0;
-        const rowHeightValue =
-            typeof rowHeight === "number"
-                ? rowHeight
-                : rowHeight
-                    ? parseInt(String(rowHeight), 10) || 44
-                    : 44;
-        const bottomGap = 80;
+        const calculateDimensions = () => {
+            if (!isMounted || !rootRef.current || !tableRef.current) return;
 
-        const rootAvailableHeight =
-            height - rootEl.getBoundingClientRect().top - bottomGap + 60 - offsets;
-        const bodyAvailableHeight =
-            rootAvailableHeight - toolbarHeight - footerHeight - headerHeight;
-        const computedRows = Math.max(
-            1,
-            Math.floor(bodyAvailableHeight / rowHeightValue),
-        );
+            const rootEl = rootRef.current;
+            const toolbarEl = rootEl.querySelector(`.${styles.toolbar}`) as HTMLElement | null;
+            const footerEl = rootEl.querySelector(`.${styles.footer}`) as HTMLElement | null;
+            const theadEl = tableRef.current.querySelector("thead") as HTMLElement | null;
 
-        setCalculatedLimit(computedRows);
-        setGridHeight(Math.max(rootAvailableHeight, rowHeightValue * 2));
-    }, [autoPageSizeOnDesktop, up, height, rowHeight, offsets]);
+            const toolbarHeight = toolbarEl?.offsetHeight ?? 0;
+            const footerHeight = footerEl?.offsetHeight ?? 0;
+            const headerHeight = theadEl?.offsetHeight ?? 0;
+            const rowHeightValue =
+                typeof rowHeight === "number"
+                    ? rowHeight
+                    : rowHeight
+                        ? parseInt(String(rowHeight), 10) || 44
+                        : 44;
+            const bottomGap = 80;
 
+            const rootRect = rootEl.getBoundingClientRect();
+            const rootAvailableHeight =
+                height - rootRect.top - bottomGap + 60 - offsets;
+            const bodyAvailableHeight =
+                rootAvailableHeight - toolbarHeight - footerHeight - headerHeight;
+            const computedRows = Math.max(1, Math.floor(bodyAvailableHeight / rowHeightValue));
+
+            if (computedRows > 0 && computedRows !== calculatedLimit) {
+                setCalculatedLimit(computedRows);
+            }
+
+            setGridHeight(Math.max(rootAvailableHeight, rowHeightValue * 2));
+        };
+
+        const debouncedCalculate = () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                calculateDimensions();
+            }, 150);
+        };
+
+        // Calcula inicialmente após um pequeno delay para garantir DOM estável
+        const initialTimer = setTimeout(() => {
+            calculateDimensions();
+            setIsAutoSizeReady(true);
+        }, 100);
+
+        // Usa ResizeObserver para detectar mudanças no tamanho do container
+        resizeObserverRef.current = new ResizeObserver(() => {
+            debouncedCalculate();
+        });
+
+        resizeObserverRef.current.observe(rootRef.current);
+
+        window.addEventListener('resize', debouncedCalculate);
+
+        return () => {
+            isMounted = false;
+            clearTimeout(timeoutId);
+            clearTimeout(initialTimer);
+            if (resizeObserverRef.current) {
+                resizeObserverRef.current.disconnect();
+            }
+            window.removeEventListener('resize', debouncedCalculate);
+        };
+    }, [autoPageSizeOnDesktop, up, height, rowHeight, offsets, calculatedLimit]);
+
+    // Notifica mudança de paginação - com prevenção de loop
     useEffect(() => {
         if (!autoPageSizeOnDesktop || !up("nt") || calculatedLimit == null) return;
-        if (limit !== calculatedLimit) {
+        if (!isAutoSizeReady) return;
+        if (calculatedLimit !== limit && !loading) {
             onPaginationChange(calculatedLimit, 0);
         }
-    }, [autoPageSizeOnDesktop, up, calculatedLimit, limit, onPaginationChange]);
+    }, [autoPageSizeOnDesktop, up, calculatedLimit, limit, onPaginationChange, loading, isAutoSizeReady]);
 
     // Notifica seleção ao pai
     useEffect(() => {
@@ -571,23 +616,33 @@ const DataGridServerSide = <T extends object>({
         onSelectionChange(selected);
     }, [rowSelection, data, onSelectionChange]);
 
-    // Mede larguras reais das colunas
+    // Mede larguras reais das colunas com debounce
     useEffect(() => {
         if (!tableRef.current) return;
         if (Object.keys(frozenCols).length === 0) return;
-        const ths = tableRef.current.querySelectorAll<HTMLElement>(
-            "thead th[data-colid]",
-        );
-        const widths: Record<string, number> = {};
-        ths.forEach((th) => {
-            const id = th.dataset.colid!;
-            widths[id] = th.offsetWidth;
-        });
-        setColWidths((prev) => {
-            const changed = Object.keys(widths).some((k) => prev[k] !== widths[k]);
-            return changed ? widths : prev;
-        });
-    }, [frozenCols, columnVisibility, columns.length]);
+
+        let timeoutId: NodeJS.Timeout;
+
+        const measureWidths = () => {
+            const ths = tableRef.current?.querySelectorAll<HTMLElement>("thead th[data-colid]");
+            if (!ths) return;
+
+            const widths: Record<string, number> = {};
+            ths.forEach((th) => {
+                const id = th.dataset.colid!;
+                widths[id] = th.offsetWidth;
+            });
+
+            setColWidths((prev) => {
+                const changed = Object.keys(widths).some((k) => prev[k] !== widths[k]);
+                return changed ? widths : prev;
+            });
+        };
+
+        timeoutId = setTimeout(measureWidths, 100);
+
+        return () => clearTimeout(timeoutId);
+    }, [frozenCols, columnVisibility, columns.length, data]);
 
     // Handlers de paginação server-side
     const goToPage = useCallback(
@@ -612,7 +667,6 @@ const DataGridServerSide = <T extends object>({
 
     const changePageSize = useCallback(
         (newSize: number) => {
-            // Reset offset para 0 quando mudar o pageSize
             onPaginationChange(newSize, 0);
         },
         [onPaginationChange],
@@ -701,7 +755,6 @@ const DataGridServerSide = <T extends object>({
         [allColumns],
     );
 
-    // Configuração do tanstack table (sem paginação nativa)
     const table = useReactTable({
         data,
         columns: processedColumns as unknown as ColumnDef<T>[],
@@ -720,10 +773,9 @@ const DataGridServerSide = <T extends object>({
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         enableRowSelection: showRowSelection,
-        manualPagination: true, // Importante: desativa paginação automática
+        manualPagination: true,
     });
 
-    // Números de página para exibição
     const pageNumbers = useMemo<(number | "...")[]>(() => {
         const pages: (number | "...")[] = [];
         if (totalPages <= 7) {
@@ -810,7 +862,6 @@ const DataGridServerSide = <T extends object>({
         });
     };
 
-    // Export CSV
     const handleExport = useCallback(() => {
         const visCols = columns;
         const headers = visCols.map((c) =>
@@ -845,7 +896,6 @@ const DataGridServerSide = <T extends object>({
             ref={rootRef}
             className={`${styles.root} ${className} ${compact ? styles.compact : ""}`}
         >
-            {/* TOOLBAR */}
             {(title ||
                 subtitle ||
                 showExport ||
@@ -881,7 +931,6 @@ const DataGridServerSide = <T extends object>({
                     </div>
                 )}
 
-            {/* TABELA */}
             <div className={styles.tableWrap} style={gridHeight && autoPageSizeOnDesktop && up("nt") ? { height: `${gridHeight}px` } : undefined}>
                 <table
                     ref={tableRef}
@@ -1074,7 +1123,6 @@ const DataGridServerSide = <T extends object>({
                 </table>
             </div>
 
-            {/* FOOTER */}
             <div className={styles.footer}>
                 <div className={styles.footerInfo}>
                     {!loading && totalRows > 0 ? (

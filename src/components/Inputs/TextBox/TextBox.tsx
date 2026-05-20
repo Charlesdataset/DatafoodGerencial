@@ -42,6 +42,7 @@ interface TextBoxProps extends Omit<
   lowercase?: boolean;
   capitalize?: boolean;
   classnames?: string;
+  isFormField?: boolean;
 }
 
 const TextBox = forwardRef<HTMLInputElement, TextBoxProps>(
@@ -76,6 +77,7 @@ const TextBox = forwardRef<HTMLInputElement, TextBoxProps>(
       lowercase = false,
       capitalize = false,
       classnames = "",
+      isFormField = true,
       ...props
     },
     ref,
@@ -431,7 +433,7 @@ const TextBox = forwardRef<HTMLInputElement, TextBoxProps>(
 
     return (
       <div
-        className={`${classnames} ${styles.formField} ${disabled ? styles.disabled : ""}`}
+        className={`${classnames} ${isFormField ? styles.formField : ""} ${disabled ? styles.disabled : ""}`}
       >
         {label && (
           <label className={styles.label}>
