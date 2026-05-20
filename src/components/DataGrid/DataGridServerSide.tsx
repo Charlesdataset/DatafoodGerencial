@@ -15,6 +15,7 @@ import React, {
     useRef,
     useState,
 } from "react";
+import { useResponsive } from "../../hooks/useResponsive";
 import dayjsUtc from "../../utils/dates";
 import { IconPin, IconPinOff } from "./DataGrid";
 import styles from "./DataGrid.module.scss";
@@ -96,6 +97,8 @@ export interface DataGridServerSideProps<T extends object> {
     title?: string;
     subtitle?: string;
     actions?: React.ReactNode;
+    autoPageSizeOnDesktop?: boolean;
+    offsets?: number;
 }
 
 // ============================================
@@ -467,6 +470,8 @@ const DataGridServerSide = <T extends object>({
     title,
     subtitle,
     actions,
+    autoPageSizeOnDesktop = false,
+    offsets = 0,
 }: DataGridServerSideProps<T>) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -490,13 +495,19 @@ const DataGridServerSide = <T extends object>({
     });
 
     const [colWidths, setColWidths] = useState<Record<string, number>>({});
+    const [calculatedLimit, setCalculatedLimit] = useState<number | undefined>(undefined);
+    const [gridHeight, setGridHeight] = useState<number | undefined>(undefined);
     const tableRef = useRef<HTMLTableElement>(null);
     const rootRef = useRef<HTMLDivElement>(null);
     const cogMenuRef = useRef<HTMLDivElement>(null);
+    const { height, up } = useResponsive();
+
+    const effectiveLimit =
+        autoPageSizeOnDesktop && up("nt") && calculatedLimit ? calculatedLimit : limit;
 
     // Cálculo da página atual baseado em offset e limit
-    const currentPage = Math.floor(offset / limit) + 1;
-    const totalPages = Math.ceil(totalRows / limit);
+    const currentPage = Math.floor(offset / effectiveLimit) + 1;
+    const totalPages = Math.ceil(totalRows / effectiveLimit);
 
     // Fecha cog ao clicar fora
     useEffect(() => {
@@ -507,6 +518,49 @@ const DataGridServerSide = <T extends object>({
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
     }, []);
+
+    useEffect(() => {
+        if (!autoPageSizeOnDesktop || !up("nt") || !rootRef.current) {
+            setCalculatedLimit(undefined);
+            setGridHeight(undefined);
+            return;
+        }
+
+        const rootEl = rootRef.current;
+        const toolbarEl = rootEl.querySelector(`.${styles.toolbar}`) as HTMLElement | null;
+        const footerEl = rootEl.querySelector(`.${styles.footer}`) as HTMLElement | null;
+        const theadEl = tableRef.current?.querySelector("thead") as HTMLElement | null;
+
+        const toolbarHeight = toolbarEl?.offsetHeight ?? 0;
+        const footerHeight = footerEl?.offsetHeight ?? 0;
+        const headerHeight = theadEl?.offsetHeight ?? 0;
+        const rowHeightValue =
+            typeof rowHeight === "number"
+                ? rowHeight
+                : rowHeight
+                    ? parseInt(String(rowHeight), 10) || 44
+                    : 44;
+        const bottomGap = 80;
+
+        const rootAvailableHeight =
+            height - rootEl.getBoundingClientRect().top - bottomGap + 60 - offsets;
+        const bodyAvailableHeight =
+            rootAvailableHeight - toolbarHeight - footerHeight - headerHeight;
+        const computedRows = Math.max(
+            1,
+            Math.floor(bodyAvailableHeight / rowHeightValue),
+        );
+
+        setCalculatedLimit(computedRows);
+        setGridHeight(Math.max(rootAvailableHeight, rowHeightValue * 2));
+    }, [autoPageSizeOnDesktop, up, height, rowHeight, offsets]);
+
+    useEffect(() => {
+        if (!autoPageSizeOnDesktop || !up("nt") || calculatedLimit == null) return;
+        if (limit !== calculatedLimit) {
+            onPaginationChange(calculatedLimit, 0);
+        }
+    }, [autoPageSizeOnDesktop, up, calculatedLimit, limit, onPaginationChange]);
 
     // Notifica seleção ao pai
     useEffect(() => {
@@ -538,10 +592,10 @@ const DataGridServerSide = <T extends object>({
     // Handlers de paginação server-side
     const goToPage = useCallback(
         (page: number) => {
-            const newOffset = (page - 1) * limit;
-            onPaginationChange(limit, newOffset);
+            const newOffset = (page - 1) * effectiveLimit;
+            onPaginationChange(effectiveLimit, newOffset);
         },
-        [limit, onPaginationChange],
+        [effectiveLimit, onPaginationChange],
     );
 
     const nextPage = useCallback(() => {
@@ -687,7 +741,7 @@ const DataGridServerSide = <T extends object>({
     }, [totalPages, currentPage]);
 
     const startRow = totalRows === 0 ? 0 : offset + 1;
-    const endRow = Math.min(offset + limit, totalRows);
+    const endRow = Math.min(offset + effectiveLimit, totalRows);
     const selectedCount = Object.values(rowSelection).filter(Boolean).length;
 
     // Freeze styles
@@ -762,7 +816,7 @@ const DataGridServerSide = <T extends object>({
         const headers = visCols.map((c) =>
             typeof c.header === "string" ? c.header : String((c as any).id ?? ""),
         );
-        const rows = data.map((row, idx) =>
+        const rows = data.map((row) =>
             visCols.map((col) => {
                 const accessorKey = (col as any).accessorKey;
                 const id = (col as any).id;
@@ -828,7 +882,7 @@ const DataGridServerSide = <T extends object>({
                 )}
 
             {/* TABELA */}
-            <div className={styles.tableWrap}>
+            <div className={styles.tableWrap} style={gridHeight && autoPageSizeOnDesktop && up("nt") ? { height: `${gridHeight}px` } : undefined}>
                 <table
                     ref={tableRef}
                     className={[
@@ -1097,7 +1151,7 @@ const DataGridServerSide = <T extends object>({
                                 <label className={styles.psLabel}>Linhas:</label>
                                 <select
                                     className={styles.psSelect}
-                                    value={limit}
+                                    value={effectiveLimit}
                                     onChange={(e) => changePageSize(Number(e.target.value))}
                                 >
                                     {pageSizeOptions.map((s) => (

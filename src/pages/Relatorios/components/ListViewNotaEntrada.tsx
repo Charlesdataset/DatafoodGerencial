@@ -20,35 +20,41 @@ export const ListViewNotaEntreda = () => {
     const [dataFinal, setDataFinal] = useState(null);
     const [ordenadoPor, setOrdenadoPor] = useState(null);
     const [textSearch, setTextSearch] = useState("");
-    const [notas, setNotas] = useState([]);
-    const [notasReport, setNotasReport] = useState([]);
-    const [url, setUrl] = useState(null);
+    const [notas, setNotas] = useState<any[]>([]);
+    const [notasReport, setNotasReport] = useState<any[]>([]);
+    const [url, setUrl] = useState<string | null>(null);
     const [showPreviewPdf, setShowPreviewPdf] = useState(false);
-    const [totalRows, setTotalRows] = useState(0);
-    const [limit, setLimit] = useState(5);
+    const [totalRows, setTotalRows] = useState(10);
+    const [limit, setLimit] = useState(10);
     const [offset, setOffset] = useState(0);
+    const ROW_HEIGHT = 42;
 
-
-
-    const fechNotas = async () => {
-
+    const fetchNotas = async () => {
         const res = await api.get(`/entrada-nf?limit=${limit}&offset=${offset}`);
         if (res?.status === 200) {
-            setNotas(res.data);
+            const payload = res.data;
+            const dataArray = Array.isArray(payload) ? payload : payload?.data ?? [];
+            const headerTotal = res.headers?.["x-total-count"];
+            const totalFromPayload =
+                payload?.totalRows ?? payload?.total ?? payload?.count ?? payload?.totalCount ??
+                (headerTotal ? Number(headerTotal) : undefined);
+
+            setNotas(dataArray);
+            // setTotalRows(
+            //     typeof totalFromPayload === "number" && !Number.isNaN(totalFromPayload)
+            //         ? totalFromPayload
+            //         : dataArray.length,
+            // );
         }
+    };
 
-
-
-
-    }
-
+    
 
     useEffect(() => {
+        fetchNotas();
+    }, [limit, offset]);
 
-        fechNotas();
-
-
-    }, [limit, offset])
+   
 
 
 
@@ -96,20 +102,26 @@ export const ListViewNotaEntreda = () => {
                     </Fluid>
                 </Card.Body>
             </Card>
-            <DataGridServerSide
-                columns={columns}
-                data={notas}
-                limit={limit}
-                offset={offset}
-                totalRows={totalRows}
-                onPaginationChange={(newLimit, newOffset) => {
-                    setLimit(newLimit);
-                    setOffset(newOffset);
-
-                }}
-                showPagination
-                showPageSizeSelector
-            />
+           
+               
+                <DataGridServerSide
+                    className="mt-4"
+                    columns={columns}
+                    data={notas}
+                    limit={limit}
+                    offset={offset}
+                    totalRows={totalRows}
+                    rowHeight={ROW_HEIGHT}
+                    autoPageSizeOnDesktop
+                    offsets={80}
+                    onPaginationChange={(newLimit, newOffset) => {
+                        setLimit(newLimit);
+                        setOffset(newOffset);
+                    }}
+                    showPagination
+                    showPageSizeSelector
+                />
+           
 
             <Fluid
                 className="mt-4"
