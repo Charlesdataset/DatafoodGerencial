@@ -42,7 +42,7 @@ const pageTitles: Record<string, string> = {
 export const Header = ({ onMenuClick }: HeaderProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, setIsAuthenticated, dataInicial, dataFinal, tipoTurnos, setTipoTurnos, turnosSelecionados, setTurnosSelecionados, setDataInicial, setDataFinal, currLogo, currLogoRelatorio } =
+  const { user, setIsAuthenticated, dataInicial, dataFinal, tipoTurnos, setTipoTurnos, turnosSelecionados, setTurnosSelecionados, setDataInicial, setDataFinal, currLogo, currLogoRelatorio, canShowTurnoTipo, setCanShowTurnoTipo } =
     useApp();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -106,6 +106,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
       setShowBackButton(true);
     });
 
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -113,6 +114,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
       unsubscribeIsCommited();
       unsubscribeRefresh();
       usubscribeShowBackButton();
+
     };
   }, []);
 
@@ -245,19 +247,22 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
             {!isMobile && (
               <>
+                {canShowTurnoTipo && (
 
-                <MultiTextBox
+                  <MultiTextBox
 
-                  colorMode="multicolor"
-                  onChange={(labels) => {
-                    setTurnosSelecionados((prev) =>
-                      prev.filter((t) => labels.includes(`${t.label}`))
-                    )
-                  }}
-                  values={turnosSelecionados.map((t) => `${t.label}`)} boxHeight={40} className="mb-0" placeholder="Tipos de turnos"
-                  onInputClick={() => {
-                    setIsTipoTurnoSearchOpen(true);
-                  }} />
+                    colorMode="multicolor"
+                    onChange={(labels) => {
+                      setTurnosSelecionados((prev) =>
+                        prev.filter((t) => labels.includes(`${t.label}`))
+                      )
+                    }}
+                    values={turnosSelecionados.map((t) => `${t.label}`)} boxHeight={40} className="mb-0" placeholder="Tipos de turnos"
+                    onInputClick={() => {
+                      setIsTipoTurnoSearchOpen(true);
+                    }} />
+
+                )}
 
 
                 <DateRangePicker startDate={dataInicial} endDate={dataFinal} onChange={(s, e) => {

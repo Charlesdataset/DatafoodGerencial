@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
     const [hasLoaded, setHasLoaded] = useState(false);
     const [comparacaoMes, setComparacaoMes] = useState<any>(null);
 
-    const { dataInicial, dataFinal, turnosSelecionados, primaryColor } = useApp();
+    const { dataInicial, dataFinal, turnosSelecionados, primaryColor, setCanShowTurnoTipo } = useApp();
 
     const findAllData = async () => {
         try {
@@ -246,6 +246,9 @@ const Dashboard: React.FC = () => {
         findAllData();
     }, [dataInicial, dataFinal, turnosSelecionados]);
 
+    useEffect(() => {
+        setCanShowTurnoTipo(true)
+    }, [])
 
 
 

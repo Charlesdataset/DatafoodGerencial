@@ -40,6 +40,8 @@ interface AppContextType {
   setTipoTurnos: (turnos: Array<any>) => void;
   turnosSelecionados: any;
   setTurnosSelecionados: (turno: any) => void;
+  canShowTurnoTipo: boolean;
+  setCanShowTurnoTipo: (canShow: boolean) => void;
 }
 
 export interface CompanyInfo {
@@ -70,6 +72,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [dataFinal, setDataFinal] = useState<Date>(null);
   const [tipoTurnos, setTipoTurnos] = useState([]);
   const [turnosSelecionados, setTurnosSelecionados] = useState([]);
+  const [canShowTurnoTipo, setCanShowTurnoTipo] = useState(false);
 
   useEffect(() => {
     if (companyInfo) {
@@ -162,7 +165,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       tipoTurnos,
       setTipoTurnos,
       turnosSelecionados,
-      setTurnosSelecionados
+      setTurnosSelecionados,
+      canShowTurnoTipo,
+      setCanShowTurnoTipo,
     }),
     [
       currLogo,
@@ -180,6 +185,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       dataFinal,
       tipoTurnos,
       turnosSelecionados,
+      canShowTurnoTipo
 
     ],
   );

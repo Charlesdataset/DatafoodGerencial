@@ -1,24 +1,28 @@
-import { faBox, faDollar, faHandHoldingDollar, faPrint } from "@fortawesome/free-solid-svg-icons";
+import { faBox, faCancel, faDollar, faFileExcel, faFilePdf, faHandHoldingDollar, faPrint } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import Card from "../../../components/Card/Card";
 import type { ExtendedColumnDef } from "../../../components/DataGrid/DataGrid";
 import DataGridServerSide from "../../../components/DataGrid/DataGridServerSide";
-import { DatePicker } from "../../../components/DatePicker/DatePicker";
 import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import Select from "../../../components/Inputs/Select/Select";
 import TextBox from "../../../components/Inputs/TextBox/TextBox";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
+import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
+import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
+import Switch from "../../../components/Switch/Switch";
+import { useApp } from "../../../contexts/AppContext";
+import handleReportNotaEntrada from "../../../reports/entrada/entadaNF.report";
 import { api } from "../../../services/api";
-import { EntradaNFOrderBy, type EntradaNfTotais } from "../types/relatorios.types";
+import { EntradaNFAgrupadoPor, EntradaNFOrderBy, type EntradaNfTotais } from "../types/relatorios.types";
 import { InfoCard } from "./InfoCard";
 
 
 export const ListViewNotaEntreda = () => {
-    const [dataInicial, setDataInicial] = useState(null); //TODO: ajustar para data hoje 
-    const [dataFinal, setDataFinal] = useState(null); //TODO: ajustar para data de hoje
+
     const [valorInicial, setValorInicial] = useState<number | undefined>(undefined);
     const [valorFinal, setValorFinal] = useState<number | undefined>(undefined);
     const [ordenadoPor, setOrdenadoPor] = useState<EntradaNFOrderBy>(null);
@@ -31,7 +35,11 @@ export const ListViewNotaEntreda = () => {
     const [totalRows, setTotalRows] = useState(10);
     const [limit, setLimit] = useState(10);
     const [offset, setOffset] = useState(0);
+    const [exibirItens, setExibirItens] = useState(false);
+    const [modalReportShow, setModalReportShow] = useState(false);
+    const [agrupadoPor, setAgrupadoPor] = useState<EntradaNFAgrupadoPor>(EntradaNFAgrupadoPor.NENHUM)
     const ROW_HEIGHT = 42;
+    const { dataInicial, dataFinal, companyInfo, currLogoRelatorio } = useApp();
 
     const fetchNotas = async () => {
         const params = {
@@ -83,6 +91,39 @@ export const ListViewNotaEntreda = () => {
         fetchTotais();
         fetchNotas();
     }, [offset])
+
+
+    const handleGeneratePdf = async () => {
+        const params = {
+            dataInicial: dataInicial,
+            dataFinal: dataFinal,
+            orderBy: ordenadoPor,
+            valorInicial: valorInicial,
+            valorFinal: valorFinal,
+            textSearch: textSearch,
+            agrupadoPor: agrupadoPor,
+            exibeItens: exibirItens
+        }
+        const res = await api.get(`/entrada-nf/report`, { params });
+        if (res.status == 200) {
+            const data = res.data;
+            if (!data) {
+                toast.info("Não encontramos dados suficientes para gerar o relatório!")
+            }
+            else {
+
+                const bytes = await handleReportNotaEntrada(res.data, agrupadoPor, ordenadoPor, exibirItens, companyInfo, currLogoRelatorio);
+                const blob = new Blob([bytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                setUrl(url);
+                setShowPreviewPdf(true);
+
+
+            }
+
+        }
+    }
+
 
 
 
@@ -169,11 +210,66 @@ export const ListViewNotaEntreda = () => {
 
     return (
         <>
+            <Modal isOpen={modalReportShow} onClose={() => { }} size="md">
+                <Modal.Header onClose={() => {
+                    setModalReportShow(false)
+                }}>
+                    <Flex>
+                        <FontAwesomeIcon icon={faPrint} className="mr-2" />
+                        Visualização de impressão
+
+                    </Flex>
+                </Modal.Header>
+                <Modal.Body>
+                    <Fluid xs={[100, 100]}>
+                        <Select label="Agrupado por" value={agrupadoPor} options={[
+                            { label: 'Nenhum', value: EntradaNFAgrupadoPor.NENHUM },
+                            { label: 'Fornecedor', value: EntradaNFAgrupadoPor.FORNECEDOR },
+                            { label: 'Data de entrada', value: EntradaNFAgrupadoPor.DATA_ENTRADA },
+                            { label: 'CFOP UF DIA', value: EntradaNFAgrupadoPor.CFOP_UF_DIA }
+                        ]} onChange={(e) => {
+                            setAgrupadoPor(e as EntradaNFAgrupadoPor)
+                        }} />
+                        <Switch label="Exibir itens" checked={exibirItens}
+
+                            onChange={(e) => {
+                                setExibirItens(e)
+                            }} />
+                    </Fluid>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Fluid
+                        xs={['expand']}
+                    >
+                        <FormButton variant="outline-secondary" className="justify-content-center">
+                            <Flex wrap="nowrap">
+                                <FontAwesomeIcon icon={faCancel} />
+                                Cancelar
+                            </Flex>
+                        </FormButton>
+                        <FormButton className="justify-content-center" style={{ background: '#217145' }}>
+                            <Flex wrap="nowrap">
+                                <FontAwesomeIcon icon={faFileExcel} />
+                                Gerar Excel
+                            </Flex>
+                        </FormButton>
+                        <FormButton className="justify-content-center " style={{ background: '#C50606' }} onClick={() => {
+                            setModalReportShow(false);
+                            handleGeneratePdf();
+                        }}>
+                            <Flex wrap="nowrap">
+                                <FontAwesomeIcon icon={faFilePdf} />
+                                Gerar PDF
+                            </Flex>
+                        </FormButton>
+                    </Fluid>
+                </Modal.Footer>
+            </Modal>
 
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={['expand', 12, 12, 'auto', 15, 15, 'auto']}
+                        xs={['expand', 'auto', 'auto', 'auto', 'auto']}
                     >
                         <TextSearch value={textSearch} placeholder="Forncedor, numero..." onChange={(e) => {
                             setTextSearch(e.target.value)
@@ -196,14 +292,11 @@ export const ListViewNotaEntreda = () => {
                             { label: 'Entrada Z-A', value: EntradaNFOrderBy.ENTRADA_ZA },
 
                         ]} />
-                        <DatePicker value={dataInicial} placeholder="Data Início" onChange={(e) => {
-                            setDataInicial(e);
-                        }} className="mb-0" />
-                        <DatePicker value={dataFinal} placeholder="Data Final" onChange={(e) => {
-                            setDataFinal(e)
-                        }} className="mb-0" />
 
-                        <FormButton className="mb-0" >
+
+                        <FormButton className="mb-0" onClick={() => {
+                            setModalReportShow(true)
+                        }}>
                             <FontAwesomeIcon icon={faPrint} />
 
                         </FormButton>
@@ -265,7 +358,9 @@ export const ListViewNotaEntreda = () => {
 
 
             {showPreviewPdf && url && (
-                <PdfiumViewer pdfUrl={url} filename="" excelDataset={null} />
+                <PdfiumViewer pdfUrl={url} filename="" excelDataset={null} onClose={() => {
+                    setShowPreviewPdf(false)
+                }} />
 
             )}
         </>

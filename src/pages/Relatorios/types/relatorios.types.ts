@@ -27,5 +27,29 @@ export interface EntradaNfTotais {
   totalPIS: number;
   totalCOFINS: number;
   totalProdutos: number;
+}
 
+export interface RelatorioEntradaNF {
+  numero: number;
+  entrada: Date;
+  fornecedor: string;
+  serie: number;
+  baseSt: number;
+  icmsSt: number;
+  ipi: number;
+  frete: number;
+  total: number;
+  natureza: string;
+  chave: number;
+  itens?: ItensEntradaNFDto[];
+}
+export class ItensEntradaNFDto {
+  id: number;
+  descricao: string;
+  ncm: string;
+  cfop: string;
+  quantidade: number;
+  vlrUnitario: number;
+  vlrDesconto: number;
+  vlrTotal: number;
 }

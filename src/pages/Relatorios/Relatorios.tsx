@@ -1,9 +1,10 @@
 import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 import Card from '../../components/Card/Card';
 import Fluid from '../../components/Layout/Fluid';
+import { useApp } from '../../contexts/AppContext';
 import ListViewBairro from './components/ListViewBairro';
 import ListViewCliente from './components/ListViewCliente';
 import { ListViewNotaEntreda } from './components/ListViewNotaEntrada';
@@ -15,6 +16,7 @@ import ReportList from './components/ReportList';
 const Relatorios: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { setCanShowTurnoTipo } = useApp();
 
     // Pega o parâmetro 'listing' da URL
     const searchParams = new URLSearchParams(location.search);
@@ -24,6 +26,9 @@ const Relatorios: React.FC = () => {
     const handleNavigateToListing = (tipo: string) => {
         navigate(`/reports?listing=${tipo}`);
     };
+    useEffect(() => {
+        setCanShowTurnoTipo(false)
+    }, [])
 
     // Decide qual componente de listagem renderizar baseado no parâmetro
     const renderListView = () => {
