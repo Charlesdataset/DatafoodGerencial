@@ -54,9 +54,12 @@ export interface SectionV3 {
   content: ComponentV3[];
 }
 
+export type V3NumberMask = "number" | `number-${number}`;
+export type V3CurrencyMask = "currency" | `currency-${number}`;
+
 export type V3Mask =
-  | "number"
-  | "currency"
+  | V3NumberMask
+  | V3CurrencyMask
   | "percentage"
   | "cnpj"
   | "cpf"
@@ -64,8 +67,7 @@ export type V3Mask =
   | "cep"
   | "phone"
   | "date"
-  | "date-time"
-  | string;
+  | "date-time";
 
 export interface TableHeaderDef {
   key: string;

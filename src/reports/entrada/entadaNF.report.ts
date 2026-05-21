@@ -77,7 +77,7 @@ const handleReportNotaEntrada = async (
       content: [
         {
           type: 'fluidLayout',
-          sizes: ['40%', '52%', '33.33%'],
+          sizes: ['33%', '33%',"33%"],
           gap: 0,
           content: [
             {
@@ -96,21 +96,49 @@ const handleReportNotaEntrada = async (
               value: 'www.datasetsistemas.com.br',
               fontSize: 10,
               color: '#303030',
-              align: 'left',
+              align: 'center',
               margin: {
                 all: 5,
               },
             },
+            // {
+            //   type: 'card',
+            //   content:[],
+            //   backgroundColor: '#404040',
+            // },
+            // {
+            //   type: 'card',
+            //   content:[],
+            //   backgroundColor: '#404040',
+            // },
+            // {
+            //   type: 'card',
+            //   content:[],
+            //   backgroundColor: '#404040',
+            // }
             {
               type: 'text',
-              value: "Página '$page'/'$pages'",
+             value: "Página '$page'/'$pages'",
+             // value: "Página testando",
               fontSize: 10,
               color: '#303030',
+              
               align: 'right',
               margin: {
-                four: [5, 0, 0, 0],
+                four: [5,-40,5,5],
               },
+            
             },
+            // {
+            //   type: 'text',
+            //  value: "Texto Qualquer",
+            //  // value: "Página testando",
+            //   fontSize: 10,
+            //   color: '#303030',
+              
+            //   align: 'right',
+            
+            // },
           ],
         },
       ],
@@ -152,6 +180,7 @@ const handleReportNotaEntrada = async (
                     key: 'quantidade',
                     prefix: 'QUANTIDADE',
                     align: 'right',
+                    mask: 'number-3',
                     sum: true,
                   },
                   {

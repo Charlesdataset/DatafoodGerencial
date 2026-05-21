@@ -27,8 +27,8 @@ pub(crate) const V3_PAGE_W: f32 = PAGE_W;
 pub(crate) const V3_PAGE_H: f32 = PAGE_H;
 const FONT_SIZE: f32 = 10.0;
 const DEFAULT_MARGIN: f32 = 40.0;
-const PAGE_COUNT_PLACEHOLDER: &str = "__V3_PAGES__";
-const PAGE_NUMBER_PLACEHOLDER: &str = "__V3_PAGE__";
+const PAGE_COUNT_PLACEHOLDER: &str = "9999";
+const PAGE_NUMBER_PLACEHOLDER: &str = "9999";
 const RESERVED_PAGE_COUNT_TOKEN: &str = "$pages";
 const RESERVED_PAGE_NUMBER_TOKEN: &str = "$page";
 const RESERVED_PAGE_COUNT_QUOTED: &str = "'$pages'";
@@ -940,7 +940,15 @@ pub(crate) fn format_mask(value: &serde_json::Value, mask: Option<&str>) -> Stri
     };
     match mask {
         Some("number") => fmt_number(&s),
+        Some(m) if m.starts_with("number-") => {
+            let decimals = m[7..].parse::<usize>().unwrap_or(2);
+            fmt_number_with_precision(&s, decimals)
+        }
         Some("currency") => format!("R$ {}", fmt_number(&s)),
+        Some(m) if m.starts_with("currency-") => {
+            let decimals = m[9..].parse::<usize>().unwrap_or(2);
+            format!("R$ {}", fmt_number_with_precision(&s, decimals))
+        }
         Some("percentage") => {
             let v: f64 = s.parse().unwrap_or(0.0);
             format!("{:.2}%", (v * 100.0)).replace('.', ",")
@@ -1024,9 +1032,9 @@ fn fmt_number(raw: &str) -> String {
         }
         let fi: String = fi.chars().rev().collect();
         if neg {
-            format!("-{}.{}", fi, dec_p)
+            format!("-{},{}", fi, dec_p)
         } else {
-            format!("{}.{}", fi, dec_p)
+            format!("{},{}", fi, dec_p)
         }
     } else {
         let neg = raw.starts_with('-');
@@ -1045,6 +1053,46 @@ fn fmt_number(raw: &str) -> String {
         } else {
             format!("{},00", fi)
         }
+    }
+}
+
+fn fmt_number_with_precision(raw: &str, decimals: usize) -> String {
+    let value: f64 = raw.parse().unwrap_or(0.0);
+    fmt_number(&format!("{:.*}", decimals, value))
+}
+
+fn fmt_number_from_f64(value: f64, decimals: Option<usize>) -> String {
+    if let Some(dec) = decimals {
+        fmt_number(&format!("{:.*}", dec, value))
+    } else {
+        let mut raw = format!("{:.6}", value);
+        while raw.contains('.') && raw.ends_with('0') {
+            raw.pop();
+        }
+        if raw.ends_with('.') {
+            raw.pop();
+        }
+        if raw.is_empty() {
+            raw = "0".to_string();
+        }
+        fmt_number(&raw)
+    }
+}
+
+fn format_numeric_value(value: f64, mask: Option<&str>) -> String {
+    match mask {
+        Some(m) if m.starts_with("currency-") => {
+            let decimals = m[9..].parse::<usize>().unwrap_or(2);
+            format!("R$ {}", fmt_number_from_f64(value, Some(decimals)))
+        }
+        Some("currency") => format!("R$ {}", fmt_number_from_f64(value, Some(2))),
+        Some(m) if m.starts_with("number-") => {
+            let decimals = m[7..].parse::<usize>().unwrap_or(2);
+            fmt_number_from_f64(value, Some(decimals))
+        }
+        Some("number") => fmt_number_from_f64(value, None),
+        Some("percentage") => format!("{:.2}%", value * 100.0).replace('.', ","),
+        _ => fmt_number_from_f64(value, Some(2)),
     }
 }
 
@@ -1183,6 +1231,9 @@ fn resolve_fluid(sizes: &[V3Size], total: f32, gap: f32) -> Vec<f32> {
         for v in r.iter_mut().skip(fixed) {
             *v = share;
         }
+    } else if rem > 0.0 && !r.is_empty() {
+        let last = r.len() - 1;
+        r[last] += rem;
     }
     r
 }
@@ -1879,13 +1930,8 @@ fn render_child_section(
                         }
                     })
                     .sum();
-                match hdr.mask.as_deref() {
-                    Some("currency") => format!("R$ {:.2}", total),
-                    Some("number") => format!("{:.2}", total),
-                    Some("percentage") => format!("{:.2}%", total * 100.0),
-                    _ => format!("{:.2}", total),
-                }
-            } else {
+                    format_numeric_value(total, hdr.mask.as_deref())
+                } else {
                 String::new()
             };
             let enc = to_utf8_winansi(&val, val.len());
@@ -1984,12 +2030,7 @@ fn render_child_section(
                             }
                         })
                         .sum();
-                    match sbr.mask.as_deref() {
-                        Some("currency") => format!("R$ {:.2}", t).replace('.', ","),
-                        Some("number") => format!("{:.2}", t),
-                        Some("percentage") => format!("{:.2}%", t * 100.0),
-                        _ => format!("{:.2}", t),
-                    }
+                    format_numeric_value(t, sbr.mask.as_deref())
                 } else {
                     String::new()
                 };
@@ -4357,12 +4398,7 @@ fn render_table(
                                 .filter_map(|r| r.get(k))
                                 .filter_map(|v| v.as_f64())
                                 .sum();
-                            match hdr.mask.as_deref() {
-                                Some("currency") => format!("R$ {:.2}", t),
-                                Some("number") => format!("{:.2}", t),
-                                Some("percentage") => format!("{:.2}%", t * 100.0),
-                                _ => format!("{:.2}", t),
-                            }
+                            format_numeric_value(t, hdr.mask.as_deref())
                         }
                     };
                     let enc = to_utf8_winansi(&val, val.len());
@@ -4449,12 +4485,7 @@ fn render_table(
                                 .filter_map(|r| r.get(key))
                                 .filter_map(|v| v.as_f64())
                                 .sum();
-                            match sbr.mask.as_deref() {
-                                Some("currency") => format!("R$ {:.2}", t).replace('.', ","),
-                                Some("number") => format!("{:.2}", t),
-                                Some("percentage") => format!("{:.2}%", t * 100.0),
-                                _ => format!("{:.2}", t),
-                            }
+                            format_numeric_value(t, sbr.mask.as_deref())
                         } else {
                             String::new()
                         };
@@ -4541,12 +4572,7 @@ fn render_table(
                             .filter_map(|r| r.get(&hdr.key))
                             .filter_map(|v| v.as_f64())
                             .sum();
-                        match hdr.mask.as_deref() {
-                            Some("currency") => format!("R$ {:.2}", t),
-                            Some("number") => format!("{:.2}", t),
-                            Some("percentage") => format!("{:.2}%", t * 100.0),
-                            _ => format!("{:.2}", t),
-                        }
+                        format_numeric_value(t, hdr.mask.as_deref())
                     };
 
                     let al2 = al[*ci];
@@ -4846,12 +4872,7 @@ fn render_table(
                             .filter_map(|r| r.get(&hdr.key))
                             .filter_map(|v| v.as_f64())
                             .sum();
-                        match hdr.mask.as_deref() {
-                            Some("currency") => format!("R$ {:.2}", t),
-                            Some("number") => format!("{:.2}", t),
-                            Some("percentage") => format!("{:.2}%", t * 100.0),
-                            _ => format!("{:.2}", t),
-                        }
+                        format_numeric_value(t, hdr.mask.as_deref())
                     };
 
                     let al2 = al[*ci];
@@ -4971,12 +4992,7 @@ fn render_table(
                         .filter_map(|r| r.get(key))
                         .filter_map(|v| v.as_f64())
                         .sum();
-                    match sbr.mask.as_deref() {
-                        Some("currency") => format!("R$ {:.2}", t).replace('.', ","),
-                        Some("number") => format!("{:.2}", t),
-                        Some("percentage") => format!("{:.2}%", t * 100.0),
-                        _ => format!("{:.2}", t),
-                    }
+                    format_numeric_value(t, sbr.mask.as_deref())
                 } else {
                     String::new()
                 };
