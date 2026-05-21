@@ -13,6 +13,7 @@ import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
 import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
+import { exportToExcel, type TableHeaderDef } from "../../../utils/exportToExcel";
 import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
 import handleReportNotaEntrada from "../../../reports/entrada/entadaNF.report";
@@ -111,14 +112,12 @@ export const ListViewNotaEntreda = () => {
                 toast.info("Não encontramos dados suficientes para gerar o relatório!")
             }
             else {
-
+                setNotasReport(data);
                 const bytes = await handleReportNotaEntrada(res.data, agrupadoPor, ordenadoPor, exibirItens, companyInfo, currLogoRelatorio);
                 const blob = new Blob([bytes], { type: 'application/pdf' });
                 const url = URL.createObjectURL(blob);
                 setUrl(url);
                 setShowPreviewPdf(true);
-
-
             }
 
         }
@@ -128,6 +127,45 @@ export const ListViewNotaEntreda = () => {
 
 
 
+
+    const handleGenerateExcel = async () => {
+        const params = {
+            dataInicial: dataInicial,
+            dataFinal: dataFinal,
+            orderBy: ordenadoPor,
+            valorInicial: valorInicial,
+            valorFinal: valorFinal,
+            textSearch: textSearch,
+            agrupadoPor: agrupadoPor,
+            exibeItens: exibirItens,
+        };
+        const res = await api.get(`/entrada-nf/report`, { params });
+        if (res.status === 200 && res.data?.length > 0) {
+            await exportToExcel(res.data, [
+                { key: 'numero', prefix: 'NF', align: 'center' },
+                { key: 'entrada', prefix: 'Entrada', mask: 'date', align: 'center' },
+                { key: 'fornecedor', prefix: 'Fornecedor' },
+                { key: 'serie', prefix: 'Série', align: 'center' },
+                { key: 'baseSt', prefix: 'Base ST', mask: 'currency', align: 'right' },
+                { key: 'icmsSt', prefix: 'ICMS ST', mask: 'currency', align: 'right' },
+                { key: 'ipi', prefix: 'IPI', mask: 'currency', align: 'right' },
+                { key: 'frete', prefix: 'Frete', mask: 'currency', align: 'right' },
+                { key: 'vlrProdutos', prefix: 'Valor Produtos', mask: 'currency', align: 'right' },
+                { key: 'vlrTotal', prefix: 'Valor Total', mask: 'currency', align: 'right' },
+                { key: 'natureza', prefix: 'Natureza' },
+                { key: 'chave', prefix: 'Chave Acesso' },
+            ] as TableHeaderDef[], {
+                fileName: 'notas_entrada',
+                sheetName: 'Notas Entrada',
+                logo: currLogoRelatorio,
+                title: 'Relatório Notas Entrada',
+                subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
+                headerBackgroundColor: '#404040',
+            });
+        } else {
+            toast.info('Não encontramos dados suficientes para gerar o Excel!');
+        }
+    };
 
     const columns: ExtendedColumnDef<any>[] = [
 
@@ -247,7 +285,7 @@ export const ListViewNotaEntreda = () => {
                                 Cancelar
                             </Flex>
                         </FormButton>
-                        <FormButton className="justify-content-center" style={{ background: '#217145' }}>
+                        <FormButton className="justify-content-center" style={{ background: '#217145' }} onClick={handleGenerateExcel}>
                             <Flex wrap="nowrap">
                                 <FontAwesomeIcon icon={faFileExcel} />
                                 Gerar Excel
@@ -358,10 +396,36 @@ export const ListViewNotaEntreda = () => {
 
 
             {showPreviewPdf && url && (
-                <PdfiumViewer pdfUrl={url} filename="" excelDataset={null} onClose={() => {
-                    setShowPreviewPdf(false)
-                }} />
-
+                <PdfiumViewer
+                    pdfUrl={url}
+                    filename="relatorio_notas_entrada"
+                    excelDataset={notasReport.length > 0 ? {
+                        data: notasReport,
+                        columns: [
+                            { key: 'numero', prefix: 'NF', align: 'center' },
+                            { key: 'entrada', prefix: 'Entrada', mask: 'date', align: 'center' },
+                            { key: 'fornecedor', prefix: 'Fornecedor' },
+                            { key: 'serie', prefix: 'Série', align: 'center' },
+                            { key: 'baseSt', prefix: 'Base ST', mask: 'currency', align: 'right' },
+                            { key: 'icmsSt', prefix: 'ICMS ST', mask: 'currency', align: 'right' },
+                            { key: 'ipi', prefix: 'IPI', mask: 'currency', align: 'right' },
+                            { key: 'frete', prefix: 'Frete', mask: 'currency', align: 'right' },
+                            { key: 'vlrProdutos', prefix: 'Valor Produtos', mask: 'currency', align: 'right' },
+                            { key: 'vlrTotal', prefix: 'Valor Total', mask: 'currency', align: 'right' },
+                            { key: 'natureza', prefix: 'Natureza' },
+                            { key: 'chave', prefix: 'Chave Acesso' },
+                        ] as TableHeaderDef[],
+                        fileName: 'notas_entrada',
+                        sheetName: 'Notas Entrada',
+                        logo: currLogoRelatorio,
+                        title: 'Relatório Notas Entrada',
+                        subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
+                        headerBackgroundColor: '#404040',
+                    } : undefined }
+                    onClose={() => {
+                        setShowPreviewPdf(false)
+                    }}
+                />
             )}
         </>
     )
