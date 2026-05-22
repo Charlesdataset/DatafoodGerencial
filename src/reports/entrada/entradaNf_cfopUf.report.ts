@@ -1,17 +1,102 @@
-import type { ReportV3 } from '../../types/v3.types';
+import type { ReportV3, ComponentV3 } from '../../types/v3.types';
 import { getImageBase64FromPath, maskCnpj, maskCpf } from '../../utils/format';
 import { gerarRelatorioPdfV3 } from '../../wasm/pdfium_generator';
+import { formatFiltersForHeader, formatPeriod, type FilterConfig } from '../utils/filterFormatter';
+
+const formatCurrency = (value: number | string) => {
+  const num = typeof value === 'number' ? value : Number(String(value).replace(',', '.'));
+  if (Number.isNaN(num)) return String(value);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num);
+};
+
+const getOrderByLabel = (value?: string) => {
+  switch (value) {
+    case 'FAZ':
+      return 'Fornecedor A-Z';
+    case 'FZA':
+      return 'Fornecedor Z-A';
+    case 'CAZ':
+      return 'Código A-Z';
+    case 'CZA':
+      return 'Código Z-A';
+    case 'EAZ':
+      return 'Entrada A-Z';
+    case 'EZA':
+      return 'Entrada Z-A';
+    default:
+      return '';
+  }
+};
+
+const getAgrupadoPorLabel = (value?: string) => {
+  switch (value) {
+    case 'F':
+      return 'Fornecedor';
+    case 'D':
+      return 'Data de entrada';
+    case 'CUD':
+      return 'CFOP UF DIA';
+    default:
+      return '';
+  }
+};
 
 const handleRelatorioNfCfopUf = async (
   dataset: any,
   companyInfo: any,
   currLogoRelatorio: string,
+  filters?: {
+    pesquisa?: string;
+    valorInicial?: number | string;
+    valorFinal?: number | string;
+    ordenadoPor?: string;
+    agrupadoPor?: string;
+    dataInicial?: string;
+    dataFinal?: string;
+  },
 ) => {
   const agrupadoDia = dataset.agrupadosPorDia.dados;
   const resumoUf = dataset.resumoPorUF.dados;
   const totaisUf = dataset.resumoPorUF.total;
   const totaisCfop = dataset.resumoPorCFOP.total;
   const resumoCfop = dataset.resumoPorCFOP.dados;
+  const filterConfigs: FilterConfig[] = [];
+
+  if (filters?.pesquisa) {
+    filterConfigs.push({ label: 'Pesquisa', values: [filters.pesquisa] });
+  }
+
+  const periodLabel = formatPeriod(filters?.dataInicial ?? '', filters?.dataFinal ?? '');
+  if (periodLabel) {
+    filterConfigs.push({ label: 'Período', values: [periodLabel], showAll: true });
+  }
+
+  if (filters?.valorInicial != null || filters?.valorFinal != null) {
+    const initial = filters?.valorInicial != null ? formatCurrency(filters.valorInicial) : undefined;
+    const final = filters?.valorFinal != null ? formatCurrency(filters.valorFinal) : undefined;
+    const valorLabel = initial && final
+      ? `${initial} a ${final}`
+      : initial
+      ? `>= ${initial}`
+      : final
+      ? `<= ${final}`
+      : '';
+    if (valorLabel) {
+      filterConfigs.push({ label: 'Valor', values: [valorLabel], showAll: true });
+    }
+  }
+
+  const ordenadoLabel = getOrderByLabel(filters?.ordenadoPor);
+  if (ordenadoLabel) {
+    filterConfigs.push({ label: 'Ordenado por', values: [ordenadoLabel], showAll: true });
+  }
+
+  const agrupadoLabel = getAgrupadoPorLabel(filters?.agrupadoPor);
+  if (agrupadoLabel) {
+    filterConfigs.push({ label: 'Agrupado por', values: [agrupadoLabel], showAll: true });
+  }
+
+  const filtrosHeader = filterConfigs.length > 0 ? formatFiltersForHeader(filterConfigs, 180) : '';
   console.log('Dataset recebido para o relatório de CFOP por UF:', dataset);
   const json: ReportV3 = {
     pageConfiguration: {
@@ -23,7 +108,7 @@ const handleRelatorioNfCfopUf = async (
     },
     header: {
       repeat: false,
-      height: 60,
+      height: filtrosHeader ? 90 : 60,
       backgroundColor: '#ffffff',
       content: [
         {
@@ -38,7 +123,7 @@ const handleRelatorioNfCfopUf = async (
               height: 40,
             },
             {
-              type: 'text',
+              type: 'text' as const,
               value: 'Relatório Notas Entrada',
 
               fontSize: 20,
@@ -50,7 +135,7 @@ const handleRelatorioNfCfopUf = async (
               },
             },
             {
-              type: 'text',
+              type: 'text' as const,
               value: "'$cnpj'  '$empresa'",
 
               fontSize: 8,
@@ -63,6 +148,16 @@ const handleRelatorioNfCfopUf = async (
             },
           ],
         },
+        ...(filtrosHeader ? ([{
+          type: 'text' as const,
+          value: `Filtros: $filtros_header`,
+          fontSize: 9,
+          color: '#575757',
+          align: 'left' as const,
+          margin: {
+            four: [10, 0, 0, 0],
+          },
+        }] as ComponentV3[]) : []),
       ],
     },
     footer: {
@@ -145,6 +240,7 @@ const handleRelatorioNfCfopUf = async (
       {
         type: 'table',
         headerBackgroundColor: '#404040',
+        zebraBackgroundColor:'#202020',
         datasetName: 'notas',
         summaryBox: {
           rows: [
@@ -316,6 +412,7 @@ const handleRelatorioNfCfopUf = async (
               label: 'TOTAL ICMS',
               mask: 'currency',
               value: '$totalValorICMSUF',
+              
             },
             {
               key: 'baseICMS',
@@ -406,16 +503,17 @@ const handleRelatorioNfCfopUf = async (
 
   const imageBase64 = await getImageBase64FromPath(currLogoRelatorio);
   json._variables = {
-    totalValorContabilResumoUf: totaisUf.totalValorContabuil,
-    totalBaseICMSUF: totaisUf.totalBaseICMS,
-    totalValorICMSUF: totaisUf.totalValorICMS,
-    totalBaseSTUF: totaisUf.totalBaseST,
-    totalValorSTUF: totaisUf.totalValorST,
-    totalValorContabilResumoCFOP: totaisCfop.totalValorContabuil,
-    totalBaseICMSCFOP: totaisCfop.totalBaseICMS,
-    totalValorICMSCFOP: totaisCfop.totalValorICMS,
-    totalBaseSTCFOP: totaisCfop.totalBaseST,
-    totalValorSTCFOP: totaisCfop.totalValorST,
+    totalValorContabilResumoUf: totaisUf.valorContabil,
+    totalBaseICMSUF: totaisUf.baseICMS,
+    totalValorICMSUF: totaisUf.valorICMS,
+    totalBaseSTUF: totaisUf.baseST,
+    totalValorSTUF: totaisUf.valorST,
+    totalValorContabilResumoCFOP: totaisCfop.valorContabil,
+    totalBaseICMSCFOP: totaisCfop.baseICMS,
+    totalValorICMSCFOP: totaisCfop.valorICMS,
+    totalBaseSTCFOP: totaisCfop.baseST,
+    totalValorSTCFOP: totaisCfop.valorST,
+    filtros_header: filtrosHeader,
     data_geracao: new Date().toLocaleDateString('pf-BR'),
     empresa: companyInfo.nomeCli,
     cnpj:

@@ -83,6 +83,7 @@ export interface TableHeaderDef {
 export interface GroupingConfig {
   groupBy: string;
   groupHeader?: string;
+  groupHeaderMask?: V3Mask;
   prefix?: string;
   subtotal?: boolean;
   gap?: number;

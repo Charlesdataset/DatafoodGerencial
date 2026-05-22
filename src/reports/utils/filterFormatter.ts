@@ -59,21 +59,48 @@ export function formatFiltersMultiline(filters: FilterConfig[]): string {
  * Formata período de data para exibição legível
  */
 export function formatPeriod(
-  periodoInicial: string,
-  periodoFinal: string,
+  periodoInicial?: string | Date | null,
+  periodoFinal?: string | Date | null,
 ): string {
   if (!periodoInicial && !periodoFinal) return "";
 
-  const formatDate = (date: string) => {
-    // Esperado: YYYY-MM-DD
-    const [year, month, day] = date.split("-");
-    return `${day}/${month}/${year}`;
+  const formatDateValue = (value: string | Date): string => {
+    if (value instanceof Date) {
+      if (Number.isNaN(value.getTime())) return String(value);
+      return value.toLocaleDateString("pt-BR");
+    }
+
+    const raw = value.trim();
+    if (!raw) return String(value);
+
+    // Se já estiver no formato brasileiro
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
+      return raw;
+    }
+
+    // Tenta parsear data ISO ou outros formatos reconhecidos pelo JS
+    const parsed = new Date(raw.replace(" ", "T"));
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toLocaleDateString("pt-BR");
+    }
+
+    const parts = raw.split("-");
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day}/${month}/${year}`;
+    }
+
+    return raw;
   };
 
-  const inicio = periodoInicial ? formatDate(periodoInicial) : "?";
-  const fim = periodoFinal ? formatDate(periodoFinal) : "?";
+  const inicio = periodoInicial ? formatDateValue(periodoInicial) : "";
+  const fim = periodoFinal ? formatDateValue(periodoFinal) : "";
 
-  return `${inicio} a ${fim}`;
+  if (inicio && fim) {
+    return `${inicio} a ${fim}`;
+  }
+
+  return inicio || fim || "";
 }
 
 /**

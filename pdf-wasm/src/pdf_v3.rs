@@ -339,6 +339,7 @@ pub enum TableWidth {
 pub struct GroupingConfig {
     pub group_by: String,
     pub group_header: Option<String>,
+    pub group_header_mask: Option<String>,
     pub prefix: Option<String>,
     pub subtotal: Option<bool>,
     pub gap: Option<f32>,
@@ -1013,6 +1014,43 @@ pub(crate) fn format_mask(value: &serde_json::Value, mask: Option<&str>) -> Stri
         }
         Some(m) if m.contains('#') => apply_mask(&s, m),
         _ => s,
+    }
+}
+
+fn is_numeric_mask(mask: &str) -> bool {
+    matches!(mask, "number" | "currency" | "percentage") || mask.starts_with("number-") || mask.starts_with("currency-")
+}
+
+fn parse_number_from_string(raw: &str) -> Option<f64> {
+    let cleaned: String = raw
+        .chars()
+        .filter(|c| c.is_ascii_digit() || *c == '.' || *c == ',' || *c == '-')
+        .collect();
+    if cleaned.is_empty() {
+        return None;
+    }
+    if cleaned.contains('.') && cleaned.contains(',') {
+        let normalized = cleaned.replace('.', "").replace(',', ".");
+        normalized.parse::<f64>().ok()
+    } else if cleaned.contains(',') {
+        let normalized = cleaned.replace(',', ".");
+        normalized.parse::<f64>().ok()
+    } else {
+        cleaned.parse::<f64>().ok()
+    }
+}
+
+fn format_value_with_mask(value: &str, mask: Option<&str>) -> String {
+    match mask {
+        Some(mask) if is_numeric_mask(mask) => {
+            if let Some(num) = parse_number_from_string(value) {
+                format_numeric_value(num, Some(mask))
+            } else {
+                format_mask(&serde_json::Value::String(value.to_string()), Some(mask))
+            }
+        }
+        Some(mask) => format_mask(&serde_json::Value::String(value.to_string()), Some(mask)),
+        None => value.to_string(),
     }
 }
 
@@ -1917,6 +1955,13 @@ fn render_child_section(
 
         *curs -= 2.0;
         let sy = *curs;
+        c.set_stroke_rgb(0.75, 0.78, 0.82);
+        c.set_line_width(2.0);
+        c.set_dash_pattern(vec![3.0, 2.0], 0.0);
+        c.move_to(child_tx, sy);
+        c.line_to(child_tx + child_iw, sy);
+        c.stroke();
+        c.set_dash_pattern(vec![], 0.0);
         let mut hx = child_tx;
         for (ci, hdr) in child_headers.iter().enumerate().take(child_cc) {
             let val = if hdr.sum {
@@ -2017,7 +2062,8 @@ fn render_child_section(
                 }
 
                 let val_str = if let Some(v) = sbr.value.as_deref() {
-                    v.to_string()
+                    let interpolated = interpolate(v, &dctx.variables);
+                    format_value_with_mask(&interpolated, sbr.mask.as_deref())
                 } else if let Some(key) = sbr.key.as_deref() {
                     let t: f64 = child_items
                         .iter()
@@ -4174,14 +4220,15 @@ fn render_table(
                 }
 
                 if render_group_header {
+                    let formatted_key = format_value_with_mask(&key, grouping.group_header_mask.as_deref());
                     let group_title = if let Some(ref template) = grouping.group_header {
                         interpolate(template, &dctx.variables)
-                            .replace("{group}", key)
-                            .replace("{key}", key)
+                            .replace("{group}", &formatted_key)
+                            .replace("{key}", &formatted_key)
                     } else if let Some(ref prefix) = grouping.prefix {
-                        format!("{}{}", prefix, key)
+                        format!("{}{}", prefix, formatted_key)
                     } else {
-                        key.clone()
+                        formatted_key
                     };
 
                     let group_header_bg = grouping
@@ -4382,6 +4429,13 @@ fn render_table(
                 c.set_fill_rgb(0.85, 0.88, 0.92);
                 c.rect(tx, sy - rh, iw, rh);
                 c.fill_nonzero();
+                c.set_stroke_rgb(0.75, 0.78, 0.82);
+                c.set_line_width(2.0);
+                c.set_dash_pattern(vec![3.0, 2.0], 0.0);
+                c.move_to(tx, sy);
+                c.line_to(tx + iw, sy);
+                c.stroke();
+                c.set_dash_pattern(vec![], 0.0);
 
                 let mut hx = tx;
                 for ci in 0..cc {
@@ -4478,7 +4532,8 @@ fn render_table(
                         }
 
                         let val_str = if let Some(v) = sbr.value.as_deref() {
-                            v.to_string()
+                            let interpolated = interpolate(v, &dctx.variables);
+                            format_value_with_mask(&interpolated, sbr.mask.as_deref())
                         } else if let Some(key) = sbr.key.as_deref() {
                             let t: f64 = grp
                                 .iter()
@@ -4544,6 +4599,13 @@ fn render_table(
 
             let top = *curs;
             let bottom = top - gh;
+            c.set_stroke_rgb(0.75, 0.78, 0.82);
+            c.set_line_width(2.0);
+            c.set_dash_pattern(vec![3.0, 2.0], 0.0);
+            c.move_to(tx, top);
+            c.line_to(tx + iw, top);
+            c.stroke();
+            c.set_dash_pattern(vec![], 0.0);
             let title_fs = fs * 1.05;
             let value_fs = fs * 1.2;
 
@@ -4844,6 +4906,13 @@ fn render_table(
 
             let top = *curs;
             let bottom = top - gh;
+            c.set_stroke_rgb(0.75, 0.78, 0.82);
+            c.set_line_width(2.0);
+            c.set_dash_pattern(vec![3.0, 2.0], 0.0);
+            c.move_to(tx, top);
+            c.line_to(tx + iw, top);
+            c.stroke();
+            c.set_dash_pattern(vec![], 0.0);
             let title_fs = fs * 1.05;
             let value_fs = fs * 1.2;
 
@@ -4985,7 +5054,8 @@ fn render_table(
 
                 // Compute value string
                 let val_str = if let Some(v) = sbr.value.as_deref() {
-                    v.to_string()
+                    let interpolated = interpolate(v, &dctx.variables);
+                    format_value_with_mask(&interpolated, sbr.mask.as_deref())
                 } else if let Some(key) = sbr.key.as_deref() {
                     let t: f64 = rows
                         .iter()
@@ -5548,12 +5618,13 @@ fn render_table_multi_data(
             group_rows(rows, &grouping.group_by)
                 .into_iter()
                 .map(|(key, grp)| {
+                    let formatted_key = format_value_with_mask(&key, grouping.group_header_mask.as_deref());
                     let label = if let Some(ref template) = grouping.group_header {
-                        template.replace("{value}", &key)
+                        template.replace("{value}", &formatted_key)
                     } else if let Some(ref prefix) = grouping.prefix {
-                        format!("{}{}", prefix, key)
+                        format!("{}{}", prefix, formatted_key)
                     } else {
-                        key
+                        formatted_key
                     };
                     (Some(label), grp)
                 })

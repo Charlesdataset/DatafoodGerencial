@@ -116,19 +116,32 @@ export const ListViewNotaEntreda = () => {
             }
             else {
                 if (agrupadoPor != EntradaNFAgrupadoPor.CFOP_UF_DIA) {
-
-
                     setNotasReport(data);
-                    const bytes = await handleReportNotaEntrada(res.data, agrupadoPor, ordenadoPor, exibirItens, companyInfo, currLogoRelatorio);
+                    const bytes = await handleReportNotaEntrada(res.data, agrupadoPor, ordenadoPor, exibirItens, companyInfo, currLogoRelatorio, {
+                      pesquisa: textSearch,
+                      valorInicial,
+                      valorFinal,
+                      ordenadoPor,
+                      agrupadoPor,
+                      dataInicial,
+                      dataFinal,
+                    });
                     const blob = new Blob([bytes], { type: 'application/pdf' });
                     const url = URL.createObjectURL(blob);
                     setUrl(url);
                     setShowPreviewPdf(true);
-
-                }
-                else {
-                    setNotasReport(data);
-                    const bytes = await handleRelatorioNfCfopUf(res.data, companyInfo, currLogoRelatorio);
+                } else {
+                    const groupedRows = data?.agrupadosPorDia?.dados ?? [];
+                    setNotasReport(groupedRows);
+                    const bytes = await handleRelatorioNfCfopUf(res.data, companyInfo, currLogoRelatorio, {
+                        pesquisa: textSearch,
+                        valorInicial,
+                        valorFinal,
+                        ordenadoPor,
+                        agrupadoPor,
+                        dataInicial,
+                        dataFinal,
+                    });
                     const blob = new Blob([bytes], { type: 'application/pdf' });
                     const url = URL.createObjectURL(blob);
                     setUrl(url);
@@ -157,8 +170,8 @@ export const ListViewNotaEntreda = () => {
         };
         const url = agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? '/entrada-nf/report-cfop-uf' : '/entrada-nf/report';
         const res = await api.get(url, { params });
-        if (res.status === 200 && res.data?.length > 0) {
-            await exportToExcel(res.data, [
+        if (res.status === 200) {
+            const excelColumns = [
                 { key: 'numero', prefix: 'NF', align: 'center' },
                 { key: 'entrada', prefix: 'Entrada', mask: 'date', align: 'center' },
                 { key: 'fornecedor', prefix: 'Fornecedor' },
@@ -171,16 +184,25 @@ export const ListViewNotaEntreda = () => {
                 { key: 'vlrTotal', prefix: 'Valor Total', mask: 'currency', align: 'right' },
                 { key: 'natureza', prefix: 'Natureza' },
                 { key: 'chave', prefix: 'Chave Acesso' },
-            ] as TableHeaderDef[], {
-                fileName: 'notas_entrada',
-                sheetName: 'Notas Entrada',
-                logo: currLogoRelatorio,
-                title: 'Relatório Notas Entrada',
-                subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
-                headerBackgroundColor: '#404040',
-            });
+            ] as TableHeaderDef[];
 
+            const excelData =
+                agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA
+                    ? res.data?.agrupadosPorDia?.dados ?? []
+                    : res.data;
 
+            if (excelData.length > 0) {
+                await exportToExcel(excelData, excelColumns, {
+                    fileName: agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? 'notas_entrada_cfop_uf' : 'notas_entrada',
+                    sheetName: 'Notas Entrada',
+                    logo: currLogoRelatorio,
+                    title: agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? 'Relatório Notas Entrada (CFOP UF)' : 'Relatório Notas Entrada',
+                    subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
+                    headerBackgroundColor: '#404040',
+                });
+            } else {
+                toast.info('Não encontramos dados suficientes para gerar o Excel!');
+            }
         } else {
             toast.info('Não encontramos dados suficientes para gerar o Excel!');
         }

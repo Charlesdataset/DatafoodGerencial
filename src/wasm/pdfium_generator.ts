@@ -282,9 +282,16 @@ export async function gerarRelatorioPdfV3(
     ...(variables ?? {}),
   };
 
+  const stringifiedVariables = Object.fromEntries(
+    Object.entries(mergedVariables).map(([key, value]) => [
+      key,
+      value === undefined || value === null ? "" : String(value),
+    ]),
+  );
+
   const varsWithDate = {
-    ...mergedVariables,
-    currDate: mergedVariables.currDate ?? new Date().toLocaleString("pt-BR"),
+    ...stringifiedVariables,
+    currDate: stringifiedVariables.currDate ?? new Date().toLocaleString("pt-BR"),
   };
 
   const result = mod.generate_pdf_v3(
