@@ -9,6 +9,8 @@ const handleRelatorioNfCfopUf = async (
 ) => {
   const agrupadoDia = dataset.agrupadosPorDia.dados;
   const resumoUf = dataset.resumoPorUF.dados;
+  const totaisUf = dataset.resumoPorUF.total;
+  const totaisCfop = dataset.resumoPorCFOP.total;
   const resumoCfop = dataset.resumoPorCFOP.dados;
   console.log('Dataset recebido para o relatório de CFOP por UF:', dataset);
   const json: ReportV3 = {
@@ -217,6 +219,43 @@ const handleRelatorioNfCfopUf = async (
         tableHeader: [
           { key: 'uf', prefix: 'Resumo por estado', align: 'left' },
         ],
+        summaryBox: {
+          rows: [
+            {
+              key: 'valorICMS',
+              label: 'TOTAL ICMS',
+              mask: 'currency',
+              value: '$totalValorICMSUF',
+            },
+            {
+              key: 'baseICMS',
+              label: 'TOTAL BASE ICMS',
+              mask: 'currency',
+              value: '$totalBaseICMSUF',
+            },
+            {
+              key: 'baseST',
+              label: 'TOTAL BASE ST',
+              mask: 'currency',
+              value: '$totalBaseSTUF',
+            },
+            {
+              key: 'valorST',
+              label: 'TOTAL ST',
+              mask: 'currency',
+              value: '$totalValorSTUF',
+            },
+            {
+              key: 'valorContabil',
+              label: 'TOTAL GERAL',
+              value: '$totalValorContabilResumoUf',
+              mask: 'currency',
+              bold: true,
+              dividerBefore: true,
+            },
+          ],
+          align: 'center',
+        },
         widths: ['auto'],
         items: {
           path: 'dados',
@@ -270,7 +309,43 @@ const handleRelatorioNfCfopUf = async (
         textColor: '#404040',
         datasetName: 'resumoCfop',
         zebraBackgroundColor: '#ffffff',
-
+        summaryBox: {
+          rows: [
+            {
+              key: 'valorICMS',
+              label: 'TOTAL ICMS',
+              mask: 'currency',
+              value: '$totalValorICMSUF',
+            },
+            {
+              key: 'baseICMS',
+              label: 'TOTAL BASE ICMS',
+              mask: 'currency',
+              value: '$totalBaseICMSCFOP',
+            },
+            {
+              key: 'baseST',
+              label: 'TOTAL BASE ST',
+              mask: 'currency',
+              value: '$totalBaseSTCFOP',
+            },
+            {
+              key: 'valorST',
+              label: 'TOTAL ST',
+              mask: 'currency',
+              value: '$totalValorSTCFOP',
+            },
+            {
+              key: 'valorContabil',
+              label: 'TOTAL GERAL',
+              value: '$totalValorContabilResumoCFOP',
+              mask: 'currency',
+              bold: true,
+              dividerBefore: true,
+            },
+          ],
+          align: 'center',
+        },
         margin: {
           four: [40, 0, 0, 0],
         },
@@ -331,6 +406,16 @@ const handleRelatorioNfCfopUf = async (
 
   const imageBase64 = await getImageBase64FromPath(currLogoRelatorio);
   json._variables = {
+    totalValorContabilResumoUf: totaisUf.totalValorContabuil,
+    totalBaseICMSUF: totaisUf.totalBaseICMS,
+    totalValorICMSUF: totaisUf.totalValorICMS,
+    totalBaseSTUF: totaisUf.totalBaseST,
+    totalValorSTUF: totaisUf.totalValorST,
+    totalValorContabilResumoCFOP: totaisCfop.totalValorContabuil,
+    totalBaseICMSCFOP: totaisCfop.totalBaseICMS,
+    totalValorICMSCFOP: totaisCfop.totalValorICMS,
+    totalBaseSTCFOP: totaisCfop.totalBaseST,
+    totalValorSTCFOP: totaisCfop.totalValorST,
     data_geracao: new Date().toLocaleDateString('pf-BR'),
     empresa: companyInfo.nomeCli,
     cnpj:

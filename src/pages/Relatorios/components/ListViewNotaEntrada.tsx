@@ -18,7 +18,8 @@ import { useApp } from "../../../contexts/AppContext";
 import handleReportNotaEntrada from "../../../reports/entrada/entadaNF.report";
 import handleRelatorioNfCfopUf from "../../../reports/entrada/entradaNf_cfopUf.report";
 import { api } from "../../../services/api";
-import { exportToExcel, type TableHeaderDef } from "../../../utils/exportToExcel";
+import type { TableHeaderDef } from "../../../types/v3.types";
+import { exportToExcel } from "../../../utils/exportToExcel";
 import { EntradaNFAgrupadoPor, EntradaNFOrderBy, type EntradaNfTotais } from "../types/relatorios.types";
 import { InfoCard } from "./InfoCard";
 
@@ -286,11 +287,14 @@ export const ListViewNotaEntreda = () => {
                         ]} onChange={(e) => {
                             setAgrupadoPor(e as EntradaNFAgrupadoPor)
                         }} />
-                        <Switch label="Exibir itens" checked={exibirItens}
+                        {agrupadoPor != EntradaNFAgrupadoPor.CFOP_UF_DIA && (
 
-                            onChange={(e) => {
-                                setExibirItens(e)
-                            }} />
+                            <Switch label="Exibir itens" checked={exibirItens}
+
+                                onChange={(e) => {
+                                    setExibirItens(e)
+                                }} />
+                        )}
                     </Fluid>
                 </Modal.Body>
                 <Modal.Footer>
