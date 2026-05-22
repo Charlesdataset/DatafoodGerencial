@@ -13,11 +13,12 @@ import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
 import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
-import { exportToExcel, type TableHeaderDef } from "../../../utils/exportToExcel";
 import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
 import handleReportNotaEntrada from "../../../reports/entrada/entadaNF.report";
+import handleRelatorioNfCfopUf from "../../../reports/entrada/entradaNf_cfopUf.report";
 import { api } from "../../../services/api";
+import { exportToExcel, type TableHeaderDef } from "../../../utils/exportToExcel";
 import { EntradaNFAgrupadoPor, EntradaNFOrderBy, type EntradaNfTotais } from "../types/relatorios.types";
 import { InfoCard } from "./InfoCard";
 
@@ -105,19 +106,33 @@ export const ListViewNotaEntreda = () => {
             agrupadoPor: agrupadoPor,
             exibeItens: exibirItens
         }
-        const res = await api.get(`/entrada-nf/report`, { params });
+        const url = agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? '/entrada-nf/report-cfop-uf' : '/entrada-nf/report';
+        const res = await api.get(url, { params });
         if (res.status == 200) {
             const data = res.data;
             if (!data) {
                 toast.info("Não encontramos dados suficientes para gerar o relatório!")
             }
             else {
-                setNotasReport(data);
-                const bytes = await handleReportNotaEntrada(res.data, agrupadoPor, ordenadoPor, exibirItens, companyInfo, currLogoRelatorio);
-                const blob = new Blob([bytes], { type: 'application/pdf' });
-                const url = URL.createObjectURL(blob);
-                setUrl(url);
-                setShowPreviewPdf(true);
+                if (agrupadoPor != EntradaNFAgrupadoPor.CFOP_UF_DIA) {
+
+
+                    setNotasReport(data);
+                    const bytes = await handleReportNotaEntrada(res.data, agrupadoPor, ordenadoPor, exibirItens, companyInfo, currLogoRelatorio);
+                    const blob = new Blob([bytes], { type: 'application/pdf' });
+                    const url = URL.createObjectURL(blob);
+                    setUrl(url);
+                    setShowPreviewPdf(true);
+
+                }
+                else {
+                    setNotasReport(data);
+                    const bytes = await handleRelatorioNfCfopUf(res.data, companyInfo, currLogoRelatorio);
+                    const blob = new Blob([bytes], { type: 'application/pdf' });
+                    const url = URL.createObjectURL(blob);
+                    setUrl(url);
+                    setShowPreviewPdf(true);
+                }
             }
 
         }
@@ -139,7 +154,8 @@ export const ListViewNotaEntreda = () => {
             agrupadoPor: agrupadoPor,
             exibeItens: exibirItens,
         };
-        const res = await api.get(`/entrada-nf/report`, { params });
+        const url = agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? '/entrada-nf/report-cfop-uf' : '/entrada-nf/report';
+        const res = await api.get(url, { params });
         if (res.status === 200 && res.data?.length > 0) {
             await exportToExcel(res.data, [
                 { key: 'numero', prefix: 'NF', align: 'center' },
@@ -162,6 +178,8 @@ export const ListViewNotaEntreda = () => {
                 subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
                 headerBackgroundColor: '#404040',
             });
+
+
         } else {
             toast.info('Não encontramos dados suficientes para gerar o Excel!');
         }
@@ -421,7 +439,7 @@ export const ListViewNotaEntreda = () => {
                         title: 'Relatório Notas Entrada',
                         subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
                         headerBackgroundColor: '#404040',
-                    } : undefined }
+                    } : undefined}
                     onClose={() => {
                         setShowPreviewPdf(false)
                     }}
