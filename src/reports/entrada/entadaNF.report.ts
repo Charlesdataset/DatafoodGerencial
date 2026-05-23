@@ -243,12 +243,15 @@ const handleReportNotaEntrada = async (
       {
         type: 'table',
         headerBackgroundColor: '#404040',
-
+        zebraBackgroundColor: '#202020',
+        zebraTextColor: '#FFFFFF',
         ...(exibeItens
           ? {
               items: {
                 headerBackgroundColor: '#ffffff',
                 textColor: '#404040',
+                zebraBackgroundColor: '#202020',
+                zebraTextColor: '#FFFFFF',
                 headerTextColor: '#000000',
 
                 borderStyle: 'none',
@@ -349,6 +352,8 @@ const handleReportNotaEntrada = async (
                   agrupadoPor === EntradaNFAgrupadoPor.DATA_ENTRADA
                     ? 'date'
                     : undefined,
+                gap: 40,
+                subtotal:true
               },
             }
           : {}),
@@ -424,19 +429,17 @@ const handleReportNotaEntrada = async (
   };
 
   const imageBase64 = await getImageBase64FromPath(currLogoRelatorio);
+  const rawCnpj = companyInfo?.cnpj ?? '';
   json._variables = {
-    totalValorContabilResumoUf: null,
-    totalBaseICMSUF: null,
-    totalValorICMSUF: null,
-    totalBaseSTUF: null,
-    totalValorSTUF: null,
     filtros_header: filtrosHeader,
     data_geracao: new Date().toLocaleDateString('pf-BR'),
-    empresa: companyInfo.nomeCli,
+    empresa: companyInfo?.nomeCli ?? '',
     cnpj:
-      companyInfo.cnpj.length > 11
-        ? maskCnpj(companyInfo.cnpj)
-        : maskCpf(companyInfo.cnpj),
+      rawCnpj.length > 11
+        ? maskCnpj(rawCnpj)
+        : rawCnpj
+        ? maskCpf(rawCnpj)
+        : '',
 
     currDate: new Date().toLocaleDateString('pt-BR'),
     logoSistema: imageBase64,

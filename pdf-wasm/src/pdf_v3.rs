@@ -1932,25 +1932,9 @@ fn render_child_section(
             page_break(c, curs);
             render_header(c, *curs);
             *curs -= hh;
-            render_child_header(
-                c,
-                *curs,
-                child_tx,
-                child_iw,
-                child_hh,
-                child_headers,
-                &child_cw,
-                &child_al,
-                child_cc,
-                fs,
-                fb,
-                child_header_bg,
-                child_header_text,
-                child_border_color,
-                child_border_width,
-                draw_child_borders,
-            );
-            *curs -= child_hh;
+            // Do not repeat the child header row immediately above the subtotal line.
+            // The subtotal belongs to the item section, but the header should only
+            // repeat for actual child rows, not the subtotal summary.
         }
 
         *curs -= 2.0;
@@ -4404,10 +4388,7 @@ fn render_table(
                 } else {
                     false
                 };
-                let more_content = row_idx < grp.len()
-                    || grouping.subtotal.unwrap_or(false)
-                    || gi < groups.len() - 1
-                    || has_grand_total;
+                let more_content = row_idx < grp.len();
                 if rendered_items && more_content {
                     if *curs - hh < page_bottom + 20.0 {
                         page_break(c, curs);

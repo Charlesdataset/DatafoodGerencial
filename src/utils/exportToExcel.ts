@@ -60,6 +60,11 @@ function applyMask(value: unknown, mask?: string): string {
       if (isNaN(n)) return raw;
       return new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
     }
+    case "number-3": {
+      const n = parseFloat(raw);
+      if (isNaN(n)) return raw;
+      return new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(n);
+    }
     case "percentage": {
       const n = parseFloat(raw);
       if (isNaN(n)) return raw;
@@ -97,6 +102,26 @@ function applyMask(value: unknown, mask?: string): string {
       return c.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
     }
     default:
+      if (mask.startsWith("currency-")) {
+        const n = parseFloat(raw);
+        if (isNaN(n)) return raw;
+        const decimals = Number(mask.slice(9)) || 2;
+        return new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        }).format(n);
+      }
+      if (mask.startsWith("number-")) {
+        const n = parseFloat(raw);
+        if (isNaN(n)) return raw;
+        const decimals = Number(mask.slice(7)) || 2;
+        return new Intl.NumberFormat("pt-BR", {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        }).format(n);
+      }
       return raw;
   }
 }
@@ -115,22 +140,32 @@ function resolveCell(raw: unknown, col: TableHeaderDef): string {
 
 function styleDataRow(
   row: ExcelJS.Row,
+  rowData: Record<string, unknown> | null,
   columns: TableHeaderDef[],
   isZebra: boolean,
   zebraBackgroundColor: string,
   zebraTextColor: string | undefined,
   cc: number
 ) {
+  const isItem = rowData?.__rowType === "item";
+  const isSubtotal = rowData?.__rowType === "subtotal" || rowData?.__rowType === "summary";
+  const isSection = rowData?.__rowType === "section";
   const textArgb = isZebra && zebraTextColor ? toArgb(zebraTextColor) : toArgb(DEFAULT.bodyText);
   for (let ci = 1; ci <= cc; ci++) {
     const col = columns[ci - 1];
     const cell = row.getCell(ci);
+    const bgColor = isItem ? "FFFFFFFF" : isZebra ? zebraBackgroundColor : "#FFFFFF";
     cell.fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: isZebra ? toArgb(zebraBackgroundColor) : "FFFFFFFF" },
+      fgColor: { argb: toArgb(bgColor) },
     };
-    cell.font = { size: 10, color: { argb: textArgb } };
+    cell.font = {
+      size: isSection ? 11 : 10,
+      color: { argb: toArgb(textArgb) },
+      italic: isItem,
+      bold: isSubtotal || isSection,
+    };
     cell.alignment = {
       vertical: "middle",
       horizontal: col.align === "right" ? "right" : col.align === "center" ? "center" : "left",
@@ -282,10 +317,33 @@ export async function exportToExcel(
   let dataRowIndex = 0;
 
   const emitDataRow = (rowData: Record<string, unknown>) => {
+    if (rowData.__rowType === "blank") {
+      const row = ws.addRow(Array(cc).fill(null));
+      row.height = 8;
+      return;
+    }
+
+    if (rowData.__rowType === "section") {
+      const row = ws.addRow(Array(cc).fill(null));
+      row.height = 22;
+      const title = String(rowData.sectionTitle ?? rowData.numero ?? "");
+      row.getCell(1).value = title;
+      ws.mergeCells(row.number, 1, row.number, cc);
+      const cell = row.getCell(1);
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: toArgb("#E8EAF0") },
+      };
+      cell.font = { bold: true, size: 11, color: { argb: toArgb(DEFAULT.bodyText) } };
+      cell.alignment = { vertical: "middle", horizontal: "left" };
+      return;
+    }
+
     const values = columns.map((col) => resolveCell(rowData[col.key], col));
     const row = ws.addRow(values);
     row.height = 18;
-    styleDataRow(row, columns, dataRowIndex % 2 === 1, zebraBackgroundColor, zebraTextColor, cc);
+    styleDataRow(row, rowData, columns, dataRowIndex % 2 === 1, zebraBackgroundColor, zebraTextColor, cc);
     dataRowIndex++;
   };
 
@@ -452,7 +510,7 @@ export async function exportToExcel(
     columns.forEach((col, ci) => {
       const headerLen = (col.prefix ?? col.key).length;
       const maxData = dataset.reduce((acc, rowData) => Math.max(acc, resolveCell(rowData[col.key], col).length), 0);
-      ws.getColumn(ci + 1).width = Math.min(Math.max(headerLen, maxData) + 4, 60);
+      ws.getColumn(ci + 1).width = Math.min(Math.max(headerLen, maxData) + 6, 80);
     });
   }
 
