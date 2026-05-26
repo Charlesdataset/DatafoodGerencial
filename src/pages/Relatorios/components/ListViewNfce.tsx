@@ -167,6 +167,7 @@ const ListViewNfce: React.FC = () => {
     const buildNfceExcelPayload = (
         rows: Nfce[],
         agrupadoPor: NfceAgrupadoPor,
+        exibirItensExport: boolean,
     ) => {
         const groupBy =
             agrupadoPor === NfceAgrupadoPor.Cliente ? 'cliente' :
@@ -184,12 +185,55 @@ const ListViewNfce: React.FC = () => {
                             agrupadoPor === NfceAgrupadoPor.DataRecebimento ? 'Recebimento: ' :
                                 '';
 
-        return {
-            data: rows.map((row) => ({
+        const rowsWithItems: any[] = [];
+        for (const row of rows) {
+            rowsWithItems.push({
                 ...row,
                 dataEmissao: formatDateForExcel(row.dataEmissao),
                 dataSaida: formatDateForExcel(row.dataSaida),
-            })),
+                produto: undefined,
+                qtd: undefined,
+                valorTotalItem: undefined,
+                __rowType: 'note',
+            });
+
+            if (exibirItensExport && row.itens?.length) {
+                rowsWithItems.push({
+                    numero: '',
+                    cliente: '',
+                    status: '',
+                    dataEmissao: '',
+                    dataSaida: '',
+                    valorProdutos: '',
+                    vlrTotal: '',
+                    produto: 'Produto',
+                    qtd: 'Quantidade',
+                    valorTotalItem: 'Valor Item',
+                    __rowType: 'itemHeader',
+                    ...(groupBy ? { [groupBy]: row[groupBy] } : {}),
+                });
+
+                for (const item of row.itens) {
+                    rowsWithItems.push({
+                        numero: '',
+                        cliente: '',
+                        status: '',
+                        dataEmissao: '',
+                        dataSaida: '',
+                        valorProdutos: '',
+                        vlrTotal: '',
+                        produto: item.produto,
+                        qtd: item.qtd,
+                        valorTotalItem: item.valorTotal,
+                        __rowType: 'item',
+                        ...(groupBy ? { [groupBy]: row[groupBy] } : {}),
+                    });
+                }
+            }
+        }
+
+        return {
+            data: rowsWithItems,
             groupBy,
             groupPrefix,
         };
@@ -252,8 +296,8 @@ const ListViewNfce: React.FC = () => {
                 return;
             }
 
-            const { data: excelData, groupBy, groupPrefix } = buildNfceExcelPayload(nfces, agrupadoPor);
-            await exportToExcel(excelData, [
+            const { data: excelData, groupBy, groupPrefix } = buildNfceExcelPayload(nfces, agrupadoPor, exibirItens);
+            const excelColumns: TableHeaderDef[] = [
                 { key: 'numero', prefix: 'Nº Nota', align: 'center' },
                 { key: 'cliente', prefix: 'Cliente', align: 'left' },
                 { key: 'status', prefix: 'Status', align: 'center' },
@@ -261,7 +305,17 @@ const ListViewNfce: React.FC = () => {
                 { key: 'dataSaida', prefix: 'Saída', mask: 'date', align: 'center' },
                 { key: 'valorProdutos', prefix: 'Valor Produtos', mask: 'currency', align: 'right' },
                 { key: 'vlrTotal', prefix: 'Valor Total', mask: 'currency', align: 'right' },
-            ], {
+            ];
+
+            if (exibirItens) {
+                excelColumns.push(
+                    { key: 'produto', prefix: 'Produto', align: 'left' },
+                    { key: 'qtd', prefix: 'Quantidade', mask: 'number-3', align: 'right' },
+                    { key: 'valorTotalItem', prefix: 'Valor Item', mask: 'currency', align: 'right' },
+                );
+            }
+
+            await exportToExcel(excelData, excelColumns, {
                 fileName: 'nfce',
                 sheetName: 'NFCe',
                 logo: currLogoRelatorio,
@@ -572,7 +626,7 @@ const ListViewNfce: React.FC = () => {
                     pdfUrl={url}
                     filename="relatorio_nfce"
                     excelDataset={nfceReport.length > 0 ? (() => {
-                        const { data: excelData, groupBy, groupPrefix } = buildNfceExcelPayload(nfceReport, agrupadoPor);
+                        const { data: excelData, groupBy, groupPrefix } = buildNfceExcelPayload(nfceReport, agrupadoPor, exibirItens);
                         const columns: TableHeaderDef[] = [
                             { key: 'numero', prefix: 'Nº Nota', align: 'center' },
                             { key: 'cliente', prefix: 'Cliente', align: 'left' },
@@ -582,6 +636,13 @@ const ListViewNfce: React.FC = () => {
                             { key: 'valorProdutos', prefix: 'Valor Produtos', mask: 'currency', align: 'right' },
                             { key: 'vlrTotal', prefix: 'Valor Total', mask: 'currency', align: 'right' },
                         ];
+                        if (exibirItens) {
+                            columns.push(
+                                { key: 'produto', prefix: 'Produto', align: 'left' },
+                                { key: 'qtd', prefix: 'Quantidade', mask: 'number-3', align: 'right' },
+                                { key: 'valorTotalItem', prefix: 'Valor Item', mask: 'currency', align: 'right' },
+                            );
+                        }
                         return {
                             data: excelData,
                             columns,

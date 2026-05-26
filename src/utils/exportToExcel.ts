@@ -148,13 +148,14 @@ function styleDataRow(
   cc: number
 ) {
   const isItem = rowData?.__rowType === "item";
+  const isItemHeader = rowData?.__rowType === "itemHeader";
   const isSubtotal = rowData?.__rowType === "subtotal" || rowData?.__rowType === "summary";
   const isSection = rowData?.__rowType === "section";
   const textArgb = isZebra && zebraTextColor ? toArgb(zebraTextColor) : toArgb(DEFAULT.bodyText);
   for (let ci = 1; ci <= cc; ci++) {
     const col = columns[ci - 1];
     const cell = row.getCell(ci);
-    const bgColor = isItem ? "FFFFFFFF" : isZebra ? zebraBackgroundColor : "#FFFFFF";
+    const bgColor = isItemHeader ? "#EEF1F6" : isItem ? "FFFFFFFF" : isZebra ? zebraBackgroundColor : "#FFFFFF";
     cell.fill = {
       type: "pattern",
       pattern: "solid",
@@ -164,7 +165,7 @@ function styleDataRow(
       size: isSection ? 11 : 10,
       color: { argb: toArgb(textArgb) },
       italic: isItem,
-      bold: isSubtotal || isSection,
+      bold: isSubtotal || isSection || isItemHeader,
     };
     cell.alignment = {
       vertical: "middle",
