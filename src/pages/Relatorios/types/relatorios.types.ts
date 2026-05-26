@@ -53,3 +53,12 @@ export class ItensEntradaNFDto {
   vlrDesconto: number;
   vlrTotal: number;
 }
+
+export enum NfceAgrupadoPor {
+  Nenhum = '',
+  Cliente = 'Cliente',
+  DataEmissao = 'Data Emissão',
+  DataSaida = 'Data Saída',
+  DataRecebimento = 'Data Recebimento',
+  Status = 'Status',
+}

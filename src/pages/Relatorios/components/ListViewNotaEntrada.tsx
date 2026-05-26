@@ -120,13 +120,13 @@ export const ListViewNotaEntreda = () => {
                     setNotasReport(data);
                     setNotasReportPayload(null);
                     const bytes = await handleReportNotaEntrada(res.data, agrupadoPor, ordenadoPor, exibirItens, companyInfo, currLogoRelatorio, {
-                      pesquisa: textSearch,
-                      valorInicial,
-                      valorFinal,
-                      ordenadoPor,
-                      agrupadoPor,
-                      dataInicial,
-                      dataFinal,
+                        pesquisa: textSearch,
+                        valorInicial,
+                        valorFinal,
+                        ordenadoPor,
+                        agrupadoPor,
+                        dataInicial,
+                        dataFinal,
                     });
                     const blob = new Blob([bytes], { type: 'application/pdf' });
                     const url = URL.createObjectURL(blob);
@@ -136,13 +136,18 @@ export const ListViewNotaEntreda = () => {
                     const groupedRows = data?.agrupadosPorDia?.dados ?? [];
                     setNotasReport(groupedRows);
                     setNotasReportPayload(data);
-                    const bytes = await handleRelatorioNfCfopUf(res.data, companyInfo, currLogoRelatorio, {
+
+                    const bytes = await handleRelatorioNfCfopUf(res.data,
+
+                        companyInfo, currLogoRelatorio, {
                         pesquisa: textSearch,
                         valorInicial,
                         valorFinal,
                         ordenadoPor,
                         agrupadoPor,
+                        //@ts-expect-error
                         dataInicial,
+                        //@ts-expect-error
                         dataFinal,
                     });
                     const blob = new Blob([bytes], { type: 'application/pdf' });
@@ -535,6 +540,7 @@ export const ListViewNotaEntreda = () => {
 
             if (exibirItens) {
                 excelColumns.push(
+                    //@ts-expect-error
                     { key: 'itemDescricao', prefix: 'Item Descrição' },
                     { key: 'itemNcm', prefix: 'Item NCM' },
                     { key: 'itemCfop', prefix: 'Item CFOP' },
@@ -564,6 +570,7 @@ export const ListViewNotaEntreda = () => {
             );
 
             if (excelData.length > 0) {
+                //@ts-expect-error
                 await exportToExcel(excelData, excelColumns, {
                     fileName: agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? 'notas_entrada_cfop_uf' : 'notas_entrada',
                     sheetName: 'Notas Entrada',

@@ -22,6 +22,7 @@ interface DatePickerProps {
   validated?: boolean;
   showErrorOnBlur?: boolean;
   onBlur?: (value: Date | null) => void;
+  isFormField?: boolean
 }
 
 // ── Drum Picker ─────────────────────────────────────────────────────────────
@@ -149,9 +150,8 @@ function DrumPicker({ value, max, label, onChange }: DrumPickerProps) {
               key={relIdx}
               className={styles.drumItem}
               style={{
-                transform: `translateY(calc(-50% + ${
-                  displayOffset * DRUM_ITEM_H
-                }px)) perspective(500px) rotateX(${-displayOffset * 22}deg)`,
+                transform: `translateY(calc(-50% + ${displayOffset * DRUM_ITEM_H
+                  }px)) perspective(500px) rotateX(${-displayOffset * 22}deg)`,
                 opacity: Math.max(0, 1 - absD * 0.32),
                 transition:
                   snapping && !pointerRef.current.isDragging
@@ -195,6 +195,7 @@ export const DatePicker = ({
   validated = false,
   showErrorOnBlur = true,
   onBlur,
+  isFormField = true,
 }: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(value || new Date());
@@ -482,7 +483,7 @@ export const DatePicker = ({
 
   return (
     <div
-      className={`${styles.formField} ${disabled ? styles.disabled : ""} ${className}`}
+      className={`${isFormField ? styles.formField : ''} ${disabled ? styles.disabled : ""} ${className}`}
     >
       {label && (
         <label className={styles.label}>
