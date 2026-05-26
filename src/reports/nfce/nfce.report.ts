@@ -39,12 +39,16 @@ const getOrderByLabel = (value?: string) => {
 
 const getAgrupadoPorLabel = (value?: string) => {
   switch (value) {
-    case 'F':
-      return 'Fornecedor';
-    case 'D':
-      return 'Data de entrada';
-    case 'CUD':
-      return 'CFOP UF DIA';
+    case 'Cliente':
+      return 'Cliente';
+    case 'Data Emissão':
+      return 'Data de emissão';
+    case 'Data Saída':
+      return 'Data de saída';
+    case 'Data Recebimento':
+      return 'Data de recebimento';
+    case 'Status':
+      return 'Status';
     default:
       return '';
   }
@@ -120,10 +124,10 @@ const handleReportNfce = async (
   }
   const getAgrupado: Record<NfceAgrupadoPor, string> = {
     [NfceAgrupadoPor.Cliente]: 'cliente',
-    [NfceAgrupadoPor.DataEmissao]: 'nome_produto',
-    [NfceAgrupadoPor.DataRecebimento]: 'data_emissao',
-    [NfceAgrupadoPor.DataSaida]: 'data_emissao',
-    [NfceAgrupadoPor.Status]: 'data_emissao',
+    [NfceAgrupadoPor.DataEmissao]: 'dataEmissao',
+    [NfceAgrupadoPor.DataRecebimento]: 'dataEmissao',
+    [NfceAgrupadoPor.DataSaida]: 'dataSaida',
+    [NfceAgrupadoPor.Status]: 'status',
     [NfceAgrupadoPor.Nenhum]: '',
   };
 
@@ -346,63 +350,43 @@ const handleReportNfce = async (
             align: 'center',
           },
           {
-            key: 'entrada',
-            prefix: 'ENTRADA',
+            key: 'cliente',
+            prefix: 'CLIENTE',
+            align: 'left',
+          },
+          {
+            key: 'status',
+            prefix: 'STATUS',
+            align: 'center',
+          },
+          {
+            key: 'dataEmissao',
+            prefix: 'DATA EMISSÃO',
             align: 'center',
             mask: 'date',
           },
           {
-            key: 'serie',
-            prefix: 'SÉRIE',
-            align: 'right',
-          },
-          {
-            key: 'baseSt',
-            prefix: 'VLR BASE ST',
-            align: 'right',
-            mask: 'number',
-            sum: true,
-          },
-          {
-            key: 'icmsSt',
-            prefix: 'ICMS ST',
-            align: 'right',
-            mask: 'number',
-            sum: true,
-          },
-          {
-            key: 'ipi',
-            prefix: 'IPI',
-            align: 'right',
-            mask: 'number',
-            sum: true,
-          },
-          {
-            key: 'frete',
-            prefix: 'FRETE',
-            align: 'right',
-            mask: 'number',
-            sum: true,
-          },
-          {
-            key: 'total',
-            prefix: 'VLR TOTAL',
-            align: 'right',
-            mask: 'number',
-            sum: true,
-          },
-          {
-            key: 'natureza',
-            prefix: 'NATUREZA OP',
+            key: 'dataSaida',
+            prefix: 'DATA SAÍDA',
             align: 'center',
+            mask: 'date',
           },
           {
-            key: 'chave',
-            prefix: 'CHAVE ACESSO',
-            align: 'center',
+            key: 'valorProdutos',
+            prefix: 'VALOR PRODUTOS',
+            align: 'right',
+            mask: 'number',
+            sum: true,
+          },
+          {
+            key: 'vlrTotal',
+            prefix: 'VALOR TOTAL',
+            align: 'right',
+            mask: 'number',
+            sum: true,
           },
         ],
-        widths: [50, 60, 40, 70, 50, 50, 50, 70, 100, 100],
+        widths: [50, 'expand', 80, 80, 80, 90, 90],
       },
     ],
   };
