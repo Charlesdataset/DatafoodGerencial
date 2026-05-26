@@ -732,7 +732,9 @@ export const ListViewNotaEntreda = () => {
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={['expand', 'auto', 'auto', 'auto', 'auto']}
+                        xs={[100, 50, 50, 70, 'expand']}
+                        sm={[50, 25, 25, 90, 'expand']}
+                        lg={['expand', 'auto', 'auto', 'auto', 'auto']}
                     >
                         <TextSearch value={textSearch} placeholder="Forncedor, numero..." onChange={(e) => {
                             setTextSearch(e.target.value)
@@ -757,7 +759,7 @@ export const ListViewNotaEntreda = () => {
                         ]} />
 
 
-                        <FormButton className="mb-0" onClick={() => {
+                        <FormButton className="mb-0 justify-content-center" onClick={() => {
                             setModalReportShow(true)
                         }}>
                             <FontAwesomeIcon icon={faPrint} />
@@ -790,7 +792,9 @@ export const ListViewNotaEntreda = () => {
 
             <Fluid
                 className="mt-4"
-                xs={['expand']}
+                xs={[100, 100, 100, 100]}
+                sm={[50,50,50,50,100]}
+                lg={['expand']}
             >
                 <InfoCard title="Total ICMS ST" value={totais?.totalICMSST ?? 0}
                     icone={faHandHoldingDollar} />

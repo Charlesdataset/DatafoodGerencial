@@ -24,12 +24,12 @@ import { toast } from "react-toastify";
 import { Flex } from "../../../components/Layout";
 import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
-import { exportToExcel } from "../../../utils/exportToExcel";
 import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
 import handleReportNfce from "../../../reports/nfce/nfce.report";
 import { api } from "../../../services/api";
 import type { TableHeaderDef } from "../../../types/v3.types";
+import { exportToExcel } from "../../../utils/exportToExcel";
 import { NfceAgrupadoPor } from "../types/relatorios.types";
 import { InfoCard } from "./InfoCard";
 
@@ -74,7 +74,7 @@ const ListViewNfce: React.FC = () => {
     const [showPreviewPdf, setShowPreviewPdf] = useState(false);
     const [url, setUrl] = useState<string | null>(null);
     const [modalReportShow, setModalReportShow] = useState(false);
-    const [search, setSearch] = useState("");
+    const [textSearch, setTextSearch] = useState("");
     const [agrupadoPor, setAgrupadoPor] = useState<NfceAgrupadoPor>(NfceAgrupadoPor.Nenhum)
     const [status, setStatus] = useState("");
 
@@ -84,37 +84,29 @@ const ListViewNfce: React.FC = () => {
     const [saidaInicial, setSaidaInicial] = useState<Date | undefined>();
     const [saidaFinal, setSaidaFinal] = useState<Date | undefined>();
 
+    useEffect(() => {
+        fetchNfces();
+    }, [textSearch, status, valorInicial, valorFinal, dataInicial, dataFinal, saidaInicial, saidaFinal])
+
     const fetchNfces = async () => {
         try {
             setLoading(true);
+            const params = {
+                dataInicial: dataInicial,
+                dataFinal: dataFinal,
+                valorInicial: valorInicial,
+                valorFinal: valorFinal,
+                textSearch: textSearch,
+                limit: limit,
+                offset: offset,
+                saidaInicial: saidaInicial,
+                saidaFinal: saidaFinal,
+                status: status
+
+            }
 
             const res = await api.get("nfce", {
-                params: {
-                    limit: Number(limit),
-                    offset: Number(offset),
-
-                    textSerach: search || undefined,
-
-                    status: status || undefined,
-
-                    valorInicial:
-                        valorInicial !== ""
-                            ? Number(valorInicial)
-                            : undefined,
-
-                    valorFinal:
-                        valorFinal !== ""
-                            ? Number(valorFinal)
-                            : undefined,
-
-                    saidaInicial:
-                        saidaInicial?.toISOString(),
-
-                    saidaFinal:
-                        saidaFinal?.toISOString(),
-
-                    exibirItens: false,
-                },
+                params: params,
             });
 
             if (res?.status === 200) {
@@ -142,7 +134,7 @@ const ListViewNfce: React.FC = () => {
         limit: Number(limit),
         offset: Number(offset),
 
-        textSerach: search || undefined,
+        textSerach: textSearch || undefined,
 
         status: status || undefined,
 
@@ -178,19 +170,19 @@ const ListViewNfce: React.FC = () => {
     ) => {
         const groupBy =
             agrupadoPor === NfceAgrupadoPor.Cliente ? 'cliente' :
-            agrupadoPor === NfceAgrupadoPor.DataEmissao ? 'dataEmissao' :
-            agrupadoPor === NfceAgrupadoPor.DataSaida ? 'dataSaida' :
-            agrupadoPor === NfceAgrupadoPor.Status ? 'status' :
-            agrupadoPor === NfceAgrupadoPor.DataRecebimento ? 'dataEmissao' :
-            undefined;
+                agrupadoPor === NfceAgrupadoPor.DataEmissao ? 'dataEmissao' :
+                    agrupadoPor === NfceAgrupadoPor.DataSaida ? 'dataSaida' :
+                        agrupadoPor === NfceAgrupadoPor.Status ? 'status' :
+                            agrupadoPor === NfceAgrupadoPor.DataRecebimento ? 'dataEmissao' :
+                                undefined;
 
         const groupPrefix =
             agrupadoPor === NfceAgrupadoPor.Cliente ? 'Cliente: ' :
-            agrupadoPor === NfceAgrupadoPor.DataEmissao ? 'Emissão: ' :
-            agrupadoPor === NfceAgrupadoPor.DataSaida ? 'Saída: ' :
-            agrupadoPor === NfceAgrupadoPor.Status ? 'Status: ' :
-            agrupadoPor === NfceAgrupadoPor.DataRecebimento ? 'Recebimento: ' :
-            '';
+                agrupadoPor === NfceAgrupadoPor.DataEmissao ? 'Emissão: ' :
+                    agrupadoPor === NfceAgrupadoPor.DataSaida ? 'Saída: ' :
+                        agrupadoPor === NfceAgrupadoPor.Status ? 'Status: ' :
+                            agrupadoPor === NfceAgrupadoPor.DataRecebimento ? 'Recebimento: ' :
+                                '';
 
         return {
             data: rows.map((row) => ({
@@ -231,7 +223,7 @@ const ListViewNfce: React.FC = () => {
                 return;
             }
             const bytes = await handleReportNfce(nfces, agrupadoPor, exibirItens, companyInfo, currLogoRelatorio, {
-                pesquisa: search,
+                pesquisa: textSearch,
                 valorInicial,
                 valorFinal,
                 agrupadoPor,
@@ -338,7 +330,12 @@ const ListViewNfce: React.FC = () => {
             size: 120,
             textAlign: 'center',
             badge: (value) => {
-                return { label: `${value}`, color: 'green' }
+                if (value == 'AUTORIZADA')
+                    return { label: `${value}`, color: 'green' }
+                else if (value == 'CANCELADA')
+                    return { label: `${value}`, color: 'red' }
+                else
+                    return { label: `${value}`, color: 'blue' }
             }
         },
         {
@@ -439,19 +436,27 @@ const ListViewNfce: React.FC = () => {
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={[30, 10, 12, 12, 12, 12, 6, 6]}
+                        xs={[100, 100, 50, 50, 50, 50, 'expand']}
+                        sm={[100, 50, 25, 25, 25, 25, 'expand']}
+
+                        md={[25, 10, 11, 11, 15, 15, 'expand']}
                     >
                         <TextSearch
                             placeholder="Cliente..."
-                            value={search}
+                            value={textSearch}
+
                             onChange={(e: any) => {
-                                setSearch(e.target.value);
+                                setTextSearch(e.target.value);
                             }}
                         />
 
                         <Select
                             value={status}
                             options={[
+                                {
+                                    label: "Todos",
+                                    value: undefined,
+                                },
                                 {
                                     label: "Autorizada",
                                     value: "AUTORIZADA",
@@ -466,7 +471,7 @@ const ListViewNfce: React.FC = () => {
                                 },
                             ]}
                             onChange={(e: any) => {
-                                setStatus(e.target.value);
+                                setStatus(e);
                             }}
                             placeholder="Status"
                         />
@@ -492,14 +497,16 @@ const ListViewNfce: React.FC = () => {
                         <DatePicker
                             placeholder="Saída Inicial"
                             value={saidaInicial}
-                            isFormField={false}
+                            // isFormField={false}
+                            className="mb-0"
                             onChange={(value: any) => {
                                 setSaidaInicial(value);
                             }}
                         />
 
                         <DatePicker
-                            isFormField={false}
+                            // isFormField={false}
+                            className="mb-0"
                             placeholder="Saída Final"
                             value={saidaFinal}
                             onChange={(value: any) => {
@@ -507,13 +514,6 @@ const ListViewNfce: React.FC = () => {
                             }}
                         />
 
-                        <FormButton
-                            className="justify-content-center"
-                            onClick={fetchNfces}
-                            disabled={loading}
-                        >
-                            Buscar
-                        </FormButton>
                         <FormButton
                             className="justify-content-center"
                             variant="secondary"
@@ -546,7 +546,9 @@ const ListViewNfce: React.FC = () => {
 
             <Fluid
                 className="mt-4"
-                xs={[50, 50]}
+                xs={[100, 100]}
+                sm={[50, 50]}
+                lg={[50, 50]}
             >
                 <InfoCard
                     title="Total Produtos"

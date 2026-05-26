@@ -140,7 +140,7 @@ const handleReportNfce = async (
       margin: {
         four: [40, 35, 40, 35],
       },
-      orientation: 'landscape',
+      orientation: 'portraint',
     },
     header: {
       repeat: false,
@@ -165,7 +165,7 @@ const handleReportNfce = async (
               fontSize: 20,
               bold: true,
               color: '#000',
-              align: 'left',
+              align: 'center',
               margin: {
                 four: [30, 0, 0, 50],
               },
@@ -177,7 +177,7 @@ const handleReportNfce = async (
               fontSize: 8,
 
               color: '#000',
-              align: 'left',
+              align: 'right',
               margin: {
                 four: [25, 0, 0, 50],
               },
@@ -287,8 +287,8 @@ const handleReportNfce = async (
               items: {
                 headerBackgroundColor: '#ffffff',
                 textColor: '#404040',
-                zebraBackgroundColor: '#202020',
-                zebraTextColor: '#FFFFFF',
+                zebraBackgroundColor: '#cbcbcb',
+                zebraTextColor: '#000000',
                 headerTextColor: '#000000',
 
                 borderStyle: 'none',
@@ -321,7 +321,7 @@ const handleReportNfce = async (
                     sum: true,
                   },
                 ],
-                widths: [50, 'expand', 60, 60],
+                widths: [50, 'expand', 100, 100],
                 indent: 100,
               },
             }
@@ -387,6 +387,18 @@ const handleReportNfce = async (
           },
         ],
         widths: [50, 'expand', 80, 80, 80, 90, 90],
+        summaryBox: {
+          rows: [
+            { key: 'valorProdutos', label: 'VALOR PRODUTOS', mask: 'currency' },
+            {
+              key: 'vlrTotal',
+              label: 'VALOR TOTAL',
+              dividerBefore: true,
+              bold: true,
+              mask: 'currency',
+            },
+          ],
+        },
       },
     ],
   };

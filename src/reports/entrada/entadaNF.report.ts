@@ -2,15 +2,23 @@ import {
   EntradaNFAgrupadoPor,
   type EntradaNFOrderBy,
 } from '../../pages/Relatorios/types/relatorios.types';
-import type { ReportV3, ComponentV3 } from '../../types/v3.types';
+import type { ComponentV3, ReportV3 } from '../../types/v3.types';
 import { getImageBase64FromPath, maskCnpj, maskCpf } from '../../utils/format';
 import { gerarRelatorioPdfV3 } from '../../wasm/pdfium_generator';
-import { formatFiltersForHeader, formatPeriod, type FilterConfig } from '../utils/filterFormatter';
+import {
+  formatFiltersForHeader,
+  formatPeriod,
+  type FilterConfig,
+} from '../utils/filterFormatter';
 
 const formatCurrency = (value: number | string) => {
-  const num = typeof value === 'number' ? value : Number(String(value).replace(',', '.'));
+  const num =
+    typeof value === 'number' ? value : Number(String(value).replace(',', '.'));
   if (Number.isNaN(num)) return String(value);
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num);
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(num);
 };
 
 const getOrderByLabel = (value?: string) => {
@@ -68,37 +76,64 @@ const handleReportNotaEntrada = async (
     filterConfigs.push({ label: 'Pesquisa', values: [filters.pesquisa] });
   }
 
-  const periodLabel = formatPeriod(filters?.dataInicial ?? null, filters?.dataFinal ?? null);
+  const periodLabel = formatPeriod(
+    filters?.dataInicial ?? null,
+    filters?.dataFinal ?? null,
+  );
   if (periodLabel) {
-    filterConfigs.push({ label: 'Período', values: [periodLabel], showAll: true });
+    filterConfigs.push({
+      label: 'Período',
+      values: [periodLabel],
+      showAll: true,
+    });
   }
 
   if (filters?.valorInicial != null || filters?.valorFinal != null) {
-    const initial = filters?.valorInicial != null ? formatCurrency(filters.valorInicial) : undefined;
-    const final = filters?.valorFinal != null ? formatCurrency(filters.valorFinal) : undefined;
-    const valorLabel = initial && final
-      ? `${initial} a ${final}`
-      : initial
-      ? `>= ${initial}`
-      : final
-      ? `<= ${final}`
-      : '';
+    const initial =
+      filters?.valorInicial != null
+        ? formatCurrency(filters.valorInicial)
+        : undefined;
+    const final =
+      filters?.valorFinal != null
+        ? formatCurrency(filters.valorFinal)
+        : undefined;
+    const valorLabel =
+      initial && final
+        ? `${initial} a ${final}`
+        : initial
+        ? `>= ${initial}`
+        : final
+        ? `<= ${final}`
+        : '';
     if (valorLabel) {
-      filterConfigs.push({ label: 'Valor', values: [valorLabel], showAll: true });
+      filterConfigs.push({
+        label: 'Valor',
+        values: [valorLabel],
+        showAll: true,
+      });
     }
   }
 
   const ordenadoLabel = getOrderByLabel(filters?.ordenadoPor);
   if (ordenadoLabel) {
-    filterConfigs.push({ label: 'Ordenado por', values: [ordenadoLabel], showAll: true });
+    filterConfigs.push({
+      label: 'Ordenado por',
+      values: [ordenadoLabel],
+      showAll: true,
+    });
   }
 
   const agrupadoLabel = getAgrupadoPorLabel(filters?.agrupadoPor);
   if (agrupadoLabel) {
-    filterConfigs.push({ label: 'Agrupado por', values: [agrupadoLabel], showAll: true });
+    filterConfigs.push({
+      label: 'Agrupado por',
+      values: [agrupadoLabel],
+      showAll: true,
+    });
   }
 
-  const filtrosHeader = filterConfigs.length > 0 ? formatFiltersForHeader(filterConfigs, 180) : '';
+  const filtrosHeader =
+    filterConfigs.length > 0 ? formatFiltersForHeader(filterConfigs, 180) : '';
 
   const json: ReportV3 = {
     pageConfiguration: {
@@ -150,16 +185,20 @@ const handleReportNotaEntrada = async (
             },
           ],
         },
-        ...(filtrosHeader ? ([{
-          type: 'text' as const,
-          value: `Filtros: $filtros_header`,
-          fontSize: 9,
-          color: '#575757',
-          align: 'left' as const,
-          margin: {
-            four: [10, 0, 0, 0],
-          },
-        }] as ComponentV3[]) : []),
+        ...(filtrosHeader
+          ? ([
+              {
+                type: 'text' as const,
+                value: `Filtros: $filtros_header`,
+                fontSize: 9,
+                color: '#575757',
+                align: 'left' as const,
+                margin: {
+                  four: [10, 0, 0, 0],
+                },
+              },
+            ] as ComponentV3[])
+          : []),
       ],
     },
     footer: {
@@ -173,7 +212,7 @@ const handleReportNotaEntrada = async (
       content: [
         {
           type: 'fluidLayout',
-          sizes: ['33%', '33%',"33%"],
+          sizes: ['33%', '33%', '33%'],
           gap: 0,
           content: [
             {
@@ -214,16 +253,15 @@ const handleReportNotaEntrada = async (
             // }
             {
               type: 'text',
-             value: "Página '$page'/'$pages'",
-             // value: "Página testando",
+              value: "Página '$page'/'$pages'",
+              // value: "Página testando",
               fontSize: 10,
               color: '#303030',
-              
+
               align: 'right',
               margin: {
-                four: [5,-40,5,5],
+                four: [5, -40, 5, 5],
               },
-            
             },
             // {
             //   type: 'text',
@@ -231,9 +269,9 @@ const handleReportNotaEntrada = async (
             //  // value: "Página testando",
             //   fontSize: 10,
             //   color: '#303030',
-              
+
             //   align: 'right',
-            
+
             // },
           ],
         },
@@ -250,8 +288,8 @@ const handleReportNotaEntrada = async (
               items: {
                 headerBackgroundColor: '#ffffff',
                 textColor: '#404040',
-                zebraBackgroundColor: '#202020',
-                zebraTextColor: '#FFFFFF',
+                zebraBackgroundColor: '#cbcbcb',
+                zebraTextColor: '#000000',
                 headerTextColor: '#000000',
 
                 borderStyle: 'none',
@@ -353,7 +391,7 @@ const handleReportNotaEntrada = async (
                     ? 'date'
                     : undefined,
                 gap: 40,
-                subtotal:true
+                subtotal: true,
               },
             }
           : {}),
@@ -435,11 +473,7 @@ const handleReportNotaEntrada = async (
     data_geracao: new Date().toLocaleDateString('pf-BR'),
     empresa: companyInfo?.nomeCli ?? '',
     cnpj:
-      rawCnpj.length > 11
-        ? maskCnpj(rawCnpj)
-        : rawCnpj
-        ? maskCpf(rawCnpj)
-        : '',
+      rawCnpj.length > 11 ? maskCnpj(rawCnpj) : rawCnpj ? maskCpf(rawCnpj) : '',
 
     currDate: new Date().toLocaleDateString('pt-BR'),
     logoSistema: imageBase64,
