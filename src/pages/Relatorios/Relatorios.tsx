@@ -1,10 +1,11 @@
-import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import React, { useEffect } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 import Card from '../../components/Card/Card';
 import Fluid from '../../components/Layout/Fluid';
 import { useApp } from '../../contexts/AppContext';
+import ListViewAuditoria from './components/ListViewAuditoria';
 import ListViewBairro from './components/ListViewBairro';
 import ListViewCliente from './components/ListViewCliente';
 import ListViewContaReceber from './components/ListViewContaReceber';
@@ -47,6 +48,8 @@ const Relatorios: React.FC = () => {
                 return <ListViewContaReceber />;
             case 'nfce':
                 return <ListViewNfce />;
+            case 'auditoria':
+                return <ListViewAuditoria />;
             default:
                 return null;
         }
@@ -112,6 +115,26 @@ const Relatorios: React.FC = () => {
                                     {
                                         name: "Contas a Receber",
                                         onClick: () => handleNavigateToListing('conta-receber')
+                                    },
+                                    {
+                                        name: "Bairros",
+                                        onClick: () => handleNavigateToListing('bairro')
+                                    },
+                                    {
+                                        name: "Produtos",
+                                        onClick: () => handleNavigateToListing('produto')
+                                    },
+                                ]}
+                            />
+                            <ReportList
+                                icon={faCog}
+                                title="Ultilitários"
+                                accentColor=" rgb(139, 136, 132)"
+                                accentBg="rgba(139, 136, 132, 0.12)"
+                                reports={[
+                                    {
+                                        name: "Auditoria",
+                                        onClick: () => handleNavigateToListing('auditoria')
                                     },
                                     {
                                         name: "Bairros",

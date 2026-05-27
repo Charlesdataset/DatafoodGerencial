@@ -362,6 +362,8 @@ const ListViewNfce: React.FC = () => {
             saidaFinal:
                 saidaFinal?.toISOString(),
             exibirItens,
+            dataInicial: dataInicial,
+            dataFinal: dataFinal
         }
 
         const res = await api.get("nfce", {
