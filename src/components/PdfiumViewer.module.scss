@@ -3,9 +3,10 @@
 
 .overlay {
   position: fixed;
-  right: 0;        
+  left: 0;
+  right: 0;
   top: 0;
-  height: 100vh;
+  bottom: 0;
   z-index: 1000;
   background: $gray-400;
   display: flex;
@@ -80,7 +81,7 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
   overscroll-behavior: contain;
 
   scrollbar-width: thin;
@@ -105,11 +106,20 @@
     0 2px 8px rgba(0, 0, 0, 0.55),
     0 8px 24px rgba(0, 0, 0, 0.35);
   background: #fff;
+  user-select: none;
+  touch-action: pan-x pan-y;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  margin: 0 auto;
+  width: fit-content;
 }
 
 .pageCanvas {
   display: block;
+  width: auto;
   max-width: 100%;
+  height: auto;
+  user-select: none;
 }
 
 // ── States ─────────────────────────────────────────────────────────────────────

@@ -937,7 +937,7 @@ pub(crate) fn format_mask(value: &serde_json::Value, mask: Option<&str>) -> Stri
     let s = match value {
         serde_json::Value::String(s) => s.clone(),
         serde_json::Value::Number(n) => n.to_string(),
-        _ => return value.to_string(),
+        _ => return String::new(),
     };
     match mask {
         Some("number") => fmt_number(&s),
@@ -977,10 +977,10 @@ pub(crate) fn format_mask(value: &serde_json::Value, mask: Option<&str>) -> Stri
             // suporta "2026-04-04" e "2026-04-04T12:31:00.000Z"
             let date_part = s.split('T').next().unwrap_or(&s);
             let p: Vec<&str> = date_part.split('-').collect();
-            if p.len() == 3 {
+            if p.len() == 3 && !p.iter().any(|seg| seg.is_empty()) {
                 format!("{}/{}/{}", p[2], p[1], p[0])
             } else {
-                s
+                String::new()
             }
         }
         Some("date-time") => {
@@ -988,10 +988,10 @@ pub(crate) fn format_mask(value: &serde_json::Value, mask: Option<&str>) -> Stri
             if parts.len() == 2 {
                 let d = {
                     let q: Vec<&str> = parts[0].split('-').collect();
-                    if q.len() == 3 {
+                    if q.len() == 3 && !q.iter().any(|seg| seg.is_empty()) {
                         format!("{}/{}/{}", q[2], q[1], q[0])
                     } else {
-                        parts[0].to_string()
+                        return String::new();
                     }
                 };
                 // "12:31:00.000Z" → "12:31"
@@ -1009,7 +1009,7 @@ pub(crate) fn format_mask(value: &serde_json::Value, mask: Option<&str>) -> Stri
                 };
                 format!("{} {}", d, time_clean)
             } else {
-                s
+                String::new()
             }
         }
         Some(m) if m.contains('#') => apply_mask(&s, m),

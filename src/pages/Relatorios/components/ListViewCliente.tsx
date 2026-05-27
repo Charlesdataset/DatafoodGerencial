@@ -131,9 +131,9 @@ const ListViewCliente: React.FC = () => {
         await fetchData();
         console.log(companyInfo)
         const bytes = await handleGenerateClientReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio);
-        const blob = new Blob([bytes], { type: 'application/octet-stream' });
+        const blob = new Blob([bytes as any], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
-        setUrl(url);
+        setUrl(url as any);
 
 
     }

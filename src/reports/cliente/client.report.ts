@@ -99,9 +99,7 @@ const handleGenerateClientReport =
           {
             type: 'fluidLayout',
             sizes: [
-              '40%',
-              '52%',
-              '33.33%',
+              '33','33','33'
             ],
             gap: 0,
             content: [
@@ -123,7 +121,7 @@ const handleGenerateClientReport =
                   'www.datasetsistemas.com.br',
                 fontSize: 10,
                 color: '#303030',
-                align: 'left',
+                align: 'center',
                 margin: {
                   all: 5,
                 },

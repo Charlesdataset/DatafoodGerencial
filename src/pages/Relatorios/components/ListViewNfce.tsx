@@ -198,20 +198,81 @@ const ListViewNfce: React.FC = () => {
                             agrupadoPor === NfceAgrupadoPor.DataRecebimento ? 'Recebimento: ' :
                                 '';
 
-        const rowsWithItems: any[] = [];
-        for (const row of rows) {
-            rowsWithItems.push({
+        const formattedRows = rows.map((row) => ({
+            ...row,
+            dataEmissao: formatDateForExcel(row.dataEmissao),
+            dataSaida: formatDateForExcel(row.dataSaida),
+        }));
+
+        const sortedRows = groupBy
+            ? [...formattedRows].sort((a, b) => {
+                const aGroup = String(a[groupBy] ?? "");
+                const bGroup = String(b[groupBy] ?? "");
+                const groupCompare = aGroup.localeCompare(bGroup, "pt-BR", { sensitivity: "base" });
+                if (groupCompare !== 0) return groupCompare;
+                return Number(a.numero ?? 0) - Number(b.numero ?? 0);
+            })
+            : formattedRows;
+
+        const totalsAccumulator = () => ({
+            valorProdutos: 0,
+            vlrTotal: 0,
+        });
+
+        const sumRowTotals = (source: any, target: any) => {
+            target.valorProdutos += Number(source.valorProdutos ?? 0);
+            target.vlrTotal += Number(source.vlrTotal ?? 0);
+        };
+
+        const output: any[] = [];
+        const globalTotals = totalsAccumulator();
+        let currentGroupKey: string | null = null;
+        let currentGroupTotals = totalsAccumulator();
+
+        const pushGroupTotal = (groupKey: string) => {
+            output.push({
+                __rowType: 'subtotal',
+                numero: 'Subtotal',
+                cliente: groupBy === 'cliente' ? groupKey : '',
+                status: groupBy === 'status' ? groupKey : '',
+                dataEmissao: groupBy === 'dataEmissao' ? groupKey : '',
+                dataSaida: groupBy === 'dataSaida' ? groupKey : '',
+                valorProdutos: currentGroupTotals.valorProdutos,
+                vlrTotal: currentGroupTotals.vlrTotal,
+                produto: '',
+                qtd: '',
+                valorTotalItem: '',
+                ...(groupBy ? { [groupBy]: groupKey } : {}),
+            });
+        };
+
+        for (const row of sortedRows) {
+            const groupKey = groupBy ? String(row[groupBy] ?? '') : '';
+            if (groupBy && currentGroupKey !== null && groupKey !== currentGroupKey) {
+                pushGroupTotal(currentGroupKey);
+                currentGroupTotals = totalsAccumulator();
+            }
+            if (groupBy && currentGroupKey === null) {
+                currentGroupKey = groupKey;
+            }
+            if (groupBy && currentGroupKey !== groupKey) {
+                currentGroupKey = groupKey;
+            }
+
+            output.push({
                 ...row,
-                dataEmissao: formatDateForExcel(row.dataEmissao),
-                dataSaida: formatDateForExcel(row.dataSaida),
                 produto: undefined,
                 qtd: undefined,
                 valorTotalItem: undefined,
                 __rowType: 'note',
+                ...(groupBy ? { [groupBy]: groupKey } : {}),
             });
 
+            sumRowTotals(row, currentGroupTotals);
+            sumRowTotals(row, globalTotals);
+
             if (exibirItensExport && row.itens?.length) {
-                rowsWithItems.push({
+                output.push({
                     numero: '',
                     cliente: '',
                     status: '',
@@ -223,11 +284,11 @@ const ListViewNfce: React.FC = () => {
                     qtd: 'Quantidade',
                     valorTotalItem: 'Valor Item',
                     __rowType: 'itemHeader',
-                    ...(groupBy ? { [groupBy]: row[groupBy] } : {}),
+                    ...(groupBy ? { [groupBy]: groupKey } : {}),
                 });
 
                 for (const item of row.itens) {
-                    rowsWithItems.push({
+                    output.push({
                         numero: '',
                         cliente: '',
                         status: '',
@@ -239,14 +300,33 @@ const ListViewNfce: React.FC = () => {
                         qtd: item.qtd,
                         valorTotalItem: item.valorTotal,
                         __rowType: 'item',
-                        ...(groupBy ? { [groupBy]: row[groupBy] } : {}),
+                        ...(groupBy ? { [groupBy]: groupKey } : {}),
                     });
                 }
             }
         }
 
+        if (groupBy && currentGroupKey !== null) {
+            pushGroupTotal(currentGroupKey);
+        }
+
+        output.push({
+            __rowType: 'summary',
+            numero: 'TOTAL GERAL',
+            cliente: '',
+            status: '',
+            dataEmissao: '',
+            dataSaida: '',
+            valorProdutos: globalTotals.valorProdutos,
+            vlrTotal: globalTotals.vlrTotal,
+            produto: '',
+            qtd: '',
+            valorTotalItem: '',
+            ...(groupBy ? { [groupBy]: currentGroupKey ?? '' } : {}),
+        });
+
         return {
-            data: rowsWithItems,
+            data: output,
             groupBy,
             groupPrefix,
         };

@@ -3,9 +3,9 @@ import type { ImageDataLike, PdfDocumentObject, PdfPageObject } from "@embedpdf/
 import { Rotation } from "@embedpdf/models";
 import { faClose, faDownload, faFileExcel, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "../contexts/AppContext";
-import { useResponsive } from "../hooks/useResponsive";
 import type { TableHeaderDef } from "../types/v3.types";
 import { exportToExcel, type MultiDataConfig } from "../utils/exportToExcel";
 import { getPdfiumEngine } from "../wasm/pdfiumEngine";
@@ -107,14 +107,17 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
   const documentRef = useRef<PdfDocumentObject | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const touchStateRef = useRef<{ initialDistance: number; initialZoom: number } | null>(null);
+  const dragStateRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
   const [zoom, setZoom] = useState(1);
+  const [fitScale, setFitScale] = useState(1);
+  const [pageWidth, setPageWidth] = useState<number | null>(null);
   const [rotation, setRotation] = useState<Rotation>(Rotation.Degree0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isMobile, isCollapsed } = useApp();
-  const { width } = useResponsive();
 
   const pageIndexes = useMemo(() => Array.from({ length: pageCount }, (_, index) => index), [pageCount]);
 
@@ -208,20 +211,56 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
 
     setError(null);
     try {
+      const actualScale = fitScale * zoom;
       const page = doc.pages[pageIndex] as PdfPageObject;
       const imageData = await engine
         .renderPageRaw(doc, page, {
-          scaleFactor: zoom,
+          scaleFactor: actualScale,
           rotation,
           dpr: window.devicePixelRatio || 1,
         })
         .toPromise();
 
       drawImageData(canvas, imageData);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.style.width = `${imageData.width / dpr}px`;
+      canvas.style.height = `${imageData.height / dpr}px`;
+      canvas.style.maxWidth = 'none';
+
+      if (pageWidth === null && actualScale > 0) {
+        const measuredWidth = canvas.width / (dpr * actualScale);
+        if (measuredWidth > 0) {
+          setPageWidth(measuredWidth);
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
   };
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const resizeObserver = new ResizeObserver(() => {
+      if (!containerRef.current) return;
+      const width = containerRef.current.clientWidth;
+      if (width > 0) {
+        setFitScale((current) => {
+          if (pageWidth === null) return current;
+          return width / pageWidth;
+        });
+      }
+    });
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, [pageWidth]);
+
+  useEffect(() => {
+    if (pageWidth === null || !containerRef.current) return;
+    const width = containerRef.current.clientWidth;
+    if (width > 0) {
+      setFitScale(width / pageWidth);
+    }
+  }, [pageWidth]);
 
   useEffect(() => {
     if (!containerRef.current || pageCount === 0) return;
@@ -290,6 +329,45 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     }
   };
 
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0 || zoom <= 1) return;
+    const container = containerRef.current;
+    if (!container) return;
+    container.setPointerCapture(event.pointerId);
+    dragStateRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      left: container.scrollLeft,
+      top: container.scrollTop,
+    };
+    setIsDragging(true);
+    event.preventDefault();
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragStateRef.current || event.pointerType !== 'mouse') return;
+    const container = containerRef.current;
+    if (!container) return;
+    event.preventDefault();
+    const dx = dragStateRef.current.x - event.clientX;
+    const dy = dragStateRef.current.y - event.clientY;
+    container.scrollLeft = dragStateRef.current.left + dx;
+    container.scrollTop = dragStateRef.current.top + dy;
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current;
+    if (container) {
+      try {
+        container.releasePointerCapture(event.pointerId);
+      } catch {
+        // ignore unsupported release
+      }
+    }
+    dragStateRef.current = null;
+    setIsDragging(false);
+  };
+
   useEffect(() => {
     return () => {
       if (engineRef.current && documentRef.current) {
@@ -302,7 +380,10 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
   }, []);
 
   return (
-    <div className={styles.overlay} style={!isMobile ? (isCollapsed ? { width: width - 49 } : { width: width - 198 }) : { width: "100%" }}>
+    <div
+      className={styles.overlay}
+      style={!isMobile ? { left: isCollapsed ? 50 : 200, right: 0 } : { left: 0, right: 0 }}
+    >
       <div className={styles.floatingToolbar}>
         <Fluid xs={excelDataset ? ["expand", "auto", "auto", "auto", "auto", "auto"] : ["expand", "auto", "auto", "auto", "auto"]}>
           <div className="mx-6">
@@ -362,7 +443,18 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
         </Fluid>
       </div>
 
-      <div className={styles.scrollArea} ref={containerRef} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+      <div
+        className={styles.scrollArea}
+        ref={containerRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'auto' }}
+      >
         {isLoading && <div className={styles.loadingMessage}>Carregando...</div>}
         {error && <div className={styles.error}>{error}</div>}
         {pageIndexes.map((pageIndex) => (
