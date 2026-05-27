@@ -150,9 +150,10 @@ const ListViewBairro: React.FC = () => {
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={['expand', 'auto']}
+                        xs={[80, 'expand', 100]}
+                        lg={['expand', 'auto']}
 
-                        rowGap={0}
+                        
                     >
                         <TextSearch isLoading={isLoading} placeholder="Digite para buscar..." value={textSearch} onChange={(e) => {
                             setTextSearch(e.target.value);
@@ -162,7 +163,7 @@ const ListViewBairro: React.FC = () => {
                         }} >
                             <FontAwesomeIcon icon={faRedo} />
                         </FormButton>
-                        <FormButton variant="primary" onClick={() => {
+                        <FormButton variant="secondary" className="justify-content-center" onClick={() => {
                             handlePrint();
                         }}>
                             <FontAwesomeIcon icon={faPrint} />
@@ -188,24 +189,25 @@ const ListViewBairro: React.FC = () => {
                     excelDataset={{
                         data: dados,
                         columns: [
-                            { key: 'idBairro',     prefix: 'Código',         align: 'center' as const },
-                            { key: 'descricao',    prefix: 'Bairro' },
-                            { key: 'dataCadastro', prefix: 'Data Cadastro',   mask: 'date-time' as const, align: 'center' as const },
-                            { key: 'pausar',       prefix: 'Pausada',         pill: true, pillCases: [
-                                { case: 'true',  color: '#16a34a', transform: 'Sim' },
-                                { case: 'false', color: '#d97706', transform: 'Não' },
-                            ]},
-                            { key: 'taxaEntrega',  prefix: 'Taxa Entrega',    align: 'right' as const, mask: 'currency' as const },
+                            { key: 'idBairro', prefix: 'Código', align: 'center' as const },
+                            { key: 'descricao', prefix: 'Bairro' },
+                            { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const, align: 'center' as const },
+                            {
+                                key: 'pausar', prefix: 'Pausada', pill: true, pillCases: [
+                                    { case: 'true', color: '#16a34a', transform: 'Sim' },
+                                    { case: 'false', color: '#d97706', transform: 'Não' },
+                                ]
+                            },
+                            { key: 'taxaEntrega', prefix: 'Taxa Entrega', align: 'right' as const, mask: 'currency' as const },
                         ] as TableHeaderDef[],
                         fileName: 'bairros',
                         sheetName: 'Bairros',
                         logo: currLogoRelatorio,
                         title: 'Relatório Bairros',
-                        subtitle: `${
-                            companyInfo?.cnpj
-                                ? (companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj))
-                                : ''
-                        }  ${companyInfo?.nomeCli ?? ''}`.trim(),
+                        subtitle: `${companyInfo?.cnpj
+                            ? (companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj))
+                            : ''
+                            }  ${companyInfo?.nomeCli ?? ''}`.trim(),
                         headerBackgroundColor: '#404040',
                     }}
                 />

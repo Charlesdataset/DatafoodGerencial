@@ -16,9 +16,9 @@ import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import { useApp } from "../../../contexts/AppContext";
 import { useNavigation } from "../../../contexts/NavigationContext";
 import handleGenerateClientReport, { ClienteAgrupadoPor, ModeloRelatorio } from "../../../reports/cliente/client.report";
+import { api } from "../../../services/api";
 import type { TableHeaderDef } from "../../../types/v3.types";
 import { maskCnpj, maskCpf } from "../../../utils/format";
-import { api } from "../../../services/api";
 
 
 const ListViewCliente: React.FC = () => {
@@ -185,9 +185,9 @@ const ListViewCliente: React.FC = () => {
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={['expand', 'auto']}
+                        xs={[80, 'expand', 100]}
+                        lg={['expand', 'auto']}
 
-                        rowGap={0}
                     >
                         <TextSearch isLoading={isLoading} placeholder="Digite para buscar..." value={textSearch} onChange={(e) => {
                             setTextSearch(e.target.value);
@@ -197,7 +197,7 @@ const ListViewCliente: React.FC = () => {
                         }} >
                             <FontAwesomeIcon icon={faRedo} />
                         </FormButton>
-                        <FormButton variant="primary" onClick={() => {
+                        <FormButton variant="secondary" className="justify-content-center" onClick={() => {
                             setModalShow(true);
                         }}>
                             <FontAwesomeIcon icon={faPrint} />
@@ -224,11 +224,11 @@ const ListViewCliente: React.FC = () => {
                         data: dados,
                         columns: tipo === ModeloRelatorio.Simplificado
                             ? [
-                                { key: 'idCliente',     prefix: 'Código' },
-                                { key: 'razaoSocial',   prefix: 'Nome' },
-                                { key: 'dataCadastro',  prefix: 'Data Cadastro', mask: 'date-time' },
-                                { key: 'celular',       prefix: 'Celular',        align: 'center' as const },
-                                { key: 'limiteCredito', prefix: 'Saldo',          mask: 'currency',  align: 'center' as const },
+                                { key: 'idCliente', prefix: 'Código' },
+                                { key: 'razaoSocial', prefix: 'Nome' },
+                                { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' },
+                                { key: 'celular', prefix: 'Celular', align: 'center' as const },
+                                { key: 'limiteCredito', prefix: 'Saldo', mask: 'currency', align: 'center' as const },
                             ] as TableHeaderDef[]
                             : [] as TableHeaderDef[],
                         fileName: 'clientes',
@@ -245,8 +245,8 @@ const ListViewCliente: React.FC = () => {
                         groupPrefix: agrupado === ClienteAgrupadoPor.Bairro
                             ? 'Bairro: '
                             : agrupado === ClienteAgrupadoPor.Cidade
-                            ? 'Cidade: '
-                            : undefined,
+                                ? 'Cidade: '
+                                : undefined,
                         multiData: tipo === ModeloRelatorio.Detalhado ? {
                             columns: 8,
                             titleField: 'razaoSocial',
@@ -257,18 +257,18 @@ const ListViewCliente: React.FC = () => {
                             labelColor: '#555e74',
                             valueColor: '#1e222b',
                             fields: [
-                                { key: 'idCliente',     prefix: 'Código' },
-                                { key: 'dataCadastro',  prefix: 'Data Cadastro',    mask: 'date-time' as const },
-                                { key: 'celular',       prefix: 'Celular' },
-                                { key: 'telefone',      prefix: 'Telefone',          mask: 'phone' as const },
+                                { key: 'idCliente', prefix: 'Código' },
+                                { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const },
+                                { key: 'celular', prefix: 'Celular' },
+                                { key: 'telefone', prefix: 'Telefone', mask: 'phone' as const },
                                 { key: 'limiteCredito', prefix: 'Limite de Crédito', mask: 'currency' as const, align: 'right' as const },
-                                { key: 'cnpjCpf',       prefix: 'CPF / CNPJ',        mask: 'cnpjCpf' as const },
-                                { key: 'email',         prefix: 'E-mail',             span: 2 },
-                                { key: 'logradouro',    prefix: 'Endereço',           span: 3 },
-                                { key: 'bairro',        prefix: 'Bairro',             span: 2 },
-                                { key: 'cidade',        prefix: 'Cidade' },
-                                { key: 'cep',           prefix: 'CEP',                mask: 'cep' as const },
-                                { key: 'uf',            prefix: 'UF' },
+                                { key: 'cnpjCpf', prefix: 'CPF / CNPJ', mask: 'cnpjCpf' as const },
+                                { key: 'email', prefix: 'E-mail', span: 2 },
+                                { key: 'logradouro', prefix: 'Endereço', span: 3 },
+                                { key: 'bairro', prefix: 'Bairro', span: 2 },
+                                { key: 'cidade', prefix: 'Cidade' },
+                                { key: 'cep', prefix: 'CEP', mask: 'cep' as const },
+                                { key: 'uf', prefix: 'UF' },
                             ],
                         } : undefined,
                     }}

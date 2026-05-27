@@ -68,6 +68,7 @@ const handleReportNfce = async (
     agrupadoPor?: string;
     dataInicial?: string | Date | null;
     dataFinal?: string | Date | null;
+    status: string;
   },
 ) => {
   const filterConfigs: FilterConfig[] = [];
@@ -112,6 +113,13 @@ const handleReportNfce = async (
         showAll: true,
       });
     }
+    if (filters.status) {
+      filterConfigs.push({
+        label: 'Status',
+        values: [filters.status],
+        showAll: true,
+      });
+    }
   }
 
   const agrupadoLabel = getAgrupadoPorLabel(filters?.agrupadoPor);
@@ -140,11 +148,11 @@ const handleReportNfce = async (
       margin: {
         four: [40, 35, 40, 35],
       },
-      orientation: 'portraint',
+      orientation: 'landscape',
     },
     header: {
       repeat: false,
-      height: filtrosHeader ? 90 : 60,
+      height: 60,
       backgroundColor: '#ffffff',
       content: [
         {
@@ -280,8 +288,8 @@ const handleReportNfce = async (
       {
         type: 'table',
         headerBackgroundColor: '#404040',
-        zebraBackgroundColor: '#202020',
-        zebraTextColor: '#FFFFFF',
+        zebraBackgroundColor: '#cbcbcb',
+        zebraTextColor: '#000000',
         ...(exibeItens
           ? {
               items: {
@@ -380,13 +388,13 @@ const handleReportNfce = async (
           },
           {
             key: 'vlrTotal',
-            prefix: 'VALOR TOTAL',
+            prefix: 'VALOR TOTAL  ',
             align: 'right',
             mask: 'number',
             sum: true,
           },
         ],
-        widths: [50, 'expand', 80, 80, 80, 90, 90],
+        widths: [50, 'expand', 80, 80, 80, 100, 100],
         summaryBox: {
           rows: [
             { key: 'valorProdutos', label: 'VALOR PRODUTOS', mask: 'currency' },

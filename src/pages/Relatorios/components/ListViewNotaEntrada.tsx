@@ -702,9 +702,12 @@ export const ListViewNotaEntreda = () => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Fluid
-                        xs={['expand']}
+                        xs={[100, 50, 50]}
+                        lg={['expand']}
                     >
-                        <FormButton variant="outline-secondary" className="justify-content-center">
+                        <FormButton variant="outline-secondary" className="justify-content-center" onClick={() => {
+                            setModalReportShow(false)
+                        }}>
                             <Flex wrap="nowrap">
                                 <FontAwesomeIcon icon={faCancel} />
                                 Cancelar
@@ -732,19 +735,13 @@ export const ListViewNotaEntreda = () => {
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={[100, 50, 50, 70, 'expand']}
+                        xs={[60, 40, 50, 50, 'expand']}
                         sm={[50, 25, 25, 90, 'expand']}
                         lg={['expand', 'auto', 'auto', 'auto', 'auto']}
                     >
                         <TextSearch value={textSearch} placeholder="Forncedor, numero..." onChange={(e) => {
                             setTextSearch(e.target.value)
                         }} />
-                        <TextBox isFormField={false} value={valorInicial} mask={'number'} onChange={(e) => {
-                            setValorInicial(Number(e.target.value))
-                        }} placeholder="Valor inicial" className="mb-0" />
-                        <TextBox isFormField={false} value={valorFinal} onChange={(e) => {
-                            setValorFinal(Number(e.target.value))
-                        }} placeholder="Valor final" className="mb-0" />
                         <Select value={ordenadoPor} className="mb-0" placeholder="Ordenado por" onChange={(e) => {
                             setOrdenadoPor(e as EntradaNFOrderBy)
                         }} options={[
@@ -757,12 +754,20 @@ export const ListViewNotaEntreda = () => {
                             { label: 'Entrada Z-A', value: EntradaNFOrderBy.ENTRADA_ZA },
 
                         ]} />
+                        <TextBox isFormField={false} value={valorInicial} mask={'number'} onChange={(e) => {
+                            setValorInicial(Number(e.target.value))
+                        }} placeholder="Valor inicial" className="mb-0" />
+                        <TextBox isFormField={false} value={valorFinal} onChange={(e) => {
+                            setValorFinal(Number(e.target.value))
+                        }} placeholder="Valor final" className="mb-0" />
 
 
-                        <FormButton className="mb-0 justify-content-center" onClick={() => {
+
+                        <FormButton variant="secondary" className="mb-0 justify-content-center" onClick={() => {
                             setModalReportShow(true)
                         }}>
                             <FontAwesomeIcon icon={faPrint} />
+                            Relatório
 
                         </FormButton>
                     </Fluid>
@@ -793,7 +798,7 @@ export const ListViewNotaEntreda = () => {
             <Fluid
                 className="mt-4"
                 xs={[100, 100, 100, 100]}
-                sm={[50,50,50,50,100]}
+                sm={[50, 50, 50, 50, 100]}
                 lg={['expand']}
             >
                 <InfoCard title="Total ICMS ST" value={totais?.totalICMSST ?? 0}

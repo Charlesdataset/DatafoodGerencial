@@ -2,7 +2,6 @@ import {
   faArrowLeft,
   faArrowRightFromBracket,
   faCancel,
-  faChartPie,
   faMobileRetro,
   faSave,
   faUser
@@ -20,24 +19,14 @@ import { useApp } from "../../contexts/AppContext";
 import { useNavigation } from "../../contexts/NavigationContext";
 import { api } from "../../services/api";
 import styles from "./Header.module.scss";
+import { pageIcons, pageTitles } from "./MobileHeader";
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
-// Ícones para cada página
-const pageIcons: Record<string, any> = {
-  "/": faChartPie,
-  "/dashboard": faChartPie,
-  "/reports": faChartPie,
 
-};
 
-const pageTitles: Record<string, string> = {
-  "/": "Dashboard",
-  "/dashboard": "Dashboard",
-  "/reports": 'Relatórios',
-};
 
 export const Header = ({ onMenuClick }: HeaderProps) => {
   const location = useLocation();
@@ -50,8 +39,8 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
   const [inLoad, setInLoad] = useState(false);
   const [showBackButton, setShowBackButton] = useState(false);
 
-  const currentIcon = pageIcons[location.pathname] || "📌";
-  const currentTitle = pageTitles[location.pathname] || "TicketFlow";
+  const currentIcon = pageIcons[`${location.pathname}${location.search}`] || "📌";
+  const currentTitle = pageTitles[`${location.pathname}${location.search}`] || "TicketFlow";
   const isMobile = window.innerWidth <= 992;
 
 

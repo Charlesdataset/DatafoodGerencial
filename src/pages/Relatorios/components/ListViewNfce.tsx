@@ -86,7 +86,8 @@ const ListViewNfce: React.FC = () => {
 
     useEffect(() => {
         fetchNfces();
-    }, [textSearch, status, valorInicial, valorFinal, dataInicial, dataFinal, saidaInicial, saidaFinal])
+        fetchTotais();
+    }, [textSearch, status, valorInicial, valorFinal, dataInicial, dataFinal, saidaInicial, saidaFinal, limit, offset])
 
     const fetchNfces = async () => {
         try {
@@ -124,7 +125,19 @@ const ListViewNfce: React.FC = () => {
     };
 
     const fetchTotais = async () => {
-        const res = await api.get('nfce/totais');
+        const params = {
+            dataInicial: dataInicial,
+            dataFinal: dataFinal,
+            valorInicial: valorInicial,
+            valorFinal: valorFinal,
+            textSearch: textSearch,
+            saidaInicial: saidaInicial,
+            saidaFinal: saidaFinal,
+            status: status
+
+        }
+
+        const res = await api.get('nfce/totais', { params: params });
         if (res?.status === 200) {
             setTotais(res.data)
         }
@@ -239,10 +252,7 @@ const ListViewNfce: React.FC = () => {
         };
     };
 
-    useEffect(() => {
-        fetchNfces();
-        fetchTotais()
-    }, [limit, offset]);
+
 
     const handleImprimirNfce = async (xml: string) => {
         try {
@@ -256,8 +266,26 @@ const ListViewNfce: React.FC = () => {
     }
 
     const handleGeneratePdf = async () => {
+        const params = {
+            textSerach: textSearch || undefined,
+            status: status || undefined,
+            valorInicial:
+                valorInicial !== ""
+                    ? Number(valorInicial)
+                    : undefined,
+            valorFinal:
+                valorFinal !== ""
+                    ? Number(valorFinal)
+                    : undefined,
+            saidaInicial:
+                saidaInicial?.toISOString(),
+            saidaFinal:
+                saidaFinal?.toISOString(),
+            exibirItens,
+        }
+
         const res = await api.get("nfce", {
-            params: buildNfceFetchParams(),
+            params: params,
         });
         if (res?.status == 200) {
             const nfces = res.data;
@@ -273,6 +301,7 @@ const ListViewNfce: React.FC = () => {
                 agrupadoPor,
                 dataInicial,
                 dataFinal,
+                status
             });
             const blob = new Blob([bytes as any], { type: 'application/pdf' });
             const url = URL.createObjectURL(blob);
@@ -460,7 +489,8 @@ const ListViewNfce: React.FC = () => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Fluid
-                        xs={['expand']}
+                        xs={[100, 50, 50]}
+                        lg={['expand']}
                     >
                         <FormButton variant="outline-secondary" className="justify-content-center">
                             <Flex wrap="nowrap">
@@ -490,7 +520,7 @@ const ListViewNfce: React.FC = () => {
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={[100, 100, 50, 50, 50, 50, 'expand']}
+                        xs={[70, 30, 50, 50, 50, 50, 'expand']}
                         sm={[100, 50, 25, 25, 25, 25, 'expand']}
 
                         md={[25, 10, 11, 11, 15, 15, 'expand']}

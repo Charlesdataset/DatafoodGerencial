@@ -195,9 +195,8 @@ const ListViewProduto: React.FC = () => {
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={['expand', 'auto']}
-
-                        rowGap={0}
+                        xs={[80, 'expand', 100]}
+                        lg={['expand', 'auto']}
                     >
                         <TextSearch isLoading={isLoading} placeholder="Digite para buscar..." value={textSearch} onChange={(e) => {
                             setTextSearch(e.target.value);
@@ -207,7 +206,7 @@ const ListViewProduto: React.FC = () => {
                         }} >
                             <FontAwesomeIcon icon={faRedo} />
                         </FormButton>
-                        <FormButton variant="primary" onClick={() => {
+                        <FormButton variant="secondary" className="justify-content-center" onClick={() => {
                             setModalShow(true);
                         }}>
                             <FontAwesomeIcon icon={faPrint} />
@@ -235,24 +234,23 @@ const ListViewProduto: React.FC = () => {
                         // Simplificado: colunas planas; Detalhado: multiData
                         columns: tipo === ModeloRelatorio.Simplificado
                             ? [
-                                { key: 'idProduto',    prefix: 'Código' },
-                                { key: 'descricao',    prefix: 'Descrição' },
+                                { key: 'idProduto', prefix: 'Código' },
+                                { key: 'descricao', prefix: 'Descrição' },
                                 { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const, align: 'center' as const },
-                                { key: 'cest',         prefix: 'Cest',          align: 'center' as const },
-                                { key: 'custoAtual',   prefix: 'Custo Atual',   align: 'center' as const },
-                                { key: 'ncm',          prefix: 'Ncm',           align: 'center' as const },
-                                { key: 'ean1',         prefix: 'Cod. Barra',    align: 'center' as const },
+                                { key: 'cest', prefix: 'Cest', align: 'center' as const },
+                                { key: 'custoAtual', prefix: 'Custo Atual', align: 'center' as const },
+                                { key: 'ncm', prefix: 'Ncm', align: 'center' as const },
+                                { key: 'ean1', prefix: 'Cod. Barra', align: 'center' as const },
                             ] as TableHeaderDef[]
                             : [] as TableHeaderDef[],
                         fileName: 'produtos',
                         sheetName: 'Produtos',
                         logo: currLogoRelatorio,
                         title: 'Relatório Produtos',
-                        subtitle: `${
-                            companyInfo?.cnpj
-                                ? (companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj))
-                                : ''
-                        }  ${companyInfo?.nomeCli ?? ''}`.trim(),
+                        subtitle: `${companyInfo?.cnpj
+                            ? (companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj))
+                            : ''
+                            }  ${companyInfo?.nomeCli ?? ''}`.trim(),
                         headerBackgroundColor: '#404040',
                         groupBy: agrupado !== ProdutoAgrupadoPor.Nenhum ? 'ncm' : undefined,
                         groupPrefix: agrupado !== ProdutoAgrupadoPor.Nenhum ? 'NCM: ' : undefined,
@@ -266,19 +264,19 @@ const ListViewProduto: React.FC = () => {
                             labelColor: '#555e74',
                             valueColor: '#1e222b',
                             fields: [
-                                { key: 'idProduto',    prefix: 'Código' },
+                                { key: 'idProduto', prefix: 'Código' },
                                 { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const },
-                                { key: 'precoVenda',   prefix: 'Preço Venda' },
-                                { key: 'precoDelivery',prefix: 'Preço Delivery' },
+                                { key: 'precoVenda', prefix: 'Preço Venda' },
+                                { key: 'precoDelivery', prefix: 'Preço Delivery' },
                                 { key: 'precoAPartir', prefix: 'Preço A Partir', align: 'right' as const },
-                                { key: 'custoAtual',   prefix: 'Custo Atual' },
-                                { key: 'cest',         prefix: 'Cest' },
-                                { key: 'ncm',          prefix: 'Ncm' },
-                                { key: 'qtdeAtual',    prefix: 'Qtde. Atual' },
-                                { key: 'estoqueMin',   prefix: 'Estoque Mín.' },
-                                { key: 'estoqueMax',   prefix: 'Estoque Máx.' },
-                                { key: 'margem',       prefix: 'Margem' },
-                                { key: 'ean1',         prefix: 'Cód. Barra', span: 2 },
+                                { key: 'custoAtual', prefix: 'Custo Atual' },
+                                { key: 'cest', prefix: 'Cest' },
+                                { key: 'ncm', prefix: 'Ncm' },
+                                { key: 'qtdeAtual', prefix: 'Qtde. Atual' },
+                                { key: 'estoqueMin', prefix: 'Estoque Mín.' },
+                                { key: 'estoqueMax', prefix: 'Estoque Máx.' },
+                                { key: 'margem', prefix: 'Margem' },
+                                { key: 'ean1', prefix: 'Cód. Barra', span: 2 },
                             ],
                         } : undefined,
                     }}

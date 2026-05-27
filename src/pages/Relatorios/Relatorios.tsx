@@ -57,7 +57,12 @@ const Relatorios: React.FC = () => {
             {!listing && (
                 <Card>
                     <Card.Body>
-                        <Fluid xs={[33, 33, 33]}>
+                        <Fluid
+
+                            xs={[50, 50]}
+                            lg={[33, 33, 33]}
+
+                        >
                             <ReportList
                                 icon={faFileAlt}
                                 title="Cadastros"
