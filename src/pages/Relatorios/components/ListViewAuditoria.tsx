@@ -15,10 +15,10 @@ import ListGroup from "../../../components/ListGroup/ListGroup";
 import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import Switch from "../../../components/Switch/Switch";
-import { exportToExcel } from "../../../utils/exportToExcel";
 import { useApp } from "../../../contexts/AppContext";
 import handleReportAuditoria, { AuditoriaAgrupadoPor } from "../../../reports/auditoria/auditoria.report";
 import { api } from "../../../services/api";
+import { exportToExcel } from "../../../utils/exportToExcel";
 
 
 export enum OperacaoAuditoria {
@@ -58,9 +58,9 @@ const ListViewAuditoria: React.FC = () => {
         }
     }
     useEffect(() => {
-
         fetchForms();
-
+        fetchData();
+        fetchTotal();
     }, [])
 
     useEffect(() => {
@@ -75,7 +75,7 @@ const ListViewAuditoria: React.FC = () => {
             dataFinal: dataFinal,
             formulario: currForm,
             operacao: operacao,
-            textSearch: textSearch,
+            pesquisa: textSearch,
             limit: limit,
             offset: offset,
         }
@@ -95,7 +95,7 @@ const ListViewAuditoria: React.FC = () => {
             dataFinal: dataFinal,
             formulario: currForm,
             operacao: operacao,
-            textSearch: textSearch,
+            pesquisa: textSearch,
         }
         const res = await api.get("auditoria/totais", { params: params })
         if (res?.status == 200) {
@@ -181,7 +181,7 @@ const ListViewAuditoria: React.FC = () => {
             dataFinal: dataFinal,
             operacao: operacao,
             formulario: currForm,
-            textSearch: textSearch
+            pesquisa: textSearch
         }
 
         const res = await api.get("auditoria", { params: params });
