@@ -224,6 +224,8 @@ const SelectModal: React.FC<SelectModalProps> = ({
 
   const initialSelectedIds = mode === "multi" ? ((rest as MultiModeProps).selectedIds ?? []) : [];
   const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set(initialSelectedIds));
+  const [selectedItems, setSelectedItems] = useState<SelectedValue[]>([]);
+  const externalSelectedData = mode === "multi" ? ((rest as MultiModeProps).selectedData ?? []) : [];
 
   // ── Estado dos filtros de combobox ────────────────────────────────────────
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
@@ -269,6 +271,21 @@ const SelectModal: React.FC<SelectModalProps> = ({
     };
     load();
   }, [isOpen]);
+
+  useEffect(() => {
+    if (mode !== "multi") return;
+    const selected = Array.from(selectedIds).map((id) => {
+      const item = items.find((i) => i[idField] === id);
+      if (item) return toSelectedValue(item);
+      const raw = externalSelectedData.find((x) => x.id === id);
+      return {
+        id,
+        name: raw ? getPrimary(raw as SelectItem) : String(id),
+        raw: (raw ?? { id } as SelectItem),
+      };
+    });
+    setSelectedItems(selected);
+  }, [items, selectedIds, idField, externalSelectedData, mode, keyShow]);
 
   // ── Resolução de textos ────────────────────────────────────────────────────
   const sep = keyShow?.separator ?? " ";
@@ -329,16 +346,37 @@ const SelectModal: React.FC<SelectModalProps> = ({
   });
 
   const handleSingleSelect = (item: SelectItem) => {
-    (rest as SingleModeProps).onSelect(toSelectedValue(item));
+    const value = toSelectedValue(item);
+    setSelectedItems([value]);
+    (rest as SingleModeProps).onSelect(value);
     onClose();
   };
 
   const handleMultiToggle = (item: SelectItem) => {
+    const itemId = item[idField];
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      next.has(item[idField]) ? next.delete(item[idField]) : next.add(item[idField]);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+        setSelectedItems((prevItems) => prevItems.filter((selected) => selected.id !== itemId));
+      } else {
+        next.add(itemId);
+        setSelectedItems((prevItems) => {
+          const nextItems = prevItems.filter((selected) => selected.id !== itemId);
+          return [...nextItems, toSelectedValue(item)];
+        });
+      }
       return next;
     });
+  };
+
+  const handleRemoveSelected = (id: number | string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    setSelectedItems((prevItems) => prevItems.filter((selected) => selected.id !== id));
   };
 
   const handleMultiConfirm = () => {
@@ -413,6 +451,24 @@ const SelectModal: React.FC<SelectModalProps> = ({
                 );
               })}
             </ListGroup>
+          )}
+        </div>
+
+        <div className={styles.pillsWrap}>
+          {selectedItems.length > 0 ? (
+            selectedItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={styles.pill}
+                onClick={() => handleRemoveSelected(item.id)}
+              >
+                <span className={styles.pillLabel}>{item.name}</span>
+                <span className={styles.pillRemove} aria-label="Remover">×</span>
+              </button>
+            ))
+          ) : (
+            <div className={styles.noSelectedText}>Nenhum selecionado</div>
           )}
         </div>
 

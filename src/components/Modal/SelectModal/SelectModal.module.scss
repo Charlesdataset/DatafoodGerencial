@@ -131,6 +131,59 @@
   text-align: right;
 }
 
+.pillsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  min-height: 48px;
+  border-top: 1px solid $border-color;
+  background: $white;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba($primary, 0.18);
+  background: rgba($primary, 0.12);
+  color: $text-primary;
+  font-size: $font-size-xs;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+
+  &:hover {
+    background: rgba($primary, 0.18);
+    transform: translateY(-1px);
+  }
+}
+
+.pillLabel {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pillRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba($primary, 0.18);
+  color: $primary;
+  font-weight: 700;
+}
+
+.noSelectedText {
+  color: rgba($text-secondary, 0.7);
+  font-size: $font-size-sm;
+}
+
 // ─── Barra de selecionados (modo multi) ───────────────────────────────────────
 .selectedBar {
   display: flex;
