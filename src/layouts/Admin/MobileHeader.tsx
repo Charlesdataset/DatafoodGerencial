@@ -3,6 +3,7 @@ import {
   faCancel,
   faChartPie,
   faFilter,
+  faMagnifyingGlass,
   faMap,
   faMobileRetro,
   faNoteSticky,
@@ -31,6 +32,7 @@ export const pageIcons: Record<string, any> = {
   "/reports?listing=cliente": faUsers,
   "/reports?listing=bairro": faMap,
   "/reports?listing=produto": faBox,
+  "/reports?listing=auditoria": faMagnifyingGlass,
 
 };
 
@@ -43,6 +45,7 @@ export const pageTitles: Record<string, string> = {
   "/reports?listing=cliente": 'Clientes',
   "/reports?listing=bairro": 'Bairros',
   "/reports?listing=produto": 'Produtos',
+  "/reports?listing=auditoria": 'Auditoria',
 };
 const MobileHeader = () => {
   const location = useLocation();

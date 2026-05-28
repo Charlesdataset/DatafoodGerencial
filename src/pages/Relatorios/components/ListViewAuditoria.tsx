@@ -1,15 +1,22 @@
-import { faPrint } from "@fortawesome/free-solid-svg-icons";
+import { faBookBookmark, faCancel, faFileExcel, faFilePdf, faFilter, faList, faPrint, faSignOut } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import Card from "../../../components/Card/Card";
 import type { ExtendedColumnDef } from "../../../components/DataGrid/DataGrid";
 import DataGridServerSide from "../../../components/DataGrid/DataGridServerSide";
 import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import Select from "../../../components/Inputs/Select/Select";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
+import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
+import ListGroup from "../../../components/ListGroup/ListGroup";
+import { Modal } from "../../../components/Modal";
+import { PdfiumViewer } from "../../../components/PdfiumViewer";
+import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
+import handleReportAuditoria, { AuditoriaAgrupadoPor } from "../../../reports/auditoria/auditoria.report";
 import { api } from "../../../services/api";
 
 
@@ -24,13 +31,22 @@ export enum OperacaoAuditoria {
 
 const ListViewAuditoria: React.FC = () => {
     const [operacao, setOperacao] = useState<OperacaoAuditoria>(null)
+    const [agrupadoPor, setAgrupadoPor] = useState<AuditoriaAgrupadoPor>(AuditoriaAgrupadoPor.Nenhum)
     const { dataInicial, dataFinal, currLogoRelatorio, companyInfo } = useApp();
+    const [showPreviewPdf, setShowPreviewPdf] = useState(false)
+    const [url, setUrl] = useState(null)
+    const [textSearch, setTextSearch] = useState("");
+    const [exibeDetalhes, setExibeDetalhes] = useState(false)
     const [limit, setLimit] = useState(10);
     const [offset, setOffset] = useState(0)
     const [formularios, setFormularios] = useState([]);
     const [currForm, setCurrForm] = useState(null)
     const [totalRows, setTotalRows] = useState(null)
     const [data, setData] = useState([])
+    const [id, setId] = useState(0)
+    const [dadosJson, setDadosJson] = useState(null)
+    const [modalDetailShow, setModalDetailShow] = useState(false)
+    const [showModalReport, setShowModalReport] = useState(false)
     const [resportData, setReportData] = useState([])
 
     const fetchForms = async () => {
@@ -95,22 +111,225 @@ const ListViewAuditoria: React.FC = () => {
         {
             accessorKey: 'idAuditoria',
             header: 'Cód.',
-            width: 80
+            width: 80,
+            textAlign: 'center'
         },
         {
             accessorKey: 'formulario',
             header: 'Formulario',
-            width: 100,
+            width: 150,
+            textAlign: 'center'
 
-        }, {
+        },
+        {
             accessorKey: 'operacao',
-            header: 'Operação'
+            header: 'Operação',
+            textAlign: 'center',
+            width: 100
+        },
+        {
+            accessorKey: 'data',
+            header: 'Data',
+            mask: 'datetime',
+            textAlign: 'center',
+            width: 100
+        },
+        {
+            accessorKey: 'computador',
+            header: 'Computador',
+            textAlign: 'center',
+            width: 100
+        },
+        {
+            accessorKey: 'nomeColaborador',
+            header: 'Colaborador',
+            textAlign: 'center',
+            width: 150
+        },
+
+        {
+            accessorKey: 'dadosJson',
+            header: 'Detalhes',
+            textAlign: 'center',
+            cell: (info) => {
+                return (
+                    <>
+                        {
+                            info.row.original.operacao == 'Alteração' && (
+                                <FormButton variant="icon" onClick={() => {
+                                    const id = info.row.original.idAuditoria;
+                                    const dadosJson = info.row.original.dadosJson;
+                                    setDadosJson(dadosJson)
+                                    setId(id)
+                                    setModalDetailShow(true)
+                                }} >
+                                    <FontAwesomeIcon icon={faList} />
+                                </FormButton>
+                            )
+                        }
+                    </>
+                )
+            },
+            width: 100
         }
 
     ]
 
+    const fetchDataReport = async () => {
+        const params = {
+            dataInicial: dataInicial,
+            dataFinal: dataFinal,
+            operacao: operacao,
+            formulario: currForm,
+            textSearch: textSearch
+        }
+
+        const res = await api.get("auditoria", { params: params });
+        if (res?.status == 200)
+            return res.data;
+        return null;
+    }
+
+
+    const handleGenerateExcel = async () => {
+
+    }
+
+    const handleGeneratePdf = async () => {
+        const dataSet = await fetchDataReport();
+        if (dataSet) {
+
+
+            const bytes = await handleReportAuditoria(dataSet, agrupadoPor, false, companyInfo, currLogoRelatorio, {
+                dataInicial: dataInicial, dataFinal: dataFinal,
+                formulario: currForm,
+                pesquisa: textSearch
+            })
+            const blob = new Blob([bytes as any], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            setUrl(url);
+            setShowPreviewPdf(true);
+
+        }
+        else {
+            toast.info("Não encontramos dados pora o filtro selecionado!")
+        }
+
+    }
+
     return (
         <>
+            <Modal isOpen={modalDetailShow} onClose={() => { }}>
+                <Modal.Header onClose={() => { setModalDetailShow(false) }}>
+                    <Flex align="center">
+                        <FontAwesomeIcon icon={faBookBookmark} />
+                        {`Detalhes da auditoria id ${id}`}
+
+                    </Flex>
+                </Modal.Header>
+
+                <Modal.Body>
+                    {dadosJson != null && dadosJson.alterados && (
+                        <ListGroup>
+                            {Object.keys(dadosJson.alterados).map((key) => {
+                                const item = dadosJson.alterados[key];
+                                // Filtra apenas os campos que realmente mudaram
+                                if (JSON.stringify(item.antes) === JSON.stringify(item.depois)) {
+                                    return null;
+                                }
+
+                                return (
+                                    <ListGroup.Item key={key}>
+                                        <div className="d-flex justify-content-between align-items-start">
+                                            <div className="fw-bold" style={{ minWidth: '150px' }}>
+                                                {key}
+                                            </div>
+                                            <div className="flex-grow-1">
+                                                <span className="text-danger me-2">
+                                                    Antes: {item.antes}
+                                                </span>
+                                                <span className="text-muted mx-2">→</span>
+                                                <span className="text-success">
+                                                    Depois: {item.depois}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </ListGroup.Item>
+                                );
+                            })}
+                        </ListGroup>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <FormButton variant="link-info" onClick={() => {
+                        setModalDetailShow(false)
+                    }}>
+                        <FontAwesomeIcon icon={faSignOut} />
+                        Sair
+                    </FormButton>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal isOpen={showModalReport} onClose={() => { }}>
+                <Modal.Header onClose={() => { setShowModalReport(false) }}>
+                    <Flex>
+                        <FontAwesomeIcon icon={faFilter} />
+                        Filtros do relatório
+                    </Flex>
+                </Modal.Header>
+
+                <Modal.Body>
+
+                    <Fluid
+                        xs={[100]}
+                    >
+                        <Select value={agrupadoPor} options={[
+                            { label: 'Nenhum', value: AuditoriaAgrupadoPor.Nenhum },
+                            { label: 'Data', value: AuditoriaAgrupadoPor.Data },
+                            { label: 'Computador', value: AuditoriaAgrupadoPor.Computador },
+                            { label: 'Colaborador', value: AuditoriaAgrupadoPor.Colaborador },
+                            { label: 'Operação', value: AuditoriaAgrupadoPor.Operacao },
+                        ]} onChange={(e: any) => {
+                            setAgrupadoPor(e)
+                        }} label="Agrupado por" />
+                        <Switch label="Exibir detalhes" />
+                    </Fluid>
+
+                </Modal.Body>
+
+                <Modal.Footer>
+                    <Fluid
+                        xs={[100, 50, 50]}
+                        lg={['expand']}
+                    >
+                        <FormButton variant="outline-secondary" className="justify-content-center" onClick={() => {
+                            setShowModalReport(false)
+                        }}>
+                            <Flex wrap="nowrap">
+                                <FontAwesomeIcon icon={faCancel} />
+                                Cancelar
+                            </Flex>
+                        </FormButton>
+                        <FormButton className="justify-content-center" style={{ background: '#217145' }} onClick={handleGenerateExcel}>
+                            <Flex wrap="nowrap">
+                                <FontAwesomeIcon icon={faFileExcel} />
+                                Gerar Excel
+                            </Flex>
+                        </FormButton>
+                        <FormButton className="justify-content-center " style={{ background: '#C50606' }} onClick={() => {
+                            setShowModalReport(false);
+                            handleGeneratePdf();
+                        }}>
+                            <Flex wrap="nowrap">
+                                <FontAwesomeIcon icon={faFilePdf} />
+                                Gerar PDF
+                            </Flex>
+                        </FormButton>
+                    </Fluid>
+                </Modal.Footer>
+
+            </Modal>
+
             <Card>
                 <Card.Body>
                     <Fluid
@@ -141,7 +360,9 @@ const ListViewAuditoria: React.FC = () => {
                             value={currForm}
                         />
 
-                        <FormButton variant="secondary">
+                        <FormButton variant="secondary" onClick={() => {
+                            setShowModalReport(true)
+                        }}>
                             <FontAwesomeIcon icon={faPrint} />
                             Relatório
                         </FormButton>
@@ -160,6 +381,7 @@ const ListViewAuditoria: React.FC = () => {
                 columns={columns}
                 limit={limit}
                 offset={offset}
+                showSorting={false}
                 onPaginationChange={(l, o) => {
                     setLimit(l);
                     setOffset(o)
@@ -169,6 +391,17 @@ const ListViewAuditoria: React.FC = () => {
                 autoPageSizeOnDesktop
                 totalRows={totalRows?.totalRows ?? 0}
             />
+
+            {showPreviewPdf && url && (
+                <PdfiumViewer
+                    pdfUrl={url}
+                    filename="relatorio_auditoria"
+
+                    onClose={() => {
+                        setShowPreviewPdf(false)
+                    }}
+                />
+            )}
 
         </>
     )
