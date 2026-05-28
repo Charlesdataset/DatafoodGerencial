@@ -267,13 +267,13 @@ const handleReportAuditoria = async (
                     key: 'antes',
                     prefix: 'Antes',
                     align: 'left',
-                    wrap: true,
+                   
                   },
                   {
                     key: 'depois',
                     prefix: 'Depois',
                     align: 'left',
-                    wrap: true,
+                  
           
                   },
                 ],
