@@ -212,6 +212,7 @@ const SelectModal: React.FC<SelectModalProps> = ({
   mode = "single",
   excludeIds,
   selectedData,
+  selectedIds: selectedIdsProp,
   bucketEvent,
   filtersBox,
   idField = "id",
@@ -222,10 +223,22 @@ const SelectModal: React.FC<SelectModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const initialSelectedIds = mode === "multi" ? ((rest as MultiModeProps).selectedIds ?? []) : [];
+  const selectedIdsFromProps = mode === "multi" ? (selectedIdsProp ?? []) : [];
+  const selectedDataIds = mode === "multi" ? (selectedData ?? []).map((item) => item.id) : [];
+  const initialSelectedIds = mode === "multi" ? Array.from(new Set([...selectedIdsFromProps, ...selectedDataIds])) : [];
   const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set(initialSelectedIds));
   const [selectedItems, setSelectedItems] = useState<SelectedValue[]>([]);
-  const externalSelectedData = mode === "multi" ? ((rest as MultiModeProps).selectedData ?? []) : [];
+  const externalSelectedData = mode === "multi" ? (selectedData ?? []) : [];
+  const fetchItemsRef = useRef(fetchItems);
+
+  useEffect(() => {
+    fetchItemsRef.current = fetchItems;
+  }, [fetchItems]);
+
+  const selectedItemsEqual = (a: SelectedValue[], b: SelectedValue[]) => {
+    if (a.length !== b.length) return false;
+    return a.every((item, index) => item.id === b[index].id && item.name === b[index].name);
+  };
 
   // ── Estado dos filtros de combobox ────────────────────────────────────────
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
@@ -255,13 +268,19 @@ const SelectModal: React.FC<SelectModalProps> = ({
     setFiltro("");
     setError(null);
     if (mode === "multi") {
-      const ids = (rest as MultiModeProps).selectedIds ?? [];
-      setSelectedIds(new Set(ids));
+      const ids = Array.from(new Set([...selectedIdsFromProps, ...selectedDataIds]));
+      setSelectedIds((prev) => {
+        const next = new Set(ids);
+        if (prev.size === next.size && Array.from(prev).every((id) => next.has(id))) {
+          return prev;
+        }
+        return next;
+      });
     }
     const load = async () => {
       setLoading(true);
       try {
-        setItems(await fetchItems());
+        setItems(await fetchItemsRef.current());
       } catch {
         setError("Não foi possível carregar os itens.");
         setItems([]);
@@ -270,7 +289,7 @@ const SelectModal: React.FC<SelectModalProps> = ({
       }
     };
     load();
-  }, [isOpen]);
+  }, [isOpen, mode]);
 
   useEffect(() => {
     if (mode !== "multi") return;
@@ -284,7 +303,9 @@ const SelectModal: React.FC<SelectModalProps> = ({
         raw: (raw ?? { id } as SelectItem),
       };
     });
-    setSelectedItems(selected);
+    if (!selectedItemsEqual(selectedItems, selected)) {
+      setSelectedItems(selected);
+    }
   }, [items, selectedIds, idField, externalSelectedData, mode, keyShow]);
 
   // ── Resolução de textos ────────────────────────────────────────────────────
@@ -306,7 +327,7 @@ const SelectModal: React.FC<SelectModalProps> = ({
     // img tem prioridade sobre icon
     if (img) {
       const url = typeof img === "function" ? img(item) : item[img];
-      const currBucket = item[bucketEvent];
+      const currBucket = bucketEvent ? item[bucketEvent] : undefined;
       return url ? <img src={`${import.meta.env.VITE_BASE_URL_BUCKET}/${currBucket}/${url}`} alt="" className={styles.itemAvatar} /> : <IconPerson />;
     }
     if (!icon) return null; // sem icon nem img → sem ícone
@@ -327,7 +348,7 @@ const SelectModal: React.FC<SelectModalProps> = ({
   }, [items, filtersBox]);
 
   const itemsFiltrados = useMemo(() => {
-    const excludeSet = new Set([...(excludeIds ?? []), ...(selectedData ?? []).map((x) => x[idField] ?? x.id)]);
+    const excludeSet = new Set([...(excludeIds ?? []), ...Array.from(selectedIds)]);
     let base = excludeSet.size > 0 ? items.filter((item) => !excludeSet.has(item[idField])) : items;
     // Aplica filtros dos comboboxes
     for (const [field, val] of Object.entries(filterValues)) {
@@ -336,7 +357,7 @@ const SelectModal: React.FC<SelectModalProps> = ({
     if (!filtro.trim()) return base;
     const f = filtro.toLowerCase();
     return base.filter((item) => getPrimary(item).toLowerCase().includes(f) || getSecondary(item).toLowerCase().includes(f) || String(item.id).includes(f));
-  }, [items, filtro, keyShow, excludeIds, selectedData, filterValues]);
+  }, [items, filtro, keyShow, excludeIds, selectedIds, filterValues]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const toSelectedValue = (item: SelectItem): SelectedValue => ({
