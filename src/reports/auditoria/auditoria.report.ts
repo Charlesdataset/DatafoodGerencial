@@ -231,7 +231,7 @@ const handleReportAuditoria = async (
 
               align: 'right',
               margin: {
-                four: [5, -40, 5, 5],
+                four: [5, 0, 5, 5],
               },
             },
           ],
