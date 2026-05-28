@@ -1,4 +1,4 @@
-import { faBookBookmark, faCancel, faFileExcel, faFilePdf, faFilter, faList, faPrint, faSignOut } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faArrowRightArrowLeft, faBookBookmark, faCancel, faCheckCircle, faFileExcel, faFilePdf, faFilter, faList, faPrint, faSignOut, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -11,7 +11,6 @@ import Select from "../../../components/Inputs/Select/Select";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
-import ListGroup from "../../../components/ListGroup/ListGroup";
 import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import Switch from "../../../components/Switch/Switch";
@@ -273,46 +272,228 @@ const ListViewAuditoria: React.FC = () => {
         <>
             <Modal isOpen={modalDetailShow} onClose={() => { }}>
                 <Modal.Header onClose={() => { setModalDetailShow(false) }}>
-                    <Flex align="center">
-                        <FontAwesomeIcon icon={faBookBookmark} />
-                        {`Detalhes da auditoria id ${id}`}
-
+                    <Flex align="center" gap={2}>
+                        <FontAwesomeIcon icon={faBookBookmark} style={{ fontSize: 18 }} />
+                        <div>
+                            <div style={{ fontWeight: 600, fontSize: 16 }}>Auditoria #{id}</div>
+                            <div style={{ fontSize: 12, color: '#6c757d', marginTop: 2 }}>Histórico de alterações</div>
+                        </div>
                     </Flex>
                 </Modal.Header>
 
                 <Modal.Body>
                     {dadosJson != null && dadosJson.alterados && (
-                        <ListGroup>
-                            {Object.keys(dadosJson.alterados).map((key) => {
+                        <div style={{
+                            maxHeight: 'calc(100vh - 250px)',
+                            overflowY: 'auto',
+                            paddingRight: 12,
+                            borderRadius: 8
+                        }}>
+                            {/* Header Summary */}
+                            <div style={{
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                color: '#fff',
+                                padding: '16px 20px',
+                                borderRadius: 12,
+                                marginBottom: 24,
+                                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)'
+                            }}>
+                                <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div>
+                                        <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 4 }}>Total de campos alterados</div>
+                                        <div style={{ fontSize: 28, fontWeight: 700 }}>
+                                            {Object.keys(dadosJson.alterados).filter((key) => {
+                                                const item = dadosJson.alterados[key];
+                                                return JSON.stringify(item.antes) !== JSON.stringify(item.depois);
+                                            }).length}
+                                        </div>
+                                    </div>
+                                    <div style={{
+                                        background: 'rgba(255,255,255,0.2)',
+                                        padding: '8px 16px',
+                                        borderRadius: 8,
+                                        fontSize: 12,
+                                        backdropFilter: 'blur(10px)'
+                                    }}>
+                                        <FontAwesomeIcon icon={faArrowRightArrowLeft} style={{ marginRight: 6 }} />
+                                        Mudanças detectadas
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Fields List */}
+                            {Object.keys(dadosJson.alterados).map((key, index) => {
                                 const item = dadosJson.alterados[key];
-                                // Filtra apenas os campos que realmente mudaram
                                 if (JSON.stringify(item.antes) === JSON.stringify(item.depois)) {
                                     return null;
                                 }
 
                                 return (
-                                    <ListGroup.Item key={key}>
-                                        <div className="d-flex justify-content-between align-items-start">
-                                            <div className="fw-bold" style={{ minWidth: '150px' }}>
-                                                {key}
-                                            </div>
-                                            <div className="flex-grow-1">
-                                                <span className="text-danger me-2">
-                                                    Antes: {item.antes}
-                                                </span>
-                                                <span className="text-muted mx-2">→</span>
-                                                <span className="text-success">
-                                                    Depois: {item.depois}
-                                                </span>
+                                    <div
+                                        key={key}
+                                        style={{
+                                            marginBottom: 20,
+                                            animation: `slideIn 0.3s ease-out ${index * 0.05}s both`,
+                                        }}
+                                    >
+                                        <style>{`
+                                            @keyframes slideIn {
+                                                from {
+                                                    opacity: 0;
+                                                    transform: translateX(-10px);
+                                                }
+                                                to {
+                                                    opacity: 1;
+                                                    transform: translateX(0);
+                                                }
+                                            }
+                                        `}</style>
+
+                                        {/* Field Label */}
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            marginBottom: 12,
+                                            gap: 8
+                                        }}>
+                                            <div style={{
+                                                width: 4,
+                                                height: 24,
+                                                background: 'linear-gradient(180deg, #dc3545, #fd7e14)',
+                                                borderRadius: 2
+                                            }}></div>
+                                            <div>
+                                                <div style={{
+                                                    fontWeight: 600,
+                                                    fontSize: 14,
+                                                    color: '#212529',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: 0.5
+                                                }}>
+                                                    {key}
+                                                </div>
+                                                <div style={{
+                                                    fontSize: 11,
+                                                    color: '#6c757d',
+                                                    marginTop: 2
+                                                }}>
+                                                    Campo modificado
+                                                </div>
                                             </div>
                                         </div>
-                                    </ListGroup.Item>
+
+                                        {/* Before & After Comparison */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                            {/* ANTES (Vermelho/Old) */}
+                                            <div style={{
+                                                background: '#fff5f5',
+                                                border: '2px solid #dc3545',
+                                                borderRadius: 10,
+                                                padding: 16,
+                                                position: 'relative',
+                                                overflow: 'hidden'
+                                            }}>
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    right: 0,
+                                                    height: 3,
+                                                    background: '#dc3545'
+                                                }}></div>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 8,
+                                                    marginBottom: 10,
+                                                    color: '#dc3545',
+                                                    fontWeight: 600,
+                                                    fontSize: 12
+                                                }}>
+                                                    <FontAwesomeIcon icon={faTimesCircle} />
+                                                    Antigo
+                                                </div>
+                                                <div style={{
+                                                    fontSize: 13,
+                                                    color: '#495057',
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word',
+                                                    lineHeight: 1.6,
+                                                    maxHeight: 120,
+                                                    overflowY: 'auto',
+                                                    paddingRight: 8,
+                                                    fontFamily: 'Monaco, "Courier New", monospace',
+                                                    backgroundColor: '#fff',
+                                                    padding: '8px 10px',
+                                                    borderRadius: 6,
+                                                    marginTop: 8
+                                                }}>
+                                                    {item.antes ?? '-'}
+                                                </div>
+                                            </div>
+
+                                            {/* DEPOIS (Verde/New) */}
+                                            <div style={{
+                                                background: '#f0fdf4',
+                                                border: '2px solid #198754',
+                                                borderRadius: 10,
+                                                padding: 16,
+                                                position: 'relative',
+                                                overflow: 'hidden'
+                                            }}>
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    right: 0,
+                                                    height: 3,
+                                                    background: '#198754'
+                                                }}></div>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 8,
+                                                    marginBottom: 10,
+                                                    color: '#198754',
+                                                    fontWeight: 600,
+                                                    fontSize: 12
+                                                }}>
+                                                    <FontAwesomeIcon icon={faCheckCircle} />
+                                                    Novo
+                                                </div>
+                                                <div style={{
+                                                    fontSize: 13,
+                                                    color: '#495057',
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word',
+                                                    lineHeight: 1.6,
+                                                    maxHeight: 120,
+                                                    overflowY: 'auto',
+                                                    paddingRight: 8,
+                                                    fontFamily: 'Monaco, "Courier New", monospace',
+                                                    backgroundColor: '#fff',
+                                                    padding: '8px 10px',
+                                                    borderRadius: 6,
+                                                    marginTop: 8
+                                                }}>
+                                                    {item.depois ?? '-'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 );
                             })}
-                        </ListGroup>
+                        </div>
                     )}
                     {(!dadosJson || !dadosJson.alterados || Object.keys(dadosJson.alterados).length === 0) && (
-                        <div className="text-muted">Não há detalhes de alteração para este registro.</div>
+                        <div style={{
+                            textAlign: 'center',
+                            padding: '40px 20px',
+                            color: '#6c757d'
+                        }}>
+                            <FontAwesomeIcon icon={faCheckCircle} style={{ fontSize: 32, marginBottom: 12, color: '#198754', opacity: 0.5 }} />
+                            <div>Não há alterações neste registro</div>
+                        </div>
                     )}
                 </Modal.Body>
                 <Modal.Footer>
@@ -320,7 +501,7 @@ const ListViewAuditoria: React.FC = () => {
                         setModalDetailShow(false)
                     }}>
                         <FontAwesomeIcon icon={faSignOut} />
-                        Sair
+                        Fechar
                     </FormButton>
                 </Modal.Footer>
             </Modal>

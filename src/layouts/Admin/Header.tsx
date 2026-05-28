@@ -134,17 +134,18 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         icon={<FontAwesomeIcon icon={faMobileRetro} />}
         key={'id'}
         keyShow={{
-          primary: [
+          secondary: [
             {
               key: "id",
               prefix: "Cód.  ",
               mask: "number",
               padChar: "0",
               padStart: 6,
+              marginStart: 0
             },
 
           ],
-          secondary: [{ key: "label", prefix: "Descrição : ", marginStart: 5 },]
+          primary: [{ key: "label",  marginStart: 0 },]
         }}
         mode="multi"
         selectedData={turnosSelecionados}
@@ -153,7 +154,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           api.get(`/turnos/tipo-turnos`).then((r) => r.data.tipoTurnos.map(x => ({ id: x.value, label: x.name })) || [])
         }
         onMultiSelect={(e) => {
-          setTurnosSelecionados((prev) => [...prev, ...e.map((x) => x.raw)]);
+          setTurnosSelecionados(e.map((x) => x.raw));
         }}
       />
 
