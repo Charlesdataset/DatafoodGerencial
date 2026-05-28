@@ -95,6 +95,31 @@ const handleReportAuditoria = async (
   const filtrosHeader =
     filterConfigs.length > 0 ? formatFiltersForHeader(filterConfigs, 180) : '';
 
+  const buildDetalhes = (dadosJson: any) => {
+    if (!dadosJson || !dadosJson.alterados || typeof dadosJson.alterados !== 'object') {
+      return [];
+    }
+
+    return Object.entries(dadosJson.alterados)
+      .map(([campo, item]) => {
+        if (JSON.stringify(item?.antes) === JSON.stringify(item?.depois)) {
+          return null;
+        }
+        return {
+          campo,
+          antes: item?.antes ?? '',
+          depois: item?.depois ?? '',
+        };
+      })
+      .filter(Boolean) as Array<{ campo: string; antes: string; depois: string }>;
+  };
+
+  const datasetWithColaborador = dataset.map((item: any) => ({
+    ...item,
+    colaborador: item.colaborador ?? item.nomeColaborador ?? '',
+    itens: exibirDetalhes ? buildDetalhes(item.dadosJson) : [],
+  }));
+
   const json: ReportV3 = {
     pageConfiguration: {
       backgroundColor: '#ffffff',
@@ -219,45 +244,44 @@ const handleReportAuditoria = async (
         headerBackgroundColor: '#404040',
         zebraBackgroundColor: '#cbcbcb',
         zebraTextColor: '#000000',
-        // ...(exibirDetalhes
-        //   ? {
-        //       items: {
-        //         headerBackgroundColor: '#ffffff',
-        //         textColor: '#404040',
-        //         zebraBackgroundColor: '#cbcbcb',
-        //         zebraTextColor: '#000000',
-        //         headerTextColor: '#000000',
-
-        //         borderStyle: 'none',
-        //         gapTop: 10,
-        //         gap: 20,
-        //         path: 'itens',
-        //         tableHeader: [
-        //           {
-        //             key: 'idAuditoria',
-        //             prefix: 'ID',
-        //           },
-        //           {
-        //             key: 'formulario',
-        //             prefix: 'FORMULARIO',
-        //           },
-
-        //           {
-        //             key: 'operacao',
-        //             prefix: 'OPERAÇÃO',
-        //             align: 'right',
-        //           },
-        //           {
-        //             key: 'computador',
-        //             prefix: 'COMPUTADOR',
-        //             align: 'right',
-        //           },
-        //         ],
-        //         widths: [50, 'expand', 100, 100],
-        //         indent: 100,
-        //       },
-        //     }
-        //   : {}),
+        ...(exibirDetalhes
+          ? {
+              items: {
+                headerBackgroundColor: '#ffffff',
+                textColor: '#404040',
+                zebraBackgroundColor: '#cbcbcb',
+                zebraTextColor: '#000000',
+                headerTextColor: '#000000',
+                borderStyle: 'none',
+                gapTop: 10,
+                gap: 20,
+                path: 'itens',
+                tableHeader: [
+                  {
+                    key: 'campo',
+                    prefix: 'Campo',
+                    align: 'left',
+         
+                  },
+                  {
+                    key: 'antes',
+                    prefix: 'Antes',
+                    align: 'left',
+                    wrap: true,
+                  },
+                  {
+                    key: 'depois',
+                    prefix: 'Depois',
+                    align: 'left',
+                    wrap: true,
+          
+                  },
+                ],
+                widths: ['expand', 250, 250],
+                indent: 10,
+              },
+            }
+          : {}),
 
         datasetName: 'notas',
         ...(agrupadoPor !== AuditoriaAgrupadoPor.Nenhum
@@ -282,11 +306,13 @@ const handleReportAuditoria = async (
             key: 'formulario',
             prefix: 'Formulário',
             align: 'left',
+        
           },
           {
             key: 'colaborador',
             prefix: 'Colaborador',
             align: 'left',
+          
           },
           {
             key: 'operacao',
@@ -311,7 +337,7 @@ const handleReportAuditoria = async (
     ],
   };
   json._datasets = {
-    notas: dataset,
+    notas: datasetWithColaborador,
   };
 
   const imageBase64 = await getImageBase64FromPath(currLogoRelatorio);

@@ -15,6 +15,7 @@ import ListGroup from "../../../components/ListGroup/ListGroup";
 import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import Switch from "../../../components/Switch/Switch";
+import { exportToExcel } from "../../../utils/exportToExcel";
 import { useApp } from "../../../contexts/AppContext";
 import handleReportAuditoria, { AuditoriaAgrupadoPor } from "../../../reports/auditoria/auditoria.report";
 import { api } from "../../../services/api";
@@ -47,7 +48,6 @@ const ListViewAuditoria: React.FC = () => {
     const [dadosJson, setDadosJson] = useState(null)
     const [modalDetailShow, setModalDetailShow] = useState(false)
     const [showModalReport, setShowModalReport] = useState(false)
-    const [resportData, setReportData] = useState([])
 
     const fetchForms = async () => {
         const res = await api("auditoria/auto-complete");
@@ -66,7 +66,7 @@ const ListViewAuditoria: React.FC = () => {
     useEffect(() => {
         fetchData();
         fetchTotal();
-    }, [dataInicial, dataFinal, currForm, operacao, limit, offset])
+    }, [dataInicial, dataFinal, currForm, operacao, textSearch, limit, offset])
 
 
     const fetchData = async () => {
@@ -75,13 +75,13 @@ const ListViewAuditoria: React.FC = () => {
             dataFinal: dataFinal,
             formulario: currForm,
             operacao: operacao,
+            textSearch: textSearch,
             limit: limit,
-            offset: offset
+            offset: offset,
         }
 
         const res = await api.get('auditoria', { params })
         if (res?.status === 200) {
-
             setData(res.data)
         }
         else {
@@ -95,7 +95,7 @@ const ListViewAuditoria: React.FC = () => {
             dataFinal: dataFinal,
             formulario: currForm,
             operacao: operacao,
-
+            textSearch: textSearch,
         }
         const res = await api.get("auditoria/totais", { params: params })
         if (res?.status == 200) {
@@ -191,16 +191,70 @@ const ListViewAuditoria: React.FC = () => {
     }
 
 
-    const handleGenerateExcel = async () => {
+    const formatDetalhes = (dadosJson: any) => {
+        if (!dadosJson) return '';
 
+        if (dadosJson.alterados && typeof dadosJson.alterados === 'object') {
+            return Object.entries(dadosJson.alterados)
+                .map(([campo, item]) => {
+                    if (JSON.stringify(item?.antes) === JSON.stringify(item?.depois)) {
+                        return null;
+                    }
+                    return `${campo}: ${item?.antes ?? ''} → ${item?.depois ?? ''}`;
+                })
+                .filter(Boolean)
+                .join(' | ');
+        }
+
+        return JSON.stringify(dadosJson);
+    }
+
+    const handleGenerateExcel = async () => {
+        const dataSet = await fetchDataReport();
+        if (!dataSet || dataSet.length === 0) {
+            toast.info('Não encontramos dados suficientes para gerar o Excel!');
+            return;
+        }
+
+        const excelColumns = [
+            { key: 'idAuditoria', prefix: 'Cód.', align: 'center' },
+            { key: 'formulario', prefix: 'Formulário', align: 'left' },
+            { key: 'nomeColaborador', prefix: 'Colaborador', align: 'left' },
+            { key: 'operacao', prefix: 'Operação', align: 'center' },
+            { key: 'computador', prefix: 'Computador', align: 'center' },
+            { key: 'data', prefix: 'Data', mask: 'date-time', align: 'center' },
+            { key: 'detalhes', prefix: 'Detalhes', align: 'left' },
+        ];
+
+        const excelData = dataSet.map((row: any) => ({
+            ...row,
+            detalhes: formatDetalhes(row.dadosJson),
+        }));
+
+        const excelGroupBy = {
+            [AuditoriaAgrupadoPor.Colaborador]: 'nomeColaborador',
+            [AuditoriaAgrupadoPor.Computador]: 'computador',
+            [AuditoriaAgrupadoPor.Data]: 'data',
+            [AuditoriaAgrupadoPor.Operacao]: 'operacao',
+        };
+
+        await exportToExcel(excelData, excelColumns, {
+            fileName: 'relatorio_auditoria',
+            sheetName: 'Auditoria',
+            logo: currLogoRelatorio,
+            title: 'Relatório Auditoria',
+            subtitle: `${companyInfo?.cnpj ?? ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
+            headerBackgroundColor: '#404040',
+            groupBy: excelGroupBy[agrupadoPor],
+            groupPrefix: agrupadoPor || undefined,
+            nullGroupLabel: '(Sem dados)',
+        });
     }
 
     const handleGeneratePdf = async () => {
         const dataSet = await fetchDataReport();
         if (dataSet) {
-
-
-            const bytes = await handleReportAuditoria(dataSet, agrupadoPor, false, companyInfo, currLogoRelatorio, {
+            const bytes = await handleReportAuditoria(dataSet, agrupadoPor, exibeDetalhes, companyInfo, currLogoRelatorio, {
                 dataInicial: dataInicial, dataFinal: dataFinal,
                 formulario: currForm,
                 pesquisa: textSearch
@@ -209,12 +263,10 @@ const ListViewAuditoria: React.FC = () => {
             const url = URL.createObjectURL(blob);
             setUrl(url);
             setShowPreviewPdf(true);
-
         }
         else {
             toast.info("Não encontramos dados pora o filtro selecionado!")
         }
-
     }
 
     return (
@@ -259,6 +311,9 @@ const ListViewAuditoria: React.FC = () => {
                             })}
                         </ListGroup>
                     )}
+                    {(!dadosJson || !dadosJson.alterados || Object.keys(dadosJson.alterados).length === 0) && (
+                        <div className="text-muted">Não há detalhes de alteração para este registro.</div>
+                    )}
                 </Modal.Body>
                 <Modal.Footer>
                     <FormButton variant="link-info" onClick={() => {
@@ -292,7 +347,7 @@ const ListViewAuditoria: React.FC = () => {
                         ]} onChange={(e: any) => {
                             setAgrupadoPor(e)
                         }} label="Agrupado por" />
-                        <Switch label="Exibir detalhes" />
+                        <Switch label="Exibir detalhes" checked={exibeDetalhes} onChange={setExibeDetalhes} />
                     </Fluid>
 
                 </Modal.Body>
@@ -337,7 +392,14 @@ const ListViewAuditoria: React.FC = () => {
                     >
 
 
-                        <TextSearch placeholder="Computador, usuario ..." />
+                        <TextSearch
+                            placeholder="Computador, usuario ..."
+                            value={textSearch}
+                            onSearch={(value) => {
+                                setTextSearch(value);
+                                setOffset(0);
+                            }}
+                        />
                         <Select placeholder="Operação" options={[
                             { label: 'Todos', value: OperacaoAuditoria.Todos },
                             { label: 'Deletou', value: OperacaoAuditoria.Delete },
