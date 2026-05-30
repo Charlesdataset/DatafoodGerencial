@@ -2,9 +2,11 @@ import { faCog, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import React, { useEffect } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '../../components/Button';
 import Card from '../../components/Card/Card';
 import Fluid from '../../components/Layout/Fluid';
 import { useApp } from '../../contexts/AppContext';
+import { gerarExcelTeste } from '../../wasm/excel_generator';
 import ListViewAuditoria from './components/ListViewAuditoria';
 import ListViewBairro from './components/ListViewBairro';
 import ListViewCliente from './components/ListViewCliente';
@@ -20,6 +22,7 @@ const Relatorios: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { setCanShowTurnoTipo } = useApp();
+    const { currLogoRelatorio } = useApp();
 
     // Pega o parâmetro 'listing' da URL
     const searchParams = new URLSearchParams(location.search);
@@ -57,6 +60,11 @@ const Relatorios: React.FC = () => {
 
     return (
         <>
+            <Button onClick={() => {
+                gerarExcelTeste(currLogoRelatorio);
+            }}>
+                Relatorio teste
+            </Button>
             {!listing && (
                 <Card>
                     <Card.Body>
