@@ -3,6 +3,7 @@ use wasm_bindgen::prelude::*;
 mod excel_v1;
 mod excel_v3;
 mod models;
+mod modelsv3;
 #[wasm_bindgen(start)]
 pub fn start() {
     console_error_panic_hook::set_once();

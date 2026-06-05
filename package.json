@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "build:wasm": "cd pdf-wasm && cargo clean && rm -rf pkg && wasm-pack build --target web --release --out-dir ./pkg && cp pkg/pdf_wasm.js ../public/wasm/pdf_wasm.js && cp pkg/pdf_wasm_bg.wasm ../public/wasm/pdf_wasm_bg.wasm && cp pkg/pdf_wasm.js ../public/wasm/pdfium_wasm.js && cp pkg/pdf_wasm_bg.wasm ../public/wasm/pdfium_wasm_bg.wasm",
     "build-w:wasm": "cd pdf-wasm && cargo clean && if exist pkg rmdir /s /q pkg && wasm-pack build --target web --release --out-dir ./pkg && copy pkg\\pdf_wasm.js ..\\public\\wasm\\pdf_wasm.js && copy pkg\\pdf_wasm_bg.wasm ..\\public\\wasm\\pdf_wasm_bg.wasm && copy pkg\\pdf_wasm.js ..\\public\\wasm\\pdfium_wasm.js && copy pkg\\pdf_wasm_bg.wasm ..\\public\\wasm\\pdfium_wasm_bg.wasm",
-    "build-wasm-excel": "cd excel-wasm && cargo clean && if exist pkg rmdir /s /q pkg && wasm-pack build --target web --release --out-dir ./pkg && xcopy pkg\\excel_wasm.js ..\\public\\wasm\\ /Y && xcopy pkg\\excel_wasm_bg.wasm ..\\public\\wasm\\ /Y && xcopy pkg\\excel_wasm.d.ts ..\\public\\wasm\\ /Y"
+    "build-wasm-excel": "cd excel-wasm && cargo clean && if exist pkg rmdir /s /q pkg && wasm-pack build --target web --release --out-dir ./pkg && xcopy pkg\\excel_wasm.js ..\\public\\wasm\\ /Y && xcopy pkg\\excel_wasm_bg.wasm ..\\public\\wasm\\ /Y && xcopy pkg\\excel_wasm.d.ts ..\\public\\wasm\\ /Y",
+    "w-e": "cd excel-wasm && wasm-pack build --target web --release --out-dir ./pkg && xcopy pkg\\excel_wasm.js ..\\public\\wasm\\ /Y && xcopy pkg\\excel_wasm_bg.wasm ..\\public\\wasm\\ /Y && xcopy pkg\\excel_wasm.d.ts ..\\public\\wasm\\ /Y"
   },
   "dependencies": {
     "@embedpdf/engines": "^2.14.1",

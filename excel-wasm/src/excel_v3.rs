@@ -1,12 +1,52 @@
+use chrono::{Datelike, Local, Timelike};
+use std::collections::HashMap;
+
 use rust_xlsxwriter::*;
 
 use base64::{Engine as _, engine::general_purpose::STANDARD as B64};
+use serde_json::Value;
 
-use crate::models::*;
+use crate::modelsv3::*;
+
+//=====================================================================
+//                               CORE
+//=====================================================================
 
 pub fn gerar(json: &str) -> Vec<u8> {
     //PEGO JSON PARA TRATAR
     let report: ExcelReport = serde_json::from_str(json).unwrap();
+
+    //PEGO A CONFIG
+    let config = report.config.as_ref();
+    let row_height = config.and_then(|c| c.row_height).unwrap_or(40);
+    let header_bg = config
+        .and_then(|c| c.header_background.as_ref())
+        .and_then(|hex| hex_to_rgb(hex))
+        .unwrap_or(0x1F2937);
+    let header_fg = config
+        .and_then(|c| c.header_foreground.as_ref())
+        .and_then(|hex| hex_to_rgb(hex))
+        .unwrap_or(0xFFFFFF);
+    let zebra_bg = config
+        .and_then(|c| c.zebra_background.as_ref())
+        .and_then(|hex| hex_to_rgb(hex))
+        .unwrap_or(0xF9FAFB);
+    let zebra_fg = config
+        .and_then(|c| c.zebra_foreground.as_ref())
+        .and_then(|hex| hex_to_rgb(hex))
+        .unwrap_or(0x000000);
+    let row_bg = config
+        .and_then(|c| c.row_background.as_ref())
+        .and_then(|hex| hex_to_rgb(hex))
+        .unwrap_or(0xFFFFFF);
+    let row_fg = config
+        .and_then(|c| c.row_foreground.as_ref())
+        .and_then(|hex| hex_to_rgb(hex))
+        .unwrap_or(0x000000);
+    let header_border = config
+        .and_then(|c| c.border_style.as_ref())
+        .and_then(|v| parse_border_style(v))
+        .unwrap_or(FormatBorder::None);
 
     //CHAMAR LIB EXCEL
     let mut workbook = Workbook::new();
@@ -27,6 +67,8 @@ pub fn gerar(json: &str) -> Vec<u8> {
 
         Some(image.set_scale_width(scale).set_scale_height(scale))
     });
+
+    //step 1 renderizar o header
     let header = report.header.unwrap();
     render_header(
         worksheet,
@@ -35,11 +77,233 @@ pub fn gerar(json: &str) -> Vec<u8> {
         &header.company_name,
     );
 
-    workbook.save_to_buffer().unwrap()
+    //setp 2 Renderizar filtros~
+
+    if let Some(filters) = &header.filters {
+        let mut filters_join = String::new();
+        filters_join.push_str("Filtros: ");
+        filters_join.push_str(
+            &filters
+                .iter()
+                .map(|f| format!("{}: {}", f.key, f.value))
+                .collect::<Vec<_>>()
+                .join(" | ")
+                .to_string(),
+        );
+
+        render_filters(worksheet, &filters_join);
+    }
+
+    let mut current_row = 2;
+    let mut last_table: u8 = 0;
+    //step 3 renderizar componentes
+    for component in &report.content {
+        match component {
+            Component::Table(table) => {
+                last_table = table.table_header.last().unwrap().cols[1];
+                if let Some(dataset) = report.datasets.get(&table.dataset_name) {
+                    //verificando se tem agrupamento para fazer
+                    if let Some(grouping) = &table.grouping {
+                        let gap = grouping.gap.unwrap_or(2);
+                        let mut groups: HashMap<String, Vec<Value>> = HashMap::new();
+                        for item in dataset {
+                            if let Some(group_value) = item.get(&grouping.group_by) {
+                                let key = match group_value {
+                                    Value::String(s) => s.clone(),
+                                    Value::Number(n) => n.to_string(),
+                                    Value::Bool(b) => b.to_string(),
+                                    _ => group_value.to_string(),
+                                };
+
+                                groups
+                                    .entry(key)
+                                    .or_insert_with(Vec::new)
+                                    .push(item.clone());
+                            }
+                        }
+
+                        for (g_name, g_values) in groups {
+                            web_sys::console::log_1(&format!("Nome do grupo {}", g_name).into());
+                            let bg_color = report
+                                .config
+                                .as_ref()
+                                .and_then(|c| c.primary_color.as_ref())
+                                .and_then(|hex| hex_to_rgb(hex))
+                                .unwrap_or(0xE5E7EB);
+                            worksheet
+                                .merge_range(
+                                    current_row,
+                                    1,
+                                    current_row,
+                                    last_table as u16,
+                                    &g_name,
+                                    &Format::new()
+                                        .set_bold()
+                                        .set_background_color(bg_color)
+                                        .set_font_color(Color::White),
+                                )
+                                .unwrap();
+                            current_row += 1;
+                            current_row = render_table(
+                                worksheet,
+                                table,
+                                current_row,
+                                &g_values,
+                                row_height,
+                                header_bg,
+                                header_fg,
+                                zebra_bg,
+                                zebra_fg,
+                                row_bg,
+                                row_fg,
+                                header_border,
+                            );
+                            current_row += gap;
+                        }
+
+                        //renderizar totais sumaryBox
+
+                        //pegar a ultima coluna renderizada para saber o meio
+                        if let Some(sumary) = &table.summary_box {
+                            let mut total_text = String::new();
+                            let mut qtd_rows: u32 = 0;
+
+                            for (_index, sumary_row) in sumary.rows.iter().enumerate() {
+                                qtd_rows += 1;
+                                total_text = sumary
+                                    .rows
+                                    .iter()
+                                    .map(|row| {
+                                        let soma: f64 = dataset
+                                            .iter()
+                                            .filter_map(|item| item.get(&sumary_row.key))
+                                            .filter_map(|v| v.as_f64())
+                                            .sum();
+                                        format!(
+                                            "{}:    {}",
+                                            row.label,
+                                            apply_mask(
+                                                soma,
+                                                &sumary_row
+                                                    .mask
+                                                    .as_ref()
+                                                    .unwrap_or(&"number".to_string())
+                                            )
+                                        )
+                                    })
+                                    .collect::<Vec<_>>()
+                                    .join("\n");
+                            }
+                            let last_col_render =
+                                table.table_header.last().as_deref().unwrap().cols[1];
+                            let meio = last_col_render / 2;
+
+                            let first_col = meio - 2;
+                            let last_col = meio + 2;
+                            if qtd_rows > 0 {
+                                for r in 0..=qtd_rows + 1 {
+                                    worksheet.set_row_height(current_row + r, 25).unwrap();
+                                }
+                            }
+
+                            worksheet
+                                .merge_range(
+                                    current_row,
+                                    first_col as u16,
+                                    current_row + qtd_rows,
+                                    last_col as u16,
+                                    &total_text,
+                                    &Format::new()
+                                        .set_border(FormatBorder::Medium)
+                                        .set_border_color(Color::Black)
+                                        .set_align(FormatAlign::Center)
+                                        .set_align(FormatAlign::VerticalCenter)
+                                        .set_text_wrap()
+                                        .set_font_name("Segoe UI")
+                                        .set_bold()
+                                        .set_font_color(Color::Black),
+                                )
+                                .unwrap();
+                        }
+                    } else {
+                        current_row = render_table(
+                            worksheet,
+                            table,
+                            current_row,
+                            dataset,
+                            row_height,
+                            header_bg,
+                            header_fg,
+                            zebra_bg,
+                            zebra_fg,
+                            row_bg,
+                            row_fg,
+                            header_border,
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    //step 4 renderizar o footer rodapé
+    current_row += 5;
+
+    let now = Local::now();
+    let data_formatada = format!(
+        "{:02}/{:02}/{} às {:02}:{:02}",
+        now.day(),
+        now.month0(),
+        now.year(),
+        now.hour(),
+        now.minute()
+    );
+
+    worksheet
+        .merge_range(
+            current_row,
+            1,
+            current_row,
+            3,
+            &format!("Emitido em {}", data_formatada),
+            &format_filters(),
+        )
+        .unwrap();
+    let meio = last_table / 2;
+    if meio - 1 != 3 {
+        worksheet
+            .merge_range(
+                current_row,
+                (meio as u16) - 1,
+                current_row,
+                (meio as u16) + 1 as u16,
+                "www.datasetsistemas.com.br",
+                &&Format::new().set_align(FormatAlign::Center),
+            )
+            .unwrap();
+
+        workbook.save_to_buffer().unwrap()
+    } else {
+        worksheet
+            .merge_range(
+                current_row,
+                meio as u16,
+                current_row,
+                (meio as u16) + 2 as u16,
+                "www.datasetsistemas.com.br",
+                &&Format::new().set_align(FormatAlign::Center),
+            )
+            .unwrap();
+
+        workbook.save_to_buffer().unwrap()
+    }
 }
 
-//FUNÇÃO PARA RENDERIZAR O HEADER
-pub fn render_header(
+//=====================================================================
+//                       RENDERS EM ORDEM DE STEPS
+//=====================================================================
+
+fn render_header(
     worksheet: &mut Worksheet,
     image: Option<&Image>,
     title: &str,
@@ -47,21 +311,506 @@ pub fn render_header(
 ) {
     if let Some(img) = image {
         worksheet
-            .insert_image_with_offset(0, 1, img, 10, 10)
+            .insert_image_with_offset(0, 1, img, 0, 10)
             .unwrap();
     }
 
     worksheet
-        .merge_range(0, 4, 0, 12, title, &header_title_format())
+        .merge_range(0, 4, 0, 13, title, &header_title_format())
         .unwrap();
 
     worksheet
-        .merge_range(0, 13, 0, 18, company_info, &company_info_format())
+        .merge_range(0, 14, 0, 16, company_info, &company_info_format())
         .unwrap();
 }
 
-//FUNCOES ULTILITARIAS
-pub fn image_from_base64(base64_str: &str) -> Result<Image, String> {
+fn render_filters(worksheet: &mut Worksheet, filters: &str) {
+    worksheet
+        .merge_range(1, 1, 1, 16, filters, &format_filters())
+        .unwrap();
+}
+
+fn render_table(
+    worksheet: &mut Worksheet,
+    table: &TableComponent,
+    start_row: u32,
+    dataset: &Vec<Value>,
+    row_height: u8,
+    header_bg: u32,
+    header_fg: u32,
+    zebra_bg: u32,
+    zebra_fg: u32,
+    row_bg: u32,
+    row_fg: u32,
+    header_border: FormatBorder,
+) -> u32 {
+    let mut row = start_row;
+    row = render_table_header(
+        worksheet,
+        table,
+        row,
+        row_height,
+        header_bg,
+        header_fg,
+        header_border,
+    );
+    row = render_table_rows(
+        worksheet, table, row, dataset, row_height, zebra_bg, zebra_fg, row_bg, row_fg,
+    );
+    row = render_totals_rows(worksheet, table, row, dataset);
+    row
+}
+
+pub fn render_table_header(
+    worksheet: &mut Worksheet,
+    table: &TableComponent,
+    row: u32,
+    row_height: u8,
+    header_bg: u32,
+    header_fg: u32,
+    header_border: FormatBorder,
+) -> u32 {
+    for column in &table.table_header {
+        worksheet.set_row_height(row, row_height).unwrap();
+
+        let [start, end] = column.cols;
+        let align = column.header_align.as_deref().unwrap_or("center");
+        if start == end {
+            worksheet
+                .write_with_format(
+                    row,
+                    start as u16,
+                    &column.prefix,
+                    &table_header_format(align)
+                        .set_background_color(header_bg)
+                        .set_font_color(header_fg)
+                        .set_border(header_border),
+                )
+                .unwrap();
+        } else {
+            worksheet
+                .merge_range(
+                    row,
+                    start as u16,
+                    row,
+                    end as u16,
+                    &column.prefix,
+                    &table_header_format(align)
+                        .set_background_color(header_bg)
+                        .set_font_color(header_fg)
+                        .set_border(header_border),
+                )
+                .unwrap();
+        }
+    }
+
+    row + 1
+}
+
+fn render_table_rows(
+    worksheet: &mut Worksheet,
+    table: &TableComponent,
+    start_row: u32,
+    dataset: &Vec<Value>,
+    row_height: u8,
+    zebra_bg: u32,
+    zebra_fg: u32,
+    row_bg: u32,
+    row_fg: u32,
+) -> u32 {
+    let mut row = start_row;
+
+    for (index, item) in dataset.iter().enumerate() {
+        worksheet.set_row_height(row, row_height).unwrap();
+        for column in &table.table_header {
+            let [start_col, end_col] = column.cols;
+
+            let align = column.align.as_deref().unwrap_or("center");
+
+            let format = if index % 2 == 0 {
+                table_row_even_format(align)
+                    .set_background_color(row_bg)
+                    .set_font_color(row_fg)
+            } else {
+                table_row_odd_format(align)
+                    .set_background_color(zebra_bg)
+                    .set_font_color(zebra_fg)
+            };
+            // web_sys::console::log_1(&"Estou debugando....".into());
+            let value = item.get(&column.key);
+
+            // web_sys::console::log_1(&format!("campo={} valor={:?}", column.key, value).into());
+
+            if start_col == end_col {
+                match value {
+                    Some(Value::Number(num)) => {
+                        // web_sys::console::log_1(&"Caindo aqui 01".into());
+                        let new_format = format.set_num_format("#,##0.00");
+                        worksheet
+                            .write_number_with_format(
+                                row,
+                                start_col as u16,
+                                num.as_f64().unwrap_or(0.0),
+                                &new_format,
+                            )
+                            .unwrap();
+                    }
+
+                    Some(Value::String(text)) => {
+                        // web_sys::console::log_1(&"Caindo aqui 02".into());
+                        worksheet
+                            .write_with_format(row, start_col as u16, text, &format)
+                            .unwrap();
+                    }
+
+                    Some(Value::Bool(v)) => {
+                        // web_sys::console::log_1(&"Caindo aqui 03".into());
+                        worksheet
+                            .write_with_format(row, start_col as u16, &v.to_string(), &format)
+                            .unwrap();
+                    }
+
+                    Some(Value::Null) | None => {}
+
+                    Some(other) => {
+                        // web_sys::console::log_1(&"Caindo aqui 04".into());
+                        worksheet
+                            .write_with_format(row, start_col as u16, &other.to_string(), &format)
+                            .unwrap();
+                    }
+                }
+            } else {
+                let text = match value {
+                    Some(Value::String(v)) => v.clone(),
+                    Some(v) => v.to_string(),
+                    None => String::new(),
+                };
+
+                worksheet
+                    .merge_range(row, start_col as u16, row, end_col as u16, &text, &format)
+                    .unwrap();
+            }
+        }
+
+        row += 1;
+        web_sys::console::log_1(&"teste etttt".into());
+        //verifico se não tem itens
+        if let Some(childrens) = &table.childrens {
+            for c in childrens {
+                if let Some(value) = item.get(&c.path) {
+                    if value.is_array() {
+                        row = render_children(
+                            row,
+                            worksheet,
+                            value.as_array().unwrap(),
+                            &c.table_header,
+                        );
+                    }
+                }
+            }
+        } else {
+            web_sys::console::log_1(&"Não tem itens".into());
+        }
+    }
+
+    row
+}
+
+fn render_children(
+    row: u32,
+    worksheet: &mut Worksheet,
+    dataset: &Vec<Value>,
+    table_header: &Vec<ExcelTableColumn>,
+) -> u32 {
+    let mut current_row = row;
+    //renderizar o header do children
+    for t in table_header {
+        if is_same_col(t.cols[0], t.cols[1]) {
+            worksheet
+                .write_with_format(
+                    current_row,
+                    t.cols[0] as u16,
+                    &t.prefix,
+                    &table_children_header_format(
+                        &t.align.as_deref().unwrap_or(&"center".to_string()),
+                    ),
+                )
+                .unwrap();
+        } else {
+            worksheet
+                .merge_range(
+                    current_row,
+                    t.cols[0] as u16,
+                    current_row,
+                    t.cols[1] as u16,
+                    &t.prefix,
+                    &table_children_header_format(
+                        &t.align.as_deref().unwrap_or(&"center".to_string()),
+                    ),
+                )
+                .unwrap();
+        }
+    }
+    current_row += 1;
+
+    for v in dataset {
+        for t in table_header {
+            if let Some(value) = v.get(&t.key) {
+                if is_same_col(t.cols[0], t.cols[1]) {
+                    worksheet
+                        .write_with_format(
+                            current_row,
+                            t.cols[0] as u16,
+                            &value.to_string(),
+                            &table_row_even_format(
+                                &t.align.as_deref().unwrap_or(&"center".to_string()),
+                            ),
+                        )
+                        .unwrap();
+                } else {
+                    worksheet
+                        .merge_range(
+                            current_row,
+                            t.cols[0] as u16,
+                            current_row,
+                            t.cols[1] as u16,
+                            &value.to_string(),
+                            &table_row_even_format(
+                                &t.align.as_deref().unwrap_or(&"center".to_string()),
+                            ),
+                        )
+                        .unwrap();
+                }
+            }
+        }
+
+        current_row += 1;
+    }
+
+    //renderizar compos que somam nos itens
+    for t in table_header {
+        if let Some(_sum) = t.sum {
+            let soma: f64 = dataset
+                .iter()
+                .filter_map(|v| v.get(&t.key))
+                .filter_map(|i| i.as_f64())
+                .sum();
+
+            if is_same_col(t.cols[0], t.cols[1]) {
+                worksheet
+                    .write_with_format(
+                        current_row,
+                        t.cols[0] as u16,
+                        soma.to_string(),
+                        &table_row_totals_format(
+                            &t.align.as_deref().unwrap_or(&"center".to_string()),
+                        ),
+                    )
+                    .unwrap();
+            } else {
+                worksheet
+                    .merge_range(
+                        current_row,
+                        t.cols[0] as u16,
+                        current_row,
+                        t.cols[1] as u16,
+                        &soma.to_string(),
+                        &table_row_totals_format(
+                            &t.align.as_deref().unwrap_or(&"center".to_string()),
+                        ),
+                    )
+                    .unwrap();
+            }
+        }
+    }
+
+    current_row + 4
+}
+
+fn render_totals_rows(
+    worksheet: &mut Worksheet,
+    table: &TableComponent,
+    row: u32,
+    dataset: &Vec<Value>,
+) -> u32 {
+    for (index, column) in table.table_header.iter().enumerate() {
+        if index == 0 && column.sum.unwrap_or(false) == false {
+            //primeiro index não soma , entao vou colocar nome total
+
+            worksheet
+                .merge_range(
+                    row,
+                    column.cols[0] as u16,
+                    row,
+                    column.cols[1] as u16,
+                    "TOTAL",
+                    &table_row_totals_format("left"),
+                )
+                .unwrap();
+        } else {
+            if column.sum.unwrap_or(false) == false {
+                if column.cols[0] == column.cols[1] {
+                    worksheet
+                        .write_with_format(
+                            row,
+                            column.cols[0] as u16,
+                            " ",
+                            &table_row_totals_format(&column.align.as_deref().unwrap_or("center")),
+                        )
+                        .unwrap();
+                } else {
+                    worksheet
+                        .merge_range(
+                            row,
+                            column.cols[0] as u16,
+                            row,
+                            column.cols[1] as u16,
+                            " ",
+                            &table_row_totals_format(&column.align.as_deref().unwrap_or("center")),
+                        )
+                        .unwrap();
+                }
+            } else {
+                let sum_result: f64 = dataset
+                    .iter()
+                    .filter_map(|item| item.get(&column.key).and_then(|v| v.as_f64()))
+                    .sum();
+                if column.cols[0] == column.cols[1] {
+                    worksheet
+                        .write_with_format(
+                            row,
+                            column.cols[0] as u16,
+                            &sum_result.to_string(),
+                            &table_row_totals_format(&column.align.as_deref().unwrap_or("center")),
+                        )
+                        .unwrap();
+                } else {
+                    worksheet
+                        .merge_range(
+                            row,
+                            column.cols[0] as u16,
+                            row,
+                            column.cols[1] as u16,
+                            &sum_result.to_string(),
+                            &table_row_totals_format(&column.align.as_deref().unwrap_or("center")),
+                        )
+                        .unwrap();
+                }
+            }
+        }
+    }
+
+    row + 1
+}
+
+//=====================================================================
+//                          FUNCOES ULTILITARIAS
+//=====================================================================
+
+fn is_same_col(first_col: u8, last_col: u8) -> bool {
+    return first_col == last_col;
+}
+
+fn parse_border_style(value: &str) -> Option<FormatBorder> {
+    match value.to_lowercase().as_str() {
+        "none" => Some(FormatBorder::None),
+        "thin" => Some(FormatBorder::Thin),
+        "medium" => Some(FormatBorder::Medium),
+        "thick" => Some(FormatBorder::Thick),
+        "dashed" => Some(FormatBorder::Dashed),
+        "dotted" => Some(FormatBorder::Dotted),
+        "double" => Some(FormatBorder::Double),
+        "hair" => Some(FormatBorder::Hair),
+        "medium_dashed" => Some(FormatBorder::MediumDashed),
+        "dash_dot" => Some(FormatBorder::DashDot),
+        "medium_dash_dot" => Some(FormatBorder::MediumDashDot),
+        "dash_dot_dot" => Some(FormatBorder::DashDotDot),
+        "medium_dash_dot_dot" => Some(FormatBorder::MediumDashDotDot),
+        "slant_dash_dot" => Some(FormatBorder::SlantDashDot),
+        _ => None,
+    }
+}
+
+fn apply_mask(value: f64, mask: &str) -> String {
+    match mask {
+        "monetary" => {
+            let int_part = value.trunc() as i64;
+            let dec_part = ((value.abs() - value.trunc().abs()) * 100.0).round() as i64;
+
+            let formatted_int = int_part
+                .abs()
+                .to_string()
+                .chars()
+                .rev()
+                .collect::<Vec<_>>()
+                .chunks(3)
+                .map(|c| c.iter().collect::<String>())
+                .collect::<Vec<_>>()
+                .join(".")
+                .chars()
+                .rev()
+                .collect::<String>();
+
+            let sign = if int_part < 0 { "-" } else { "" };
+            format!("R$ {}{},{:02}", sign, formatted_int, dec_part)
+        }
+        "percent" => format!("{:.1}%", value * 100.0),
+        "number" => format!("{:.0}", value),
+        "decimal" => {
+            let int_part = value.trunc() as i64;
+            let dec_part = ((value.abs() - value.trunc().abs()) * 100.0).round() as i64;
+
+            let formatted_int = int_part
+                .abs()
+                .to_string()
+                .chars()
+                .rev()
+                .collect::<Vec<_>>()
+                .chunks(3)
+                .map(|c| c.iter().collect::<String>())
+                .collect::<Vec<_>>()
+                .join(".")
+                .chars()
+                .rev()
+                .collect::<String>();
+
+            let sign = if int_part < 0 { "-" } else { "" };
+            format!("{}{},{}", sign, formatted_int, dec_part) // 👈 VÍRGULA aqui!
+        }
+        "milhar" => {
+            let rounded = value.round() as i64;
+            let formatted = rounded
+                .abs()
+                .to_string()
+                .chars()
+                .rev()
+                .collect::<Vec<_>>()
+                .chunks(3)
+                .map(|c| c.iter().collect::<String>())
+                .collect::<Vec<_>>()
+                .join(".")
+                .chars()
+                .rev()
+                .collect::<String>();
+
+            if rounded < 0 {
+                format!("-{}", formatted)
+            } else {
+                formatted
+            }
+        }
+        _ => value.to_string(),
+    }
+}
+fn hex_to_rgb(hex: &str) -> Option<u32> {
+    let hex = hex.trim_start_matches('#');
+    if hex.len() == 6 {
+        u32::from_str_radix(hex, 16).ok()
+    } else {
+        None
+    }
+}
+fn image_from_base64(base64_str: &str) -> Result<Image, String> {
     let b64_clean = if let Some(pos) = base64_str.find(',') {
         &base64_str[pos + 1..]
     } else {
@@ -82,9 +831,19 @@ pub fn image_from_base64(base64_str: &str) -> Result<Image, String> {
     Image::new_from_buffer(&raw).map_err(|e| format!("Erro criando imagem: {:?}", e))
 }
 
-///Formats
+//=====================================================================
+//                          FORMATAÇÕES E ESTILOS
+//=====================================================================
+fn get_align(align: &str) -> FormatAlign {
+    let align = match align {
+        "left" => FormatAlign::Left,
+        "right" => FormatAlign::Right,
+        _ => FormatAlign::Center,
+    };
+    align
+}
 
-pub fn header_title_format() -> Format {
+fn header_title_format() -> Format {
     Format::new()
         .set_font_name("Aptos")
         .set_font_size(20.0)
@@ -94,6 +853,73 @@ pub fn header_title_format() -> Format {
         .set_align(FormatAlign::VerticalCenter)
 }
 
-pub fn company_info_format() -> Format {
-    Format::new().set_font_name("Aptos").set_font_size(10)
+fn company_info_format() -> Format {
+    Format::new()
+        .set_font_name("Aptos")
+        .set_font_size(10)
+        .set_bold()
+        .set_align(FormatAlign::Center)
+        .set_align(FormatAlign::VerticalCenter)
+        .set_text_wrap()
+}
+
+fn format_filters() -> Format {
+    Format::new()
+        .set_font_color(Color::RGB(0x808080))
+        .set_font_size(9)
+        .set_align(FormatAlign::Left)
+}
+
+fn table_header_format(align: &str) -> Format {
+    Format::new()
+        .set_font_name("Segoe UI")
+        .set_font_size(10)
+        .set_bold()
+        .set_font_color(Color::White)
+        .set_background_color(Color::RGB(0x1F2937))
+        .set_align(get_align(align))
+        .set_align(FormatAlign::VerticalCenter)
+        .set_border(FormatBorder::Thin)
+}
+
+fn table_row_even_format(align: &str) -> Format {
+    Format::new()
+        .set_font_name("Aptos")
+        .set_font_size(10)
+        .set_background_color(Color::RGB(0xF9FAFB))
+        .set_border(FormatBorder::Thin)
+        .set_border_color(Color::RGB(0xE5E7EB))
+        .set_align(get_align(align))
+        .set_align(FormatAlign::VerticalCenter)
+}
+
+fn table_row_odd_format(align: &str) -> Format {
+    Format::new()
+        .set_font_name("Aptos")
+        .set_font_size(10)
+        .set_background_color(Color::White)
+        .set_border(FormatBorder::Thin)
+        .set_border_color(Color::RGB(0xE5E7EB))
+        .set_align(get_align(align))
+        .set_align(FormatAlign::VerticalCenter)
+}
+
+fn table_row_totals_format(align: &str) -> Format {
+    Format::new()
+        .set_font_name("Aptos")
+        .set_font_size(12)
+        .set_border_top(FormatBorder::MediumDashed)
+        .set_align(get_align(align))
+        .set_bold()
+        .set_border_color(Color::Gray)
+}
+
+fn table_children_header_format(align: &str) -> Format {
+    Format::new()
+        .set_bold()
+        .set_align(get_align(align))
+        .set_align(FormatAlign::VerticalCenter)
+        .set_font_color(Color::Black)
+        .set_border_top(FormatBorder::Medium)
+        .set_border_bottom(FormatBorder::Medium)
 }

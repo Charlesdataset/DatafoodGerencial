@@ -57,20 +57,141 @@ async function loadExcelModule(): Promise<ExcelWasmBindings> {
   return _excelLoadPromise;
 }
 
-export async function gerarExcelTeste(logo: string) {
+//=============================================================
+//            tipo do excel v3
+//=============================================================
+export interface ExcelV3 {
+  config: ExcelConfig;
+  header: HeaderComponent;
+  footer: FooterComponent;
+  content: Array<ExcelV3Component>;
+  _datasets: ExcelV3Datasets;
+  _variables: ExcelV3Variables;
+}
+export type ExcelV3Datasets = Record<string, Record<string, unknown>[]>;
+export type ExcelV3Variables = Record<string, string>;
+
+export type ExcelV3Component = TableComponent;
+
+export interface TableComponent {
+  type: 'table';
+  datasetName: string;
+  tableHeader: Array<ExcelTableColumn>;
+  grouping?: ExcelGroupConfig;
+  summaryBox?: ExcelSummaryBox;
+  childrens?: Array<ChildremTable>;
+}
+
+export interface ChildremTable {
+  path: string;
+  tableHeader: Array<ExcelTableColumn>;
+  grouping?: ExcelGroupConfig;
+  summaryBox?: ExcelSummaryBox;
+}
+
+export interface ExcelSummaryBox {
+  rows: Array<ExcelSummaryRow>;
+}
+export interface ExcelSummaryRow {
+  key: string;
+  label: string;
+  mask?: ExelV3Mask;
+  bold?: boolean;
+}
+
+export interface ExcelGroupConfig {
+  groupBy: string;
+  groupHeaderMask?: string;
+  subtotal?: string;
+  gap?: number;
+}
+
+export interface ExcelTableColumn {
+  key: string;
+  cols: Array<number>;
+  prefix: string;
+  align?: ExcelV3Align;
+  headerAlign?: ExcelV3Align;
+  mask?: ExelV3Mask;
+  sum?: boolean;
+}
+
+export enum ExelV3Mask {
+  Cnpj = 'cnpj',
+  Monetary = 'monetary',
+  Number = 'number',
+  Document = 'document',
+  Percent = 'percent',
+}
+
+export enum ExcelV3Align {
+  Center = 'center',
+  Right = 'right',
+  Left = 'left',
+}
+
+export interface FooterComponent {
+  site: string;
+}
+
+export interface ExcelConfig {
+  rowHeight?: number;
+  headerBackground?: string;
+  headerForeground?: string;
+  zebraBackground?: string;
+  rowBackground?: string;
+  borderStryle?: BorderStyle;
+  primaryColor?: string;
+}
+
+export interface HeaderComponent {
+  title: string;
+  companyName: string;
+  logoBase64?: string;
+  filters?: Array<FilterItem>;
+}
+
+export interface FilterItem {
+  key: string;
+  value: string;
+  mask?: string;
+}
+
+export enum BorderStyle {
+  None = 'none',
+  Thin = 'thin',
+  Medium = 'medium',
+  Thick = 'thick',
+  Dashed = 'dashed',
+  Dotted = 'dotted',
+  MediumDashed = 'medium_dashed',
+}
+
+export async function gerarExcelTeste(logo: string, primaryColor: string) {
   const base64 = await getImageBase64FromPath(logo);
   const excel = await loadExcelModule();
 
-  const json = {
+  const json: ExcelV3 = {
+    config: {
+      rowHeight: 20,
+      headerBackground: '#404040',
+      zebraBackground: '#cbcbcb',
+      primaryColor: primaryColor,
+    },
     header: {
       title: 'Relatório NFC-e',
-      company_name: '$empresa',
-      document: '$cnpj',
+      companyName: 'DataSet Sistemas \n 25306810000100',
+      filters: [{ key: 'Data Inicial', value: '08/05/2024' }],
+    },
+
+    footer: {
+      site: 'www.datasetsistemas.com.br',
     },
 
     _variables: {
-      empresa: 'Dataset Sistemas',
+      empresa: 'DataSet Sistemas | 25306810000100',
       cnpj: '00.000.000/0001-00',
+      logoSistema: base64,
     },
 
     _datasets: {
@@ -79,23 +200,49 @@ export async function gerarExcelTeste(logo: string) {
           numero: 1,
           cliente: 'João',
           vlrTotal: 100,
+          grupo: 'SADIA',
           itens: [
             {
-              id: 1,
-              nome: 'sanduiche',
-              valor: 4.5,
+              id: 9,
+              produto: 'TIXAN YPE',
+              valor: 17.89,
             },
             {
-              id: 1,
-              nome: 'sanduiche',
-              valor: 4.5,
+              id: 15,
+              produto: 'PAPEL HIGIENICO',
+              valor: 20.79,
             },
           ],
         },
         {
           numero: 2,
-          cliente: 'Maria',
+          cliente: 'Maristela',
+          vlrTotal: 100,
+          grupo: 'SADIA',
+        },
+        {
+          numero: 3,
+          cliente: 'Joaninha',
+          vlrTotal: 100,
+          grupo: 'SADIA',
+        },
+        {
+          numero: 4,
+          cliente: 'Fabíola',
+          vlrTotal: 360,
+          grupo: 'PERDIGAO',
+        },
+        {
+          numero: 5,
+          cliente: 'Cezar',
+          vlrTotal: 450,
+          grupo: 'PERDIGAO',
+        },
+        {
+          numero: 6,
+          cliente: 'TzarBomb',
           vlrTotal: 200,
+          grupo: 'PERDIGAO',
         },
       ],
     },
@@ -104,19 +251,49 @@ export async function gerarExcelTeste(logo: string) {
       {
         type: 'table',
         datasetName: 'notas',
+        grouping: {
+          groupBy: 'grupo',
+        },
+        childrens: [
+          {
+            path: 'itens',
+            tableHeader: [
+              { key: 'id', prefix: 'ID', cols: [2, 3] },
+              { key: 'produto', prefix: 'Produto', cols: [4, 8] },
+              { key: 'valor', prefix: 'Valor', cols: [9, 12], sum: true },
+            ],
+          },
+        ],
 
         tableHeader: [
           {
             key: 'numero',
             prefix: 'NOTA',
+            cols: [1, 2],
+            align: ExcelV3Align.Center,
+            headerAlign: ExcelV3Align.Center,
           },
           {
             key: 'cliente',
             prefix: 'CLIENTE',
+            cols: [3, 9],
+            align: ExcelV3Align.Left,
+            headerAlign: ExcelV3Align.Left,
+          },
+          {
+            key: 'grupo',
+            prefix: 'GRUPO',
+            cols: [10, 12],
+            align: ExcelV3Align.Center,
+            headerAlign: ExcelV3Align.Center,
           },
           {
             key: 'vlrTotal',
             prefix: 'TOTAL',
+            cols: [13, 16],
+            align: ExcelV3Align.Right,
+            headerAlign: ExcelV3Align.Center,
+            sum: true,
           },
         ],
 
@@ -125,23 +302,20 @@ export async function gerarExcelTeste(logo: string) {
             {
               key: 'vlrTotal',
               label: 'VALOR TOTAL',
+              mask: ExelV3Mask.Monetary,
             },
           ],
         },
-      },
+      } as ExcelV3Component,
     ],
   };
-
-  json._variables = {
-    logoSistema: base64,
-  } as any;
 
   const bytes = excel.gerar_excel(JSON.stringify(json));
 
   const blob = new Blob([bytes as any], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   });
-
+  7;
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

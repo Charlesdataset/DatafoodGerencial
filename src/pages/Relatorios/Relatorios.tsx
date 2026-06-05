@@ -22,7 +22,7 @@ const Relatorios: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { setCanShowTurnoTipo } = useApp();
-    const { currLogoRelatorio } = useApp();
+    const { currLogoRelatorio, primaryColor } = useApp();
 
     // Pega o parâmetro 'listing' da URL
     const searchParams = new URLSearchParams(location.search);
@@ -61,7 +61,7 @@ const Relatorios: React.FC = () => {
     return (
         <>
             <Button onClick={() => {
-                gerarExcelTeste(currLogoRelatorio);
+                gerarExcelTeste(currLogoRelatorio, primaryColor);
             }}>
                 Relatorio teste
             </Button>
