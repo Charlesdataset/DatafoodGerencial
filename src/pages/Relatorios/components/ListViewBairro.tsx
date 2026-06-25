@@ -7,15 +7,16 @@ import type { ExtendedColumnDef } from "../../../components/DataGrid/DataGrid";
 import DataGrid from "../../../components/DataGrid/DataGrid";
 import { FormButton } from "../../../components/Inputs/Button/FormButton";
 
+import dayjs from "dayjs";
+import { toast } from "react-toastify";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import Fluid from "../../../components/Layout/Fluid";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import { useApp } from "../../../contexts/AppContext";
 import { useNavigation } from "../../../contexts/NavigationContext";
+import handleGenerateBairroExcelReport from "../../../reports/bairro/bairro.excel.report";
 import handleGenerateBairroReport from "../../../reports/bairro/bairro.report";
 import { api } from "../../../services/api";
-import type { TableHeaderDef } from "../../../types/v3.types";
-import { maskCnpj, maskCpf } from "../../../utils/format";
 
 
 const ListViewBairro: React.FC = () => {
@@ -29,7 +30,7 @@ const ListViewBairro: React.FC = () => {
 
 
     const { subscribe } = useNavigation();
-    const { companyInfo, currLogoRelatorio } = useApp();
+    const { companyInfo, currLogoRelatorio, primaryColor } = useApp();
     useEffect(() => {
         const unsubscribeBackView = subscribe('backView', () => {
             // Lógica para voltar à tela anterior
@@ -133,13 +134,38 @@ const ListViewBairro: React.FC = () => {
 
     const handlePrint = async () => {
         await fetchData();
-        console.log(companyInfo)
-        const bytes = await handleGenerateBairroReport(dados, companyInfo, currLogoRelatorio);
-        const blob = new Blob([bytes], { type: 'application/octet-stream' });
+        if (dados.length > 0) {
+
+            const bytes = await handleGenerateBairroReport(dados, companyInfo, currLogoRelatorio);
+            const blob = new Blob([bytes], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            setUrl(url);
+        } else {
+            toast.info("Não há dados para imprimir relatório!")
+        }
+
+
+    }
+
+
+    const handleExcelReport = async () => {
+
+        const bytes = await handleGenerateBairroExcelReport(
+            dados,
+            companyInfo,
+            primaryColor,
+            currLogoRelatorio
+        );
+
+        const blob = new Blob([bytes as any], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        7;
         const url = URL.createObjectURL(blob);
-        setUrl(url);
-
-
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `relatorio_bairros.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
+        a.click();
     }
 
 
@@ -153,7 +179,7 @@ const ListViewBairro: React.FC = () => {
                         xs={[80, 'expand', 100]}
                         lg={['expand', 'auto']}
 
-                        
+
                     >
                         <TextSearch isLoading={isLoading} placeholder="Digite para buscar..." value={textSearch} onChange={(e) => {
                             setTextSearch(e.target.value);
@@ -186,30 +212,11 @@ const ListViewBairro: React.FC = () => {
                         URL.revokeObjectURL(url);
                         setUrl(null);
                     }}
-                    excelDataset={{
-                        data: dados,
-                        columns: [
-                            { key: 'idBairro', prefix: 'Código', align: 'center' as const },
-                            { key: 'descricao', prefix: 'Bairro' },
-                            { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const, align: 'center' as const },
-                            {
-                                key: 'pausar', prefix: 'Pausada', pill: true, pillCases: [
-                                    { case: 'true', color: '#16a34a', transform: 'Sim' },
-                                    { case: 'false', color: '#d97706', transform: 'Não' },
-                                ]
-                            },
-                            { key: 'taxaEntrega', prefix: 'Taxa Entrega', align: 'right' as const, mask: 'currency' as const },
-                        ] as TableHeaderDef[],
-                        fileName: 'bairros',
-                        sheetName: 'Bairros',
-                        logo: currLogoRelatorio,
-                        title: 'Relatório Bairros',
-                        subtitle: `${companyInfo?.cnpj
-                            ? (companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj))
-                            : ''
-                            }  ${companyInfo?.nomeCli ?? ''}`.trim(),
-                        headerBackgroundColor: '#404040',
+                    hasExcel
+                    onExcelClick={() => {
+                        handleExcelReport();
                     }}
+
                 />
             }
 

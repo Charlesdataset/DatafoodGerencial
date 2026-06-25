@@ -1,15 +1,10 @@
 import type { ComponentV3, ReportV3 } from '../../types/v3.types';
 import { getImageBase64FromPath, maskCnpj, maskCpf } from '../../utils/format';
 import { gerarRelatorioPdfV3 } from '../../wasm/pdfium_generator';
-import {
-  formatFiltersForHeader,
-  formatPeriod,
-  type FilterConfig,
-} from '../utils/filterFormatter';
+import { formatFiltersForHeader, formatPeriod, type FilterConfig } from '../utils/filterFormatter';
 
 const formatCurrency = (value: number | string) => {
-  const num =
-    typeof value === 'number' ? value : Number(String(value).replace(',', '.'));
+  const num = typeof value === 'number' ? value : Number(String(value).replace(',', '.'));
   if (Number.isNaN(num)) return String(value);
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -72,10 +67,7 @@ const handleReportAuditoria = async (
     filterConfigs.push({ label: 'Pesquisa', values: [filters.pesquisa] });
   }
 
-  const periodLabel = formatPeriod(
-    filters?.dataInicial ?? null,
-    filters?.dataFinal ?? null,
-  );
+  const periodLabel = formatPeriod(filters?.dataInicial ?? null, filters?.dataFinal ?? null);
   if (periodLabel) {
     filterConfigs.push({
       label: 'Período',
@@ -92,8 +84,7 @@ const handleReportAuditoria = async (
     });
   }
 
-  const filtrosHeader =
-    filterConfigs.length > 0 ? formatFiltersForHeader(filterConfigs, 180) : '';
+  const filtrosHeader = filterConfigs.length > 0 ? formatFiltersForHeader(filterConfigs, 180) : '';
 
   const buildDetalhes = (dadosJson: any) => {
     if (!dadosJson || !dadosJson.alterados || typeof dadosJson.alterados !== 'object') {
@@ -101,7 +92,7 @@ const handleReportAuditoria = async (
     }
 
     return Object.entries(dadosJson.alterados)
-      .map(([campo, item]) => {
+      .map(([campo, item]: any) => {
         if (JSON.stringify(item?.antes) === JSON.stringify(item?.depois)) {
           return null;
         }
@@ -261,20 +252,16 @@ const handleReportAuditoria = async (
                     key: 'campo',
                     prefix: 'Campo',
                     align: 'left',
-         
                   },
                   {
                     key: 'antes',
                     prefix: 'Antes',
                     align: 'left',
-                   
                   },
                   {
                     key: 'depois',
                     prefix: 'Depois',
                     align: 'left',
-                  
-          
                   },
                 ],
                 widths: ['expand', 250, 250],
@@ -288,10 +275,7 @@ const handleReportAuditoria = async (
           ? {
               grouping: {
                 groupBy: getAgrupado[agrupadoPor],
-                groupHeaderMask:
-                  agrupadoPor === AuditoriaAgrupadoPor.Data
-                    ? 'date'
-                    : undefined,
+                groupHeaderMask: agrupadoPor === AuditoriaAgrupadoPor.Data ? 'date' : undefined,
                 gap: 40,
               },
             }
@@ -306,13 +290,11 @@ const handleReportAuditoria = async (
             key: 'formulario',
             prefix: 'Formulário',
             align: 'left',
-        
           },
           {
             key: 'colaborador',
             prefix: 'Colaborador',
             align: 'left',
-          
           },
           {
             key: 'operacao',
@@ -346,8 +328,7 @@ const handleReportAuditoria = async (
     filtros_header: filtrosHeader,
     data_geracao: new Date().toLocaleDateString('pf-BR'),
     empresa: companyInfo?.nomeCli ?? '',
-    cnpj:
-      rawCnpj.length > 11 ? maskCnpj(rawCnpj) : rawCnpj ? maskCpf(rawCnpj) : '',
+    cnpj: rawCnpj.length > 11 ? maskCnpj(rawCnpj) : rawCnpj ? maskCpf(rawCnpj) : '',
 
     currDate: new Date().toLocaleDateString('pt-BR'),
     logoSistema: imageBase64,

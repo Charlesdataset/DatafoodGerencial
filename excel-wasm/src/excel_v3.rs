@@ -1,7 +1,7 @@
-use chrono::{Datelike, Local, Timelike};
-use std::collections::HashMap;
-
+use chrono::{DateTime, Datelike, Local, NaiveDate, NaiveDateTime, Timelike, Utc};
 use rust_xlsxwriter::*;
+use std::collections::HashMap;
+use std::str::FromStr;
 
 use base64::{Engine as _, engine::general_purpose::STANDARD as B64};
 use serde_json::Value;
@@ -14,7 +14,21 @@ use crate::modelsv3::*;
 
 pub fn gerar(json: &str) -> Vec<u8> {
     //PEGO JSON PARA TRATAR
-    let report: ExcelReport = serde_json::from_str(json).unwrap();
+    let report: ExcelReport = match serde_json::from_str(json) {
+        Ok(r) => r,
+        Err(e) => {
+            web_sys::console::log_1(&format!("ERRO NO PARSE DO JSON: {}", e).into());
+            web_sys::console::log_1(&format!("Linha: {}, Coluna: {}", e.line(), e.column()).into());
+
+            // Mostra o trecho do JSON onde deu erro
+            let pos = e.column() as usize;
+            let start = pos.saturating_sub(100);
+            let end = (pos + 100).min(json.len());
+            web_sys::console::log_1(&format!("Trecho do JSON: ...{}...", &json[start..end]).into());
+
+            panic!("Erro no JSON: {}", e);
+        }
+    };
 
     //PEGO A CONFIG
     let config = report.config.as_ref();
@@ -51,57 +65,83 @@ pub fn gerar(json: &str) -> Vec<u8> {
     //CHAMAR LIB EXCEL
     let mut workbook = Workbook::new();
 
-    //CRIAR O WORKSHEET
-    let worksheet = workbook.add_worksheet();
-    worksheet.set_screen_gridlines(false); // esconde as grids
-    worksheet.set_print_gridlines(false); // esconde as grid quando for gerar pdf
-    worksheet.set_column_width(0, 18).unwrap();
-    worksheet.set_row_height(0, 60).unwrap();
+    let mut current_row = 0;
 
-    //VERIFICAR SE TEM A LOGO TRANFORMAR IMAGEM
-    let logo = report.variables.get("logoSistema").and_then(|base64| {
-        let image = image_from_base64(base64).ok()?;
-
-        let target_width = 200.0;
-        let scale = target_width / image.width() as f64;
-
-        Some(image.set_scale_width(scale).set_scale_height(scale))
-    });
-
-    //step 1 renderizar o header
-    let header = report.header.unwrap();
-    render_header(
-        worksheet,
-        logo.as_ref(),
-        &header.title,
-        &header.company_name,
-    );
-
-    //setp 2 Renderizar filtros~
-
-    if let Some(filters) = &header.filters {
-        let mut filters_join = String::new();
-        filters_join.push_str("Filtros: ");
-        filters_join.push_str(
-            &filters
-                .iter()
-                .map(|f| format!("{}: {}", f.key, f.value))
-                .collect::<Vec<_>>()
-                .join(" | ")
-                .to_string(),
-        );
-
-        render_filters(worksheet, &filters_join);
-    }
-
-    let mut current_row = 2;
-    let mut last_table: u8 = 0;
     //step 3 renderizar componentes
-    for component in &report.content {
+    for component in report.content {
         match component {
             Component::Table(table) => {
-                last_table = table.table_header.last().unwrap().cols[1];
+                //CRIAR O WORKSHEET
+                let worksheet = workbook.add_worksheet();
+
+                //verifico se o workseet tem um nome para por
+                if let Some(name) = &table.sheet_name {
+                    web_sys::console::log_1(&"Esta setando o nome do sheet".into());
+                    worksheet.set_name(name).unwrap();
+                }
+
+                worksheet.set_screen_gridlines(false); // esconde as grids
+                worksheet.set_print_gridlines(false); // esconde as grid quando for gerar pdf
+                worksheet.set_column_width(0, 18).unwrap();
+                worksheet.set_row_height(0, 60).unwrap();
+
+                //VERIFICAR SE TEM A LOGO TRANFORMAR IMAGEM
+                let logo = report.variables.get("logoSistema").and_then(|base64| {
+                    let image = image_from_base64(base64).ok()?;
+
+                    let target_width = 200.0;
+                    let scale = target_width / image.width() as f64;
+
+                    Some(image.set_scale_width(scale).set_scale_height(scale))
+                });
+
+                //step 1 renderizar o header
+                let header = report.header.as_ref().unwrap();
+                render_header(
+                    worksheet,
+                    logo.as_ref(),
+                    &header.title,
+                    &header.company_name,
+                );
+
+                current_row = 2;
+
+                //setp 2 Renderizar filtros~
+
+                if let Some(filters) = &header.filters {
+                    let mut filters_join = String::new();
+                    filters_join.push_str("Filtros: ");
+                    filters_join.push_str(
+                        &filters
+                            .iter()
+                            .map(|f| format!("{}: {}", f.key, f.value))
+                            .collect::<Vec<_>>()
+                            .join(" | ")
+                            .to_string(),
+                    );
+
+                    render_filters(worksheet, &filters_join);
+                }
+
+                let last_col_render = table
+                    .table_header
+                    .as_ref()
+                    .and_then(|th| th.last())
+                    .map(|t| t.cols[1])
+                    .or_else(|| {
+                        table
+                            .childrens
+                            .as_ref()
+                            .and_then(|childrens| childrens.first())
+                            .and_then(|child| child.table_header.last())
+                            .map(|t| t.cols[1])
+                    })
+                    .unwrap_or(10);
+
                 if let Some(dataset) = report.datasets.get(&table.dataset_name) {
+                    web_sys::console::log_1(
+                        &format!("O dadaset que ta batendo é o {}", &table.dataset_name).into(),
+                    );
                     //verificando se tem agrupamento para fazer
                     if let Some(grouping) = &table.grouping {
                         let gap = grouping.gap.unwrap_or(2);
@@ -135,8 +175,14 @@ pub fn gerar(json: &str) -> Vec<u8> {
                                     current_row,
                                     1,
                                     current_row,
-                                    last_table as u16,
-                                    &g_name,
+                                    last_col_render as u16,
+                                    &apply_mask(
+                                        &g_name.into(),
+                                        grouping
+                                            .group_header_mask
+                                            .as_ref()
+                                            .unwrap_or(&"Nenhum".to_string()),
+                                    ),
                                     &Format::new()
                                         .set_bold()
                                         .set_background_color(bg_color)
@@ -146,7 +192,7 @@ pub fn gerar(json: &str) -> Vec<u8> {
                             current_row += 1;
                             current_row = render_table(
                                 worksheet,
-                                table,
+                                &table,
                                 current_row,
                                 &g_values,
                                 row_height,
@@ -182,7 +228,7 @@ pub fn gerar(json: &str) -> Vec<u8> {
                                         format!(
                                             "{}:    {}",
                                             row.label,
-                                            apply_mask(
+                                            apply_mask_f64(
                                                 soma,
                                                 &sumary_row
                                                     .mask
@@ -194,8 +240,7 @@ pub fn gerar(json: &str) -> Vec<u8> {
                                     .collect::<Vec<_>>()
                                     .join("\n");
                             }
-                            let last_col_render =
-                                table.table_header.last().as_deref().unwrap().cols[1];
+
                             let meio = last_col_render / 2;
 
                             let first_col = meio - 2;
@@ -228,7 +273,7 @@ pub fn gerar(json: &str) -> Vec<u8> {
                     } else {
                         current_row = render_table(
                             worksheet,
-                            table,
+                            &table,
                             current_row,
                             dataset,
                             row_height,
@@ -242,61 +287,59 @@ pub fn gerar(json: &str) -> Vec<u8> {
                         );
                     }
                 }
+
+                //step 4 renderizar o footer rodapé
+                current_row += 5;
+
+                let now = Local::now();
+                let data_formatada = format!(
+                    "{:02}/{:02}/{} às {:02}:{:02}",
+                    now.day(),
+                    now.month0(),
+                    now.year(),
+                    now.hour(),
+                    now.minute()
+                );
+
+                worksheet
+                    .merge_range(
+                        current_row,
+                        1,
+                        current_row,
+                        3,
+                        &format!("Emitido em {}", data_formatada),
+                        &format_filters(),
+                    )
+                    .unwrap();
+                let meio = last_col_render / 2;
+                if meio - 1 != 3 {
+                    worksheet
+                        .merge_range(
+                            current_row,
+                            (meio as u16) - 1,
+                            current_row,
+                            (meio as u16) + 1 as u16,
+                            "www.datasetsistemas.com.br",
+                            &&Format::new().set_align(FormatAlign::Center),
+                        )
+                        .unwrap();
+                } else {
+                    worksheet
+                        .merge_range(
+                            current_row,
+                            meio as u16,
+                            current_row,
+                            (meio as u16) + 2 as u16,
+                            "www.datasetsistemas.com.br",
+                            &&Format::new().set_align(FormatAlign::Center),
+                        )
+                        .unwrap();
+                }
             }
         }
     }
 
-    //step 4 renderizar o footer rodapé
-    current_row += 5;
-
-    let now = Local::now();
-    let data_formatada = format!(
-        "{:02}/{:02}/{} às {:02}:{:02}",
-        now.day(),
-        now.month0(),
-        now.year(),
-        now.hour(),
-        now.minute()
-    );
-
-    worksheet
-        .merge_range(
-            current_row,
-            1,
-            current_row,
-            3,
-            &format!("Emitido em {}", data_formatada),
-            &format_filters(),
-        )
-        .unwrap();
-    let meio = last_table / 2;
-    if meio - 1 != 3 {
-        worksheet
-            .merge_range(
-                current_row,
-                (meio as u16) - 1,
-                current_row,
-                (meio as u16) + 1 as u16,
-                "www.datasetsistemas.com.br",
-                &&Format::new().set_align(FormatAlign::Center),
-            )
-            .unwrap();
-
-        workbook.save_to_buffer().unwrap()
-    } else {
-        worksheet
-            .merge_range(
-                current_row,
-                meio as u16,
-                current_row,
-                (meio as u16) + 2 as u16,
-                "www.datasetsistemas.com.br",
-                &&Format::new().set_align(FormatAlign::Center),
-            )
-            .unwrap();
-
-        workbook.save_to_buffer().unwrap()
-    }
+    workbook.save_to_buffer().unwrap()
 }
 
 //=====================================================================
@@ -345,19 +388,55 @@ fn render_table(
     header_border: FormatBorder,
 ) -> u32 {
     let mut row = start_row;
-    row = render_table_header(
-        worksheet,
-        table,
-        row,
-        row_height,
-        header_bg,
-        header_fg,
-        header_border,
-    );
+    if let Some(table_header) = &table.table_header {
+        row = render_table_header(
+            worksheet,
+            table,
+            row,
+            row_height,
+            header_bg,
+            header_fg,
+            header_border,
+        );
+    }
     row = render_table_rows(
         worksheet, table, row, dataset, row_height, zebra_bg, zebra_fg, row_bg, row_fg,
     );
-    row = render_totals_rows(worksheet, table, row, dataset);
+    //verifico se soma algo para poder printar totais
+    if let Some(table_header) = &table.table_header {
+        if table_header.iter().any(|f| f.sum.unwrap_or(false) == true) {
+            row = render_totals_rows(worksheet, table, row, dataset);
+        }
+    }
+    let dataset_len = dataset.len();
+    //mostrar quantidade de registros
+    if dataset_len > 0 {
+        row += 1;
+        let last_col = table
+            .table_header
+            .as_ref()
+            .and_then(|header| header.last())
+            .map(|col| col.cols[1])
+            .or_else(|| {
+                table
+                    .childrens
+                    .as_ref()
+                    .and_then(|childrens| childrens.first())
+                    .map(|c| c.table_header.last().map(|ch| ch.cols[1]).unwrap_or(10))
+            })
+            .unwrap_or(10);
+        worksheet
+            .merge_range(
+                row,
+                1,
+                row,
+                last_col as u16,
+                &format!("Registros {}", dataset_len.to_string()),
+                &format_filters(),
+            )
+            .unwrap();
+    }
+
     row
 }
 
@@ -370,37 +449,39 @@ pub fn render_table_header(
     header_fg: u32,
     header_border: FormatBorder,
 ) -> u32 {
-    for column in &table.table_header {
-        worksheet.set_row_height(row, row_height).unwrap();
+    if let Some(table_header) = &table.table_header {
+        for column in table_header {
+            worksheet.set_row_height(row, row_height).unwrap();
 
-        let [start, end] = column.cols;
-        let align = column.header_align.as_deref().unwrap_or("center");
-        if start == end {
-            worksheet
-                .write_with_format(
-                    row,
-                    start as u16,
-                    &column.prefix,
-                    &table_header_format(align)
-                        .set_background_color(header_bg)
-                        .set_font_color(header_fg)
-                        .set_border(header_border),
-                )
-                .unwrap();
-        } else {
-            worksheet
-                .merge_range(
-                    row,
-                    start as u16,
-                    row,
-                    end as u16,
-                    &column.prefix,
-                    &table_header_format(align)
-                        .set_background_color(header_bg)
-                        .set_font_color(header_fg)
-                        .set_border(header_border),
-                )
-                .unwrap();
+            let [start, end] = column.cols;
+            let align = column.header_align.as_deref().unwrap_or("center");
+            if start == end {
+                worksheet
+                    .write_with_format(
+                        row,
+                        start as u16,
+                        &column.prefix,
+                        &table_header_format(align)
+                            .set_background_color(header_bg)
+                            .set_font_color(header_fg)
+                            .set_border(header_border),
+                    )
+                    .unwrap();
+            } else {
+                worksheet
+                    .merge_range(
+                        row,
+                        start as u16,
+                        row,
+                        end as u16,
+                        &column.prefix,
+                        &table_header_format(align)
+                            .set_background_color(header_bg)
+                            .set_font_color(header_fg)
+                            .set_border(header_border),
+                    )
+                    .unwrap();
+            }
         }
     }
 
@@ -422,81 +503,60 @@ fn render_table_rows(
 
     for (index, item) in dataset.iter().enumerate() {
         worksheet.set_row_height(row, row_height).unwrap();
-        for column in &table.table_header {
-            let [start_col, end_col] = column.cols;
+        if let Some(table_header) = &table.table_header {
+            for column in table_header {
+                let [start_col, end_col] = column.cols;
 
-            let align = column.align.as_deref().unwrap_or("center");
+                let align = column.align.as_deref().unwrap_or("center");
 
-            let format = if index % 2 == 0 {
-                table_row_even_format(align)
-                    .set_background_color(row_bg)
-                    .set_font_color(row_fg)
-            } else {
-                table_row_odd_format(align)
-                    .set_background_color(zebra_bg)
-                    .set_font_color(zebra_fg)
-            };
-            // web_sys::console::log_1(&"Estou debugando....".into());
-            let value = item.get(&column.key);
-
-            // web_sys::console::log_1(&format!("campo={} valor={:?}", column.key, value).into());
-
-            if start_col == end_col {
-                match value {
-                    Some(Value::Number(num)) => {
-                        // web_sys::console::log_1(&"Caindo aqui 01".into());
-                        let new_format = format.set_num_format("#,##0.00");
-                        worksheet
-                            .write_number_with_format(
-                                row,
-                                start_col as u16,
-                                num.as_f64().unwrap_or(0.0),
-                                &new_format,
-                            )
-                            .unwrap();
-                    }
-
-                    Some(Value::String(text)) => {
-                        // web_sys::console::log_1(&"Caindo aqui 02".into());
-                        worksheet
-                            .write_with_format(row, start_col as u16, text, &format)
-                            .unwrap();
-                    }
-
-                    Some(Value::Bool(v)) => {
-                        // web_sys::console::log_1(&"Caindo aqui 03".into());
-                        worksheet
-                            .write_with_format(row, start_col as u16, &v.to_string(), &format)
-                            .unwrap();
-                    }
-
-                    Some(Value::Null) | None => {}
-
-                    Some(other) => {
-                        // web_sys::console::log_1(&"Caindo aqui 04".into());
-                        worksheet
-                            .write_with_format(row, start_col as u16, &other.to_string(), &format)
-                            .unwrap();
-                    }
-                }
-            } else {
-                let text = match value {
-                    Some(Value::String(v)) => v.clone(),
-                    Some(v) => v.to_string(),
-                    None => String::new(),
+                let format = if index % 2 == 0 {
+                    table_row_even_format(align)
+                        .set_background_color(row_bg)
+                        .set_font_color(row_fg)
+                } else {
+                    table_row_odd_format(align)
+                        .set_background_color(zebra_bg)
+                        .set_font_color(zebra_fg)
                 };
+                // web_sys::console::log_1(&"Estou debugando....".into());
+                let value = item.get(&column.key);
+                let formated_value = apply_mask(
+                    value.unwrap_or_default(),
+                    &column.mask.as_ref().unwrap_or(&"nenhum".to_string()),
+                );
 
-                worksheet
-                    .merge_range(row, start_col as u16, row, end_col as u16, &text, &format)
-                    .unwrap();
+                // web_sys::console::log_1(&format!("campo={} valor={:?}", column.key, value).into());
+
+                if start_col == end_col {
+                    worksheet
+                        .write_with_format(row, start_col as u16, formated_value, &format)
+                        .unwrap();
+                } else {
+                    worksheet
+                        .merge_range(
+                            row,
+                            start_col as u16,
+                            row,
+                            end_col as u16,
+                            &formated_value,
+                            &format,
+                        )
+                        .unwrap();
+                }
             }
         }
 
         row += 1;
-        web_sys::console::log_1(&"teste etttt".into());
+
         //verifico se não tem itens
         if let Some(childrens) = &table.childrens {
             for c in childrens {
+                let pre_header_path = if let Some(path) = &c.pre_header_path {
+                    item.get(path).map(|v| apply_mask(v, "string"))
+                } else {
+                    None
+                };
+
                 if let Some(value) = item.get(&c.path) {
                     if value.is_array() {
                         row = render_children(
@@ -504,12 +564,14 @@ fn render_table_rows(
                             worksheet,
                             value.as_array().unwrap(),
                             &c.table_header,
+                            c.margin_top.unwrap_or(0),
+                            c.margin_bottom.unwrap_or(3),
+                            &c.pre_header,
+                            &pre_header_path,
                         );
                     }
                 }
             }
-        } else {
-            web_sys::console::log_1(&"Não tem itens".into());
         }
     }
 
@@ -521,8 +583,50 @@ fn render_children(
     worksheet: &mut Worksheet,
     dataset: &Vec<Value>,
     table_header: &Vec<ExcelTableColumn>,
+    margin_top: u8,
+    margin_bottom: u8,
+    pre_header: &Option<String>,
+    pre_header_path: &Option<String>,
 ) -> u32 {
     let mut current_row = row;
+
+    if margin_top > 0 {
+        current_row += margin_top as u32;
+    }
+
+    //renderizo o pre header
+    if let Some(pre_header) = pre_header {
+        let first_col = table_header.first().as_deref().unwrap().cols[0];
+        let last_col = table_header.last().as_deref().unwrap().cols[1];
+        worksheet
+            .merge_range(
+                current_row,
+                first_col as u16,
+                current_row,
+                last_col as u16,
+                pre_header,
+                &Format::new().set_bold(),
+            )
+            .unwrap();
+        current_row += 1;
+    }
+    if let Some(header_path) = pre_header_path {
+        let first_col = table_header.first().as_deref().unwrap().cols[0];
+        let last_col = table_header.last().as_deref().unwrap().cols[1];
+
+        worksheet
+            .merge_range(
+                current_row,
+                first_col as u16,
+                current_row,
+                last_col as u16,
+                header_path,
+                &Format::new().set_bold(),
+            )
+            .unwrap();
+        current_row += 1;
+    }
+
     //renderizar o header do children
     for t in table_header {
         if is_same_col(t.cols[0], t.cols[1]) {
@@ -561,7 +665,7 @@ fn render_children(
                         .write_with_format(
                             current_row,
                             t.cols[0] as u16,
-                            &value.to_string(),
+                            apply_mask(value, t.mask.as_ref().unwrap_or(&"Nenhum".to_string())),
                             &table_row_even_format(
                                 &t.align.as_deref().unwrap_or(&"center".to_string()),
                             ),
@@ -574,7 +678,7 @@ fn render_children(
                             t.cols[0] as u16,
                             current_row,
                             t.cols[1] as u16,
-                            &value.to_string(),
+                            &apply_mask(value, t.mask.as_ref().unwrap_or(&"Nenhum".to_string())),
                             &table_row_even_format(
                                 &t.align.as_deref().unwrap_or(&"center".to_string()),
                             ),
@@ -601,7 +705,7 @@ fn render_children(
                     .write_with_format(
                         current_row,
                         t.cols[0] as u16,
-                        soma.to_string(),
+                        apply_mask_f64(soma, t.mask.as_ref().unwrap_or(&"Nenhum".to_string())),
                         &table_row_totals_format(
                             &t.align.as_deref().unwrap_or(&"center".to_string()),
                         ),
@@ -614,7 +718,7 @@ fn render_children(
                         t.cols[0] as u16,
                         current_row,
                         t.cols[1] as u16,
-                        &soma.to_string(),
+                        &apply_mask_f64(soma, t.mask.as_ref().unwrap_or(&"Nenhum".to_string())),
                         &table_row_totals_format(
                             &t.align.as_deref().unwrap_or(&"center".to_string()),
                         ),
@@ -624,7 +728,7 @@ fn render_children(
         }
     }
 
-    current_row + 4
+    current_row + margin_bottom as u32
 }
 
 fn render_totals_rows(
@@ -633,29 +737,17 @@ fn render_totals_rows(
     row: u32,
     dataset: &Vec<Value>,
 ) -> u32 {
-    for (index, column) in table.table_header.iter().enumerate() {
-        if index == 0 && column.sum.unwrap_or(false) == false {
-            //primeiro index não soma , entao vou colocar nome total
-
-            worksheet
-                .merge_range(
-                    row,
-                    column.cols[0] as u16,
-                    row,
-                    column.cols[1] as u16,
-                    "TOTAL",
-                    &table_row_totals_format("left"),
-                )
-                .unwrap();
-        } else {
-            if column.sum.unwrap_or(false) == false {
-                if column.cols[0] == column.cols[1] {
+    if let Some(table_header) = &table.table_header {
+        for (index, column) in table_header.iter().enumerate() {
+            if index == 0 && column.sum.unwrap_or(false) == false {
+                //primeiro index não soma , entao vou colocar nome total
+                if is_same_col(column.cols[0], column.cols[1]) {
                     worksheet
                         .write_with_format(
                             row,
                             column.cols[0] as u16,
-                            " ",
-                            &table_row_totals_format(&column.align.as_deref().unwrap_or("center")),
+                            "TOTAL",
+                            &table_row_totals_format("left"),
                         )
                         .unwrap();
                 } else {
@@ -665,36 +757,68 @@ fn render_totals_rows(
                             column.cols[0] as u16,
                             row,
                             column.cols[1] as u16,
-                            " ",
-                            &table_row_totals_format(&column.align.as_deref().unwrap_or("center")),
+                            "TOTAL",
+                            &table_row_totals_format("left"),
                         )
                         .unwrap();
                 }
             } else {
-                let sum_result: f64 = dataset
-                    .iter()
-                    .filter_map(|item| item.get(&column.key).and_then(|v| v.as_f64()))
-                    .sum();
-                if column.cols[0] == column.cols[1] {
-                    worksheet
-                        .write_with_format(
-                            row,
-                            column.cols[0] as u16,
-                            &sum_result.to_string(),
-                            &table_row_totals_format(&column.align.as_deref().unwrap_or("center")),
-                        )
-                        .unwrap();
+                if column.sum.unwrap_or(false) == false {
+                    if column.cols[0] == column.cols[1] {
+                        worksheet
+                            .write_with_format(
+                                row,
+                                column.cols[0] as u16,
+                                " ",
+                                &table_row_totals_format(
+                                    &column.align.as_deref().unwrap_or("center"),
+                                ),
+                            )
+                            .unwrap();
+                    } else {
+                        worksheet
+                            .merge_range(
+                                row,
+                                column.cols[0] as u16,
+                                row,
+                                column.cols[1] as u16,
+                                " ",
+                                &table_row_totals_format(
+                                    &column.align.as_deref().unwrap_or("center"),
+                                ),
+                            )
+                            .unwrap();
+                    }
                 } else {
-                    worksheet
-                        .merge_range(
-                            row,
-                            column.cols[0] as u16,
-                            row,
-                            column.cols[1] as u16,
-                            &sum_result.to_string(),
-                            &table_row_totals_format(&column.align.as_deref().unwrap_or("center")),
-                        )
-                        .unwrap();
+                    let sum_result: f64 = dataset
+                        .iter()
+                        .filter_map(|item| item.get(&column.key).and_then(|v| v.as_f64()))
+                        .sum();
+                    if column.cols[0] == column.cols[1] {
+                        worksheet
+                            .write_with_format(
+                                row,
+                                column.cols[0] as u16,
+                                &apply_mask_f64(sum_result, &"monetary".to_string()),
+                                &table_row_totals_format(
+                                    &column.align.as_deref().unwrap_or("center"),
+                                ),
+                            )
+                            .unwrap();
+                    } else {
+                        worksheet
+                            .merge_range(
+                                row,
+                                column.cols[0] as u16,
+                                row,
+                                column.cols[1] as u16,
+                                &apply_mask_f64(sum_result, &"monetary".to_string()),
+                                &table_row_totals_format(
+                                    &column.align.as_deref().unwrap_or("center"),
+                                ),
+                            )
+                            .unwrap();
+                    }
                 }
             }
         }
@@ -731,12 +855,20 @@ fn parse_border_style(value: &str) -> Option<FormatBorder> {
     }
 }
 
-fn apply_mask(value: f64, mask: &str) -> String {
+fn apply_mask(value: &Value, mask: &str) -> String {
+    let clean_value = match value {
+        Value::Null => "".to_string(),
+        Value::String(s) => s.clone(),
+        Value::Number(n) => n.to_string(),
+        Value::Bool(b) => b.to_string(),
+        _ => value.to_string().replace('"', ""),
+    };
+
     match mask {
         "monetary" => {
-            let int_part = value.trunc() as i64;
-            let dec_part = ((value.abs() - value.trunc().abs()) * 100.0).round() as i64;
-
+            let num = value.as_f64().unwrap_or(0.0);
+            let int_part = num.trunc() as i64;
+            let dec_part = ((num.abs() - num.trunc().abs()) * 100.0).round() as i64;
             let formatted_int = int_part
                 .abs()
                 .to_string()
@@ -750,16 +882,119 @@ fn apply_mask(value: f64, mask: &str) -> String {
                 .chars()
                 .rev()
                 .collect::<String>();
+            let sign = if int_part < 0 { "-" } else { "" };
+            format!("R$ {}{},{:02}", sign, formatted_int, dec_part)
+        }
+        "percent" => {
+            let num = value.as_f64().unwrap_or(0.0);
+            format!("{:.1}%", num * 100.0)
+        }
+        "number" => {
+            let num = value.as_f64().unwrap_or(0.0);
 
+            format!("{:.0}", num)
+        }
+        "number-3" => {
+            let num = value.as_f64().unwrap_or(0.0);
+
+            format!("{:.3}", num)
+        }
+        "decimal" => {
+            let num = value.as_f64().unwrap_or(0.0);
+            let int_part = num.trunc() as i64;
+            let dec_part = ((num.abs() - num.trunc().abs()) * 100.0).round() as i64;
+            let formatted_int = int_part
+                .abs()
+                .to_string()
+                .chars()
+                .rev()
+                .collect::<Vec<_>>()
+                .chunks(3)
+                .map(|c| c.iter().collect::<String>())
+                .collect::<Vec<_>>()
+                .join(".")
+                .chars()
+                .rev()
+                .collect::<String>();
+            let sign = if int_part < 0 { "-" } else { "" };
+            format!("{}{},{:02}", sign, formatted_int, dec_part)
+        }
+        "milhar" => {
+            let num = value.as_f64().unwrap_or(0.0);
+            let rounded = num.round() as i64;
+            let formatted = rounded
+                .abs()
+                .to_string()
+                .chars()
+                .rev()
+                .collect::<Vec<_>>()
+                .chunks(3)
+                .map(|c| c.iter().collect::<String>())
+                .collect::<Vec<_>>()
+                .join(".")
+                .chars()
+                .rev()
+                .collect::<String>();
+            if rounded < 0 {
+                format!("-{}", formatted)
+            } else {
+                formatted
+            }
+        }
+        "date" => {
+            if let Some(s) = value.as_str() {
+                parse_and_format_date(s, "%d/%m/%Y")
+            } else {
+                clean_value
+            }
+        }
+        "datetime" => {
+            if let Some(s) = value.as_str() {
+                parse_and_format_date(s, "%d/%m/%Y %H:%M:%S")
+            } else {
+                clean_value
+            }
+        }
+        "time" => {
+            if let Some(s) = value.as_str() {
+                parse_and_format_date(s, "%H:%M:%S")
+            } else {
+                clean_value
+            }
+        }
+        _ => clean_value,
+    }
+}
+
+fn apply_mask_f64(value: f64, mask: &str) -> String {
+    match mask {
+        "monetary" => {
+            let int_part = value.trunc() as i64;
+            let dec_part = ((value.abs() - value.trunc().abs()) * 100.0).round() as i64;
+            let formatted_int = int_part
+                .abs()
+                .to_string()
+                .chars()
+                .rev()
+                .collect::<Vec<_>>()
+                .chunks(3)
+                .map(|c| c.iter().collect::<String>())
+                .collect::<Vec<_>>()
+                .join(".")
+                .chars()
+                .rev()
+                .collect::<String>();
             let sign = if int_part < 0 { "-" } else { "" };
             format!("R$ {}{},{:02}", sign, formatted_int, dec_part)
         }
         "percent" => format!("{:.1}%", value * 100.0),
         "number" => format!("{:.0}", value),
+        "number-3" => {
+            format!("{:.3}", value)
+        }
         "decimal" => {
             let int_part = value.trunc() as i64;
             let dec_part = ((value.abs() - value.trunc().abs()) * 100.0).round() as i64;
-
             let formatted_int = int_part
                 .abs()
                 .to_string()
@@ -773,9 +1008,8 @@ fn apply_mask(value: f64, mask: &str) -> String {
                 .chars()
                 .rev()
                 .collect::<String>();
-
             let sign = if int_part < 0 { "-" } else { "" };
-            format!("{}{},{}", sign, formatted_int, dec_part) // 👈 VÍRGULA aqui!
+            format!("{}{},{:02}", sign, formatted_int, dec_part)
         }
         "milhar" => {
             let rounded = value.round() as i64;
@@ -792,7 +1026,6 @@ fn apply_mask(value: f64, mask: &str) -> String {
                 .chars()
                 .rev()
                 .collect::<String>();
-
             if rounded < 0 {
                 format!("-{}", formatted)
             } else {
@@ -802,6 +1035,36 @@ fn apply_mask(value: f64, mask: &str) -> String {
         _ => value.to_string(),
     }
 }
+
+fn parse_and_format_date(date_str: &str, format_str: &str) -> String {
+    // Tenta parsear como ISO 8601 (com T e Z)
+    if let Ok(dt) = DateTime::parse_from_rfc3339(date_str) {
+        return dt.format(format_str).to_string();
+    }
+
+    if let Ok(dt) = DateTime::<Utc>::from_str(date_str) {
+        return dt.format(format_str).to_string();
+    }
+
+    // Tenta parsear como NaiveDateTime (sem timezone)
+    if let Ok(dt) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S") {
+        return dt.format(format_str).to_string();
+    }
+
+    // Tenta parsear como NaiveDateTime com milissegundos
+    if let Ok(dt) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S%.f") {
+        return dt.format(format_str).to_string();
+    }
+
+    // Tenta parsear como data simples
+    if let Ok(d) = NaiveDate::parse_from_str(date_str, "%Y-%m-%d") {
+        return d.format(format_str).to_string();
+    }
+
+    // Se nada funcionar, retorna o original
+    date_str.to_string()
+}
+
 fn hex_to_rgb(hex: &str) -> Option<u32> {
     let hex = hex.trim_start_matches('#');
     if hex.len() == 6 {

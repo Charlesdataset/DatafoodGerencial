@@ -1,19 +1,11 @@
-import {
-  EntradaNFAgrupadoPor,
-  type EntradaNFOrderBy,
-} from '../../pages/Relatorios/types/relatorios.types';
+import { EntradaNFAgrupadoPor, type EntradaNFOrderBy } from '../../pages/Relatorios/types/relatorios.types';
 import type { ComponentV3, ReportV3 } from '../../types/v3.types';
 import { getImageBase64FromPath, maskCnpj, maskCpf } from '../../utils/format';
 import { gerarRelatorioPdfV3 } from '../../wasm/pdfium_generator';
-import {
-  formatFiltersForHeader,
-  formatPeriod,
-  type FilterConfig,
-} from '../utils/filterFormatter';
+import { formatFiltersForHeader, formatPeriod, type FilterConfig } from '../utils/filterFormatter';
 
 const formatCurrency = (value: number | string) => {
-  const num =
-    typeof value === 'number' ? value : Number(String(value).replace(',', '.'));
+  const num = typeof value === 'number' ? value : Number(String(value).replace(',', '.'));
   if (Number.isNaN(num)) return String(value);
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -76,10 +68,7 @@ const handleReportNotaEntrada = async (
     filterConfigs.push({ label: 'Pesquisa', values: [filters.pesquisa] });
   }
 
-  const periodLabel = formatPeriod(
-    filters?.dataInicial ?? null,
-    filters?.dataFinal ?? null,
-  );
+  const periodLabel = formatPeriod(filters?.dataInicial ?? null, filters?.dataFinal ?? null);
   if (periodLabel) {
     filterConfigs.push({
       label: 'Período',
@@ -89,22 +78,9 @@ const handleReportNotaEntrada = async (
   }
 
   if (filters?.valorInicial != null || filters?.valorFinal != null) {
-    const initial =
-      filters?.valorInicial != null
-        ? formatCurrency(filters.valorInicial)
-        : undefined;
-    const final =
-      filters?.valorFinal != null
-        ? formatCurrency(filters.valorFinal)
-        : undefined;
-    const valorLabel =
-      initial && final
-        ? `${initial} a ${final}`
-        : initial
-        ? `>= ${initial}`
-        : final
-        ? `<= ${final}`
-        : '';
+    const initial = filters?.valorInicial != null ? formatCurrency(filters.valorInicial) : undefined;
+    const final = filters?.valorFinal != null ? formatCurrency(filters.valorFinal) : undefined;
+    const valorLabel = initial && final ? `${initial} a ${final}` : initial ? `>= ${initial}` : final ? `<= ${final}` : '';
     if (valorLabel) {
       filterConfigs.push({
         label: 'Valor',
@@ -132,8 +108,7 @@ const handleReportNotaEntrada = async (
     });
   }
 
-  const filtrosHeader =
-    filterConfigs.length > 0 ? formatFiltersForHeader(filterConfigs, 180) : '';
+  const filtrosHeader = filterConfigs.length > 0 ? formatFiltersForHeader(filterConfigs, 180) : '';
 
   const json: ReportV3 = {
     pageConfiguration: {
@@ -281,8 +256,7 @@ const handleReportNotaEntrada = async (
       {
         type: 'table',
         headerBackgroundColor: '#404040',
-        zebraBackgroundColor: '#202020',
-        zebraTextColor: '#FFFFFF',
+
         ...(exibeItens
           ? {
               items: {
@@ -382,14 +356,8 @@ const handleReportNotaEntrada = async (
         ...(agrupadoPor !== EntradaNFAgrupadoPor.NENHUM
           ? {
               grouping: {
-                groupBy:
-                  agrupadoPor === EntradaNFAgrupadoPor.FORNECEDOR
-                    ? 'fornecedor'
-                    : 'entrada',
-                groupHeaderMask:
-                  agrupadoPor === EntradaNFAgrupadoPor.DATA_ENTRADA
-                    ? 'date'
-                    : undefined,
+                groupBy: agrupadoPor === EntradaNFAgrupadoPor.FORNECEDOR ? 'fornecedor' : 'entrada',
+                groupHeaderMask: agrupadoPor === EntradaNFAgrupadoPor.DATA_ENTRADA ? 'date' : undefined,
                 gap: 40,
                 subtotal: true,
               },
@@ -472,8 +440,7 @@ const handleReportNotaEntrada = async (
     filtros_header: filtrosHeader,
     data_geracao: new Date().toLocaleDateString('pf-BR'),
     empresa: companyInfo?.nomeCli ?? '',
-    cnpj:
-      rawCnpj.length > 11 ? maskCnpj(rawCnpj) : rawCnpj ? maskCpf(rawCnpj) : '',
+    cnpj: rawCnpj.length > 11 ? maskCnpj(rawCnpj) : rawCnpj ? maskCpf(rawCnpj) : '',
 
     currDate: new Date().toLocaleDateString('pt-BR'),
     logoSistema: imageBase64,

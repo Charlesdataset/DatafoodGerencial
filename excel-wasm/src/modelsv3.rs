@@ -76,11 +76,13 @@ pub struct TableComponent {
     pub dataset_name: String,
 
     #[serde(rename = "tableHeader")]
-    pub table_header: Vec<ExcelTableColumn>,
+    pub table_header: Option<Vec<ExcelTableColumn>>,
     pub grouping: Option<GroupingConfig>,
     #[serde(rename = "summaryBox")]
     pub summary_box: Option<SummaryBox>,
     pub childrens: Option<Vec<ChildremTable>>,
+    #[serde(rename = "sheetName")]
+    pub sheet_name: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -89,7 +91,11 @@ pub struct ChildremTable {
     #[serde(rename = "tableHeader")]
     pub table_header: Vec<ExcelTableColumn>,
     pub grouping: Option<GroupingConfig>,
+    #[serde(rename = "preHeader")]
     pub pre_header: Option<String>,
+
+    #[serde(rename = "preHeaderPath")]
+    pub pre_header_path: Option<String>,
     #[serde(rename = "marginTop")]
     pub margin_top: Option<u8>,
     #[serde(rename = "marginBottom")]

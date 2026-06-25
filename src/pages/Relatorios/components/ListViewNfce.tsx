@@ -4,7 +4,7 @@ import {
     faDollar,
     faFileExcel,
     faFilePdf,
-    faPrint,
+    faPrint
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type React from "react";
@@ -20,16 +20,16 @@ import TextBox from "../../../components/Inputs/TextBox/TextBox";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import Fluid from "../../../components/Layout/Fluid";
 
+import dayjs from "dayjs";
 import { toast } from "react-toastify";
 import { Flex } from "../../../components/Layout";
 import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
+import handleGenerateNfceExcelReport from "../../../reports/nfce/nfce.excel.report";
 import handleReportNfce from "../../../reports/nfce/nfce.report";
 import { api } from "../../../services/api";
-import type { TableHeaderDef } from "../../../types/v3.types";
-import { exportToExcel } from "../../../utils/exportToExcel";
 import { NfceAgrupadoPor } from "../types/relatorios.types";
 import { InfoCard } from "./InfoCard";
 
@@ -60,7 +60,7 @@ interface NfceTotais {
 }
 
 const ListViewNfce: React.FC = () => {
-    const { dataInicial, dataFinal, companyInfo, currLogoRelatorio } = useApp();
+    const { dataInicial, dataFinal, companyInfo, currLogoRelatorio, primaryColor } = useApp();
     const [nfceReport, setNfceReport] = useState([]);
     const [data, setData] = useState<Array<Nfce>>([]);
 
@@ -106,6 +106,7 @@ const ListViewNfce: React.FC = () => {
 
             }
 
+
             const res = await api.get("nfce", {
                 params: params,
             });
@@ -143,194 +144,9 @@ const ListViewNfce: React.FC = () => {
         }
     }
 
-    const buildNfceFetchParams = () => ({
-        limit: Number(limit),
-        offset: Number(offset),
 
-        textSerach: textSearch || undefined,
 
-        status: status || undefined,
 
-        valorInicial:
-            valorInicial !== ""
-                ? Number(valorInicial)
-                : undefined,
-
-        valorFinal:
-            valorFinal !== ""
-                ? Number(valorFinal)
-                : undefined,
-
-        saidaInicial:
-            saidaInicial?.toISOString(),
-
-        saidaFinal:
-            saidaFinal?.toISOString(),
-
-        exibirItens,
-    });
-
-    const formatDateForExcel = (value: unknown) => {
-        if (value == null) return "";
-        const date = value instanceof Date ? value : new Date(String(value).replace(" ", "T"));
-        if (Number.isNaN(date.getTime())) return String(value);
-        return date.toLocaleDateString("pt-BR");
-    };
-
-    const buildNfceExcelPayload = (
-        rows: Nfce[],
-        agrupadoPor: NfceAgrupadoPor,
-        exibirItensExport: boolean,
-    ) => {
-        const groupBy =
-            agrupadoPor === NfceAgrupadoPor.Cliente ? 'cliente' :
-                agrupadoPor === NfceAgrupadoPor.DataEmissao ? 'dataEmissao' :
-                    agrupadoPor === NfceAgrupadoPor.DataSaida ? 'dataSaida' :
-                        agrupadoPor === NfceAgrupadoPor.Status ? 'status' :
-                            agrupadoPor === NfceAgrupadoPor.DataRecebimento ? 'dataEmissao' :
-                                undefined;
-
-        const groupPrefix =
-            agrupadoPor === NfceAgrupadoPor.Cliente ? 'Cliente: ' :
-                agrupadoPor === NfceAgrupadoPor.DataEmissao ? 'Emissão: ' :
-                    agrupadoPor === NfceAgrupadoPor.DataSaida ? 'Saída: ' :
-                        agrupadoPor === NfceAgrupadoPor.Status ? 'Status: ' :
-                            agrupadoPor === NfceAgrupadoPor.DataRecebimento ? 'Recebimento: ' :
-                                '';
-
-        const formattedRows = rows.map((row) => ({
-            ...row,
-            dataEmissao: formatDateForExcel(row.dataEmissao),
-            dataSaida: formatDateForExcel(row.dataSaida),
-        }));
-
-        const sortedRows = groupBy
-            ? [...formattedRows].sort((a, b) => {
-                const aGroup = String(a[groupBy] ?? "");
-                const bGroup = String(b[groupBy] ?? "");
-                const groupCompare = aGroup.localeCompare(bGroup, "pt-BR", { sensitivity: "base" });
-                if (groupCompare !== 0) return groupCompare;
-                return Number(a.numero ?? 0) - Number(b.numero ?? 0);
-            })
-            : formattedRows;
-
-        const totalsAccumulator = () => ({
-            valorProdutos: 0,
-            vlrTotal: 0,
-        });
-
-        const sumRowTotals = (source: any, target: any) => {
-            target.valorProdutos += Number(source.valorProdutos ?? 0);
-            target.vlrTotal += Number(source.vlrTotal ?? 0);
-        };
-
-        const output: any[] = [];
-        const globalTotals = totalsAccumulator();
-        let currentGroupKey: string | null = null;
-        let currentGroupTotals = totalsAccumulator();
-
-        const pushGroupTotal = (groupKey: string) => {
-            output.push({
-                __rowType: 'subtotal',
-                numero: 'Subtotal',
-                cliente: groupBy === 'cliente' ? groupKey : '',
-                status: groupBy === 'status' ? groupKey : '',
-                dataEmissao: groupBy === 'dataEmissao' ? groupKey : '',
-                dataSaida: groupBy === 'dataSaida' ? groupKey : '',
-                valorProdutos: currentGroupTotals.valorProdutos,
-                vlrTotal: currentGroupTotals.vlrTotal,
-                produto: '',
-                qtd: '',
-                valorTotalItem: '',
-                ...(groupBy ? { [groupBy]: groupKey } : {}),
-            });
-        };
-
-        for (const row of sortedRows) {
-            const groupKey = groupBy ? String(row[groupBy] ?? '') : '';
-            if (groupBy && currentGroupKey !== null && groupKey !== currentGroupKey) {
-                pushGroupTotal(currentGroupKey);
-                currentGroupTotals = totalsAccumulator();
-            }
-            if (groupBy && currentGroupKey === null) {
-                currentGroupKey = groupKey;
-            }
-            if (groupBy && currentGroupKey !== groupKey) {
-                currentGroupKey = groupKey;
-            }
-
-            output.push({
-                ...row,
-                produto: undefined,
-                qtd: undefined,
-                valorTotalItem: undefined,
-                __rowType: 'note',
-                ...(groupBy ? { [groupBy]: groupKey } : {}),
-            });
-
-            sumRowTotals(row, currentGroupTotals);
-            sumRowTotals(row, globalTotals);
-
-            if (exibirItensExport && row.itens?.length) {
-                output.push({
-                    numero: '',
-                    cliente: '',
-                    status: '',
-                    dataEmissao: '',
-                    dataSaida: '',
-                    valorProdutos: '',
-                    vlrTotal: '',
-                    produto: 'Produto',
-                    qtd: 'Quantidade',
-                    valorTotalItem: 'Valor Item',
-                    __rowType: 'itemHeader',
-                    ...(groupBy ? { [groupBy]: groupKey } : {}),
-                });
-
-                for (const item of row.itens) {
-                    output.push({
-                        numero: '',
-                        cliente: '',
-                        status: '',
-                        dataEmissao: '',
-                        dataSaida: '',
-                        valorProdutos: '',
-                        vlrTotal: '',
-                        produto: item.produto,
-                        qtd: item.qtd,
-                        valorTotalItem: item.valorTotal,
-                        __rowType: 'item',
-                        ...(groupBy ? { [groupBy]: groupKey } : {}),
-                    });
-                }
-            }
-        }
-
-        if (groupBy && currentGroupKey !== null) {
-            pushGroupTotal(currentGroupKey);
-        }
-
-        output.push({
-            __rowType: 'summary',
-            numero: 'TOTAL GERAL',
-            cliente: '',
-            status: '',
-            dataEmissao: '',
-            dataSaida: '',
-            valorProdutos: globalTotals.valorProdutos,
-            vlrTotal: globalTotals.vlrTotal,
-            produto: '',
-            qtd: '',
-            valorTotalItem: '',
-            ...(groupBy ? { [groupBy]: currentGroupKey ?? '' } : {}),
-        });
-
-        return {
-            data: output,
-            groupBy,
-            groupPrefix,
-        };
-    };
 
 
 
@@ -347,7 +163,7 @@ const ListViewNfce: React.FC = () => {
 
     const handleGeneratePdf = async () => {
         const params = {
-            textSerach: textSearch || undefined,
+            textSearch: textSearch || undefined,
             status: status || undefined,
             valorInicial:
                 valorInicial !== ""
@@ -395,51 +211,7 @@ const ListViewNfce: React.FC = () => {
             toast.info("Não foi possível encontrar dados para os filtros solicitados!")
         }
     }
-    const handleGenerateExcel = async () => {
-        const res = await api.get("nfce", {
-            params: buildNfceFetchParams(),
-        });
-        if (res?.status === 200) {
-            const nfces = res.data;
-            setNfceReport(nfces);
-            if (!nfces || nfces.length === 0) {
-                toast.info("Não foi possível encontrar dados para os filtros solicitados!")
-                return;
-            }
 
-            const { data: excelData, groupBy, groupPrefix } = buildNfceExcelPayload(nfces, agrupadoPor, exibirItens);
-            const excelColumns: TableHeaderDef[] = [
-                { key: 'numero', prefix: 'Nº Nota', align: 'center' },
-                { key: 'cliente', prefix: 'Cliente', align: 'left' },
-                { key: 'status', prefix: 'Status', align: 'center' },
-                { key: 'dataEmissao', prefix: 'Emissão', mask: 'date', align: 'center' },
-                { key: 'dataSaida', prefix: 'Saída', mask: 'date', align: 'center' },
-                { key: 'valorProdutos', prefix: 'Valor Produtos', mask: 'currency', align: 'right' },
-                { key: 'vlrTotal', prefix: 'Valor Total', mask: 'currency', align: 'right' },
-            ];
-
-            if (exibirItens) {
-                excelColumns.push(
-                    { key: 'produto', prefix: 'Produto', align: 'left' },
-                    { key: 'qtd', prefix: 'Quantidade', mask: 'number-3', align: 'right' },
-                    { key: 'valorTotalItem', prefix: 'Valor Item', mask: 'currency', align: 'right' },
-                );
-            }
-
-            await exportToExcel(excelData, excelColumns, {
-                fileName: 'nfce',
-                sheetName: 'NFCe',
-                logo: currLogoRelatorio,
-                title: 'Relatório NFCe',
-                subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
-                headerBackgroundColor: '#404040',
-                groupBy,
-                groupPrefix,
-            });
-        } else {
-            toast.info("Não foi possível encontrar dados para os filtros solicitados!")
-        }
-    }
 
     const columns: ExtendedColumnDef<Nfce>[] = [
         {
@@ -533,7 +305,56 @@ const ListViewNfce: React.FC = () => {
         },
     ];
 
+    const handleExcelReport = async () => {
+        const params = {
+            pesquisa: textSearch || undefined,
+            status: status,
+            valorInicial:
+                valorInicial !== ""
+                    ? Number(valorInicial)
+                    : undefined,
+            valorFinal:
+                valorFinal !== ""
+                    ? Number(valorFinal)
+                    : undefined,
+            saidaInicial:
+                saidaInicial?.toISOString(),
+            saidaFinal:
+                saidaFinal?.toISOString(),
+            exibirItens,
+            dataInicial: dataInicial,
+            dataFinal: dataFinal
+        }
 
+
+        const res = await api.get("nfce", {
+            params: params,
+        });
+        if (res?.status == 200) {
+            const bytes = await handleGenerateNfceExcelReport(
+                res.data,
+                agrupadoPor,
+                exibirItens,
+                companyInfo,
+                primaryColor,
+                currLogoRelatorio,
+                params,
+            );
+
+            const blob = new Blob([bytes as any], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            7;
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_nfces.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
+            a.click();
+        } else {
+            toast.info("Não encontramos dados para o filtro solicitado!")
+        }
+
+    }
 
     return (
         <>
@@ -580,7 +401,9 @@ const ListViewNfce: React.FC = () => {
                                 Cancelar
                             </Flex>
                         </FormButton>
-                        <FormButton className="justify-content-center" style={{ background: '#217145' }} onClick={handleGenerateExcel}>
+                        <FormButton className="justify-content-center" style={{ background: '#217145' }} onClick={() => {
+                            handleExcelReport();
+                        }}>
                             <Flex wrap="nowrap">
                                 <FontAwesomeIcon icon={faFileExcel} />
                                 Gerar Excel
@@ -705,6 +528,7 @@ const ListViewNfce: React.FC = () => {
                 offsets={80}
                 autoPageSizeOnDesktop
                 onPaginationChange={(newLimit, newOffset) => {
+                    console.log("Estamos te enviando", newLimit, newOffset)
                     setLimit(newLimit);
                     setOffset(newOffset);
                 }}
@@ -737,39 +561,13 @@ const ListViewNfce: React.FC = () => {
                 <PdfiumViewer
                     pdfUrl={url}
                     filename="relatorio_nfce"
-                    excelDataset={nfceReport.length > 0 ? (() => {
-                        const { data: excelData, groupBy, groupPrefix } = buildNfceExcelPayload(nfceReport, agrupadoPor, exibirItens);
-                        const columns: TableHeaderDef[] = [
-                            { key: 'numero', prefix: 'Nº Nota', align: 'center' },
-                            { key: 'cliente', prefix: 'Cliente', align: 'left' },
-                            { key: 'status', prefix: 'Status', align: 'center' },
-                            { key: 'dataEmissao', prefix: 'Emissão', mask: 'date', align: 'center' },
-                            { key: 'dataSaida', prefix: 'Saída', mask: 'date', align: 'center' },
-                            { key: 'valorProdutos', prefix: 'Valor Produtos', mask: 'currency', align: 'right' },
-                            { key: 'vlrTotal', prefix: 'Valor Total', mask: 'currency', align: 'right' },
-                        ];
-                        if (exibirItens) {
-                            columns.push(
-                                { key: 'produto', prefix: 'Produto', align: 'left' },
-                                { key: 'qtd', prefix: 'Quantidade', mask: 'number-3', align: 'right' },
-                                { key: 'valorTotalItem', prefix: 'Valor Item', mask: 'currency', align: 'right' },
-                            );
-                        }
-                        return {
-                            data: excelData,
-                            columns,
-                            fileName: 'nfce',
-                            sheetName: 'NFCe',
-                            logo: currLogoRelatorio,
-                            title: 'Relatório NFCe',
-                            subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
-                            headerBackgroundColor: '#404040',
-                            groupBy,
-                            groupPrefix,
-                        };
-                    })() : undefined}
+
                     onClose={() => {
                         setShowPreviewPdf(false)
+                    }}
+                    hasExcel
+                    onExcelClick={() => {
+                        handleExcelReport()
                     }}
                 />
             )}

@@ -8,6 +8,7 @@ import DataGrid from "../../../components/DataGrid/DataGrid";
 import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import Select from "../../../components/Inputs/Select/Select";
 
+import dayjs from "dayjs";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
@@ -17,9 +18,8 @@ import { useApp } from "../../../contexts/AppContext";
 import { useNavigation } from "../../../contexts/NavigationContext";
 import { ModeloRelatorio } from "../../../reports/cliente/client.report";
 import handleGenerateProductReport, { ProdutoAgrupadoPor } from "../../../reports/produto/produt.report";
+import handleGenerateProdutoExcelReport from "../../../reports/produto/produto.excel.report";
 import { api } from "../../../services/api";
-import type { TableHeaderDef } from "../../../types/v3.types";
-import { maskCnpj, maskCpf } from "../../../utils/format";
 
 
 const ListViewProduto: React.FC = () => {
@@ -34,7 +34,7 @@ const ListViewProduto: React.FC = () => {
     const [agrupado, setAgrupado] = useState<ProdutoAgrupadoPor>(ProdutoAgrupadoPor.Nenhum);
     const [tipo, setTipo] = useState<ModeloRelatorio>(ModeloRelatorio.Simplificado);
     const { subscribe } = useNavigation();
-    const { companyInfo, currLogoRelatorio } = useApp();
+    const { companyInfo, currLogoRelatorio, primaryColor } = useApp();
     useEffect(() => {
         const unsubscribeBackView = subscribe('backView', () => {
             // Lógica para voltar à tela anterior
@@ -147,7 +147,27 @@ const ListViewProduto: React.FC = () => {
 
 
     }
+    const handleExcelReport = async () => {
 
+        const bytes = await handleGenerateProdutoExcelReport(
+            dados,
+            agrupado,
+            tipo,
+            companyInfo,
+            primaryColor,
+            currLogoRelatorio
+        );
+
+        const blob = new Blob([bytes as any], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        7;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `relatorio_produtos.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
+        a.click();
+    }
 
     return (
         <>
@@ -229,56 +249,9 @@ const ListViewProduto: React.FC = () => {
                         URL.revokeObjectURL(url);
                         setUrl(null);
                     }}
-                    excelDataset={{
-                        data: dados,
-                        // Simplificado: colunas planas; Detalhado: multiData
-                        columns: tipo === ModeloRelatorio.Simplificado
-                            ? [
-                                { key: 'idProduto', prefix: 'Código' },
-                                { key: 'descricao', prefix: 'Descrição' },
-                                { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const, align: 'center' as const },
-                                { key: 'cest', prefix: 'Cest', align: 'center' as const },
-                                { key: 'custoAtual', prefix: 'Custo Atual', align: 'center' as const },
-                                { key: 'ncm', prefix: 'Ncm', align: 'center' as const },
-                                { key: 'ean1', prefix: 'Cod. Barra', align: 'center' as const },
-                            ] as TableHeaderDef[]
-                            : [] as TableHeaderDef[],
-                        fileName: 'produtos',
-                        sheetName: 'Produtos',
-                        logo: currLogoRelatorio,
-                        title: 'Relatório Produtos',
-                        subtitle: `${companyInfo?.cnpj
-                            ? (companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj))
-                            : ''
-                            }  ${companyInfo?.nomeCli ?? ''}`.trim(),
-                        headerBackgroundColor: '#404040',
-                        groupBy: agrupado !== ProdutoAgrupadoPor.Nenhum ? 'ncm' : undefined,
-                        groupPrefix: agrupado !== ProdutoAgrupadoPor.Nenhum ? 'NCM: ' : undefined,
-                        multiData: tipo === ModeloRelatorio.Detalhado ? {
-                            columns: 7,
-                            titleField: 'descricao',
-                            titlePrefix: 'Produto: ',
-                            titleBackgroundColor: '#404040',
-                            titleTextColor: '#ffffff',
-                            labelBackgroundColor: '#EEF1F6',
-                            labelColor: '#555e74',
-                            valueColor: '#1e222b',
-                            fields: [
-                                { key: 'idProduto', prefix: 'Código' },
-                                { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const },
-                                { key: 'precoVenda', prefix: 'Preço Venda' },
-                                { key: 'precoDelivery', prefix: 'Preço Delivery' },
-                                { key: 'precoAPartir', prefix: 'Preço A Partir', align: 'right' as const },
-                                { key: 'custoAtual', prefix: 'Custo Atual' },
-                                { key: 'cest', prefix: 'Cest' },
-                                { key: 'ncm', prefix: 'Ncm' },
-                                { key: 'qtdeAtual', prefix: 'Qtde. Atual' },
-                                { key: 'estoqueMin', prefix: 'Estoque Mín.' },
-                                { key: 'estoqueMax', prefix: 'Estoque Máx.' },
-                                { key: 'margem', prefix: 'Margem' },
-                                { key: 'ean1', prefix: 'Cód. Barra', span: 2 },
-                            ],
-                        } : undefined,
+                    hasExcel
+                    onExcelClick={() => {
+                        handleExcelReport()
                     }}
                 />
 

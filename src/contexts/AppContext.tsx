@@ -13,6 +13,14 @@ import logoGigaByte from "../assets/icones/gigabyte/logo-g-fundo-branco.png";
 import logoGigaByteRelatorio from '../assets/icones/gigabyte/logo-g-relatorio.jpg';
 import { initialUser } from "../types/user.types";
 
+export interface CompanyInfo {
+  idCli: number,
+  nomeCli: string,
+  cnpj: string,
+  franquia: string
+  site?: string
+}
+
 interface AppContextType {
   user: any;
   currLogo: string;
@@ -20,8 +28,8 @@ interface AppContextType {
   currLogoRelatorio: string;
   secondaryColor: string;
   setUser: (user: any) => void;
-  companyInfo: any;
-  setCompanyInfo: (info: any) => void;
+  companyInfo: CompanyInfo;
+  setCompanyInfo: (info: CompanyInfo) => void;
   isAuthenticated: boolean;
   setIsAuthenticated: (auth: boolean) => void;
   isLoading: boolean;
@@ -111,22 +119,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setSecondaryColor("#21455f");
         setCurrLogo(logoDataSet);
         setCurrLogoRelatorio(logoDataSetRelatorio)
+        setCompanyInfo(prev => ({ ...prev, site: 'wwww.datasetsistemas.com.br' }))
         break;
       case "GIGABYTE":
         setPrimaryColor("#000000");
         setSecondaryColor("#000000");
         setCurrLogo(logoGigaByte);
         setCurrLogoRelatorio(logoGigaByteRelatorio)
+        setCompanyInfo(prev => ({ ...prev, site: 'wwww.gigabyteautomacao.com.br' }))
         break;
       case "ARS":
         setPrimaryColor("#55BACA");
         setSecondaryColor("#55BACA");
         setCurrLogo(logoArs);
         setCurrLogoRelatorio(logoArsRelatorio)
+        setCompanyInfo(prev => ({ ...prev, site: 'wwww.arsautomacao.com.br' }))
         break;
       default:
         setPrimaryColor("#55BACA");
         setSecondaryColor("#55BACA");
+        setCompanyInfo(prev => ({ ...prev, site: 'wwww.datasetsistemas.com.br' }))
         setCurrLogo(logoDataSet);
         break;
     }
@@ -134,7 +146,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-  }, [companyInfo]);
+  }, [companyInfo?.franquia]);
 
 
 

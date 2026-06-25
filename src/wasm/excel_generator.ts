@@ -1,5 +1,3 @@
-import { getImageBase64FromPath } from '../utils/format';
-
 type ExcelWasmBindings = {
   gerar_excel: (json: string) => Uint8Array;
   default: (input?: { module_or_path: ArrayBuffer | string | URL | Request }) => Promise<void>;
@@ -80,13 +78,17 @@ export interface TableComponent {
   grouping?: ExcelGroupConfig;
   summaryBox?: ExcelSummaryBox;
   childrens?: Array<ChildremTable>;
+  sheetName?: string;
 }
 
 export interface ChildremTable {
   path: string;
   tableHeader: Array<ExcelTableColumn>;
   grouping?: ExcelGroupConfig;
-  summaryBox?: ExcelSummaryBox;
+  preHeader?: string;
+  preHeaderPath?: string;
+  marginTop?: number;
+  marginBottom?: number;
 }
 
 export interface ExcelSummaryBox {
@@ -95,7 +97,7 @@ export interface ExcelSummaryBox {
 export interface ExcelSummaryRow {
   key: string;
   label: string;
-  mask?: ExelV3Mask;
+  mask?: ExcelV3Mask;
   bold?: boolean;
 }
 
@@ -112,16 +114,21 @@ export interface ExcelTableColumn {
   prefix: string;
   align?: ExcelV3Align;
   headerAlign?: ExcelV3Align;
-  mask?: ExelV3Mask;
+  mask?: ExcelV3Mask;
   sum?: boolean;
 }
 
-export enum ExelV3Mask {
+export enum ExcelV3Mask {
   Cnpj = 'cnpj',
   Monetary = 'monetary',
   Number = 'number',
   Document = 'document',
   Percent = 'percent',
+  DateTime = 'datetime',
+  Date = 'date',
+  Decimal = 'decimal',
+  Milhar = 'milhar',
+  Number3 = 'number-3',
 }
 
 export enum ExcelV3Align {
@@ -167,159 +174,7 @@ export enum BorderStyle {
   MediumDashed = 'medium_dashed',
 }
 
-export async function gerarExcelTeste(logo: string, primaryColor: string) {
-  const base64 = await getImageBase64FromPath(logo);
+export async function excelEngineGenerate(json: ExcelV3): Promise<Uint8Array<ArrayBufferLike> | undefined> {
   const excel = await loadExcelModule();
-
-  const json: ExcelV3 = {
-    config: {
-      rowHeight: 20,
-      headerBackground: '#404040',
-      zebraBackground: '#cbcbcb',
-      primaryColor: primaryColor,
-    },
-    header: {
-      title: 'Relatório NFC-e',
-      companyName: 'DataSet Sistemas \n 25306810000100',
-      filters: [{ key: 'Data Inicial', value: '08/05/2024' }],
-    },
-
-    footer: {
-      site: 'www.datasetsistemas.com.br',
-    },
-
-    _variables: {
-      empresa: 'DataSet Sistemas | 25306810000100',
-      cnpj: '00.000.000/0001-00',
-      logoSistema: base64,
-    },
-
-    _datasets: {
-      notas: [
-        {
-          numero: 1,
-          cliente: 'João',
-          vlrTotal: 100,
-          grupo: 'SADIA',
-          itens: [
-            {
-              id: 9,
-              produto: 'TIXAN YPE',
-              valor: 17.89,
-            },
-            {
-              id: 15,
-              produto: 'PAPEL HIGIENICO',
-              valor: 20.79,
-            },
-          ],
-        },
-        {
-          numero: 2,
-          cliente: 'Maristela',
-          vlrTotal: 100,
-          grupo: 'SADIA',
-        },
-        {
-          numero: 3,
-          cliente: 'Joaninha',
-          vlrTotal: 100,
-          grupo: 'SADIA',
-        },
-        {
-          numero: 4,
-          cliente: 'Fabíola',
-          vlrTotal: 360,
-          grupo: 'PERDIGAO',
-        },
-        {
-          numero: 5,
-          cliente: 'Cezar',
-          vlrTotal: 450,
-          grupo: 'PERDIGAO',
-        },
-        {
-          numero: 6,
-          cliente: 'TzarBomb',
-          vlrTotal: 200,
-          grupo: 'PERDIGAO',
-        },
-      ],
-    },
-
-    content: [
-      {
-        type: 'table',
-        datasetName: 'notas',
-        grouping: {
-          groupBy: 'grupo',
-        },
-        childrens: [
-          {
-            path: 'itens',
-            tableHeader: [
-              { key: 'id', prefix: 'ID', cols: [2, 3] },
-              { key: 'produto', prefix: 'Produto', cols: [4, 8] },
-              { key: 'valor', prefix: 'Valor', cols: [9, 12], sum: true },
-            ],
-          },
-        ],
-
-        tableHeader: [
-          {
-            key: 'numero',
-            prefix: 'NOTA',
-            cols: [1, 2],
-            align: ExcelV3Align.Center,
-            headerAlign: ExcelV3Align.Center,
-          },
-          {
-            key: 'cliente',
-            prefix: 'CLIENTE',
-            cols: [3, 9],
-            align: ExcelV3Align.Left,
-            headerAlign: ExcelV3Align.Left,
-          },
-          {
-            key: 'grupo',
-            prefix: 'GRUPO',
-            cols: [10, 12],
-            align: ExcelV3Align.Center,
-            headerAlign: ExcelV3Align.Center,
-          },
-          {
-            key: 'vlrTotal',
-            prefix: 'TOTAL',
-            cols: [13, 16],
-            align: ExcelV3Align.Right,
-            headerAlign: ExcelV3Align.Center,
-            sum: true,
-          },
-        ],
-
-        summaryBox: {
-          rows: [
-            {
-              key: 'vlrTotal',
-              label: 'VALOR TOTAL',
-              mask: ExelV3Mask.Monetary,
-            },
-          ],
-        },
-      } as ExcelV3Component,
-    ],
-  };
-
-  const bytes = excel.gerar_excel(JSON.stringify(json));
-
-  const blob = new Blob([bytes as any], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  });
-  7;
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'realtorio-teste.xlsx';
-  a.click();
-  URL.revokeObjectURL(url);
+  return excel.gerar_excel(JSON.stringify(json));
 }

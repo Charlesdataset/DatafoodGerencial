@@ -1,5 +1,6 @@
 import { faBox, faCancel, faDollar, faFileExcel, faFilePdf, faHandHoldingDollar, faPrint } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Card from "../../../components/Card/Card";
@@ -16,10 +17,9 @@ import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
 import handleReportNotaEntrada from "../../../reports/entrada/entadaNF.report";
+import handleGenerateEntradaExcelReport from "../../../reports/entrada/entradaNf.excel.report";
 import handleRelatorioNfCfopUf from "../../../reports/entrada/entradaNf_cfopUf.report";
 import { api } from "../../../services/api";
-import type { TableHeaderDef } from "../../../types/v3.types";
-import { exportToExcel } from "../../../utils/exportToExcel";
 import { EntradaNFAgrupadoPor, EntradaNFOrderBy, type EntradaNfTotais } from "../types/relatorios.types";
 import { InfoCard } from "./InfoCard";
 
@@ -43,7 +43,7 @@ export const ListViewNotaEntreda = () => {
     const [modalReportShow, setModalReportShow] = useState(false);
     const [agrupadoPor, setAgrupadoPor] = useState<EntradaNFAgrupadoPor>(EntradaNFAgrupadoPor.NENHUM)
     const ROW_HEIGHT = 42;
-    const { dataInicial, dataFinal, companyInfo, currLogoRelatorio } = useApp();
+    const { dataInicial, dataFinal, companyInfo, currLogoRelatorio, primaryColor } = useApp();
 
     const fetchNotas = async () => {
         const params = {
@@ -165,429 +165,8 @@ export const ListViewNotaEntreda = () => {
 
 
 
-    const formatDateForExcel = (value: unknown) => {
-        if (value == null) return "";
-        const date = value instanceof Date ? value : new Date(String(value).replace(" ", "T"));
-        if (isNaN(date.getTime())) return String(value);
-        return date.toLocaleDateString("pt-BR");
-    };
 
-    const buildNotaEntradaExcelPayload = (
-        rows: any[],
-        agrupadoPor: EntradaNFAgrupadoPor,
-        exibeItens: boolean,
-        summary?: {
-            resumoPorUF?: any[];
-            resumoPorCFOP?: any[];
-            totaisUf?: any;
-            totaisCfop?: any;
-            totalDia?: any;
-        }
-    ) => {
-        const groupBy = agrupadoPor === EntradaNFAgrupadoPor.FORNECEDOR
-            ? 'fornecedor'
-            : agrupadoPor === EntradaNFAgrupadoPor.DATA_ENTRADA
-                ? 'entrada'
-                : undefined;
-        const groupPrefix = agrupadoPor === EntradaNFAgrupadoPor.FORNECEDOR
-            ? 'Fornecedor: '
-            : agrupadoPor === EntradaNFAgrupadoPor.DATA_ENTRADA
-                ? 'Entrada: '
-                : '';
 
-        if (agrupadoPor === EntradaNFAgrupadoPor.CFOP_UF_DIA) {
-            const output = rows.map((row) => ({
-                ...row,
-                __rowType: 'note',
-            }));
-
-            if (!summary) {
-                return {
-                    data: output,
-                    groupBy: undefined,
-                    groupPrefix: '',
-                };
-            }
-
-            const summaryRows: any[] = [];
-
-            if (summary.resumoPorUF?.length) {
-                summaryRows.push({ __rowType: 'blank' });
-                summaryRows.push({ __rowType: 'section', sectionTitle: 'RESUMO POR UF' });
-                summaryRows.push({
-                    __rowType: 'summary',
-                    dia: '',
-                    uf: 'UF',
-                    modelo: 'CFOP',
-                    cfop: '',
-                    numero: 'VALOR CONTÁBIL',
-                    aliquota: 'VALOR ICMS',
-                    valorContabil: 'BASE ICMS',
-                    baseICMS: 'BASE ST',
-                    valorICMS: 'VALOR ST',
-                    valorST: '',
-                });
-                for (const ufItem of summary.resumoPorUF) {
-                    summaryRows.push({
-                        __rowType: 'subtotal',
-                        dia: '',
-                        uf: ufItem.uf ?? '',
-                        modelo: '',
-                        cfop: '',
-                        numero: ufItem.totalValorContabil,
-                        aliquota: ufItem.totalValorICMS,
-                        valorContabil: ufItem.totalBaseICMS,
-                        baseICMS: ufItem.totalBaseST,
-                        valorICMS: ufItem.totalValorST,
-                        baseST: '',
-                        valorST: '',
-                    });
-                }
-                if (summary.totaisUf) {
-                    summaryRows.push({
-                        __rowType: 'summary',
-                        dia: '',
-                        uf: '',
-                        modelo: '',
-                        cfop: '',
-                        numero: 'TOTAL RESUMO POR UF',
-                        aliquota: '',
-                        valorContabil: summary.totaisUf.valorContabil,
-                        baseICMS: summary.totaisUf.baseICMS,
-                        valorICMS: summary.totaisUf.valorICMS,
-                        baseST: summary.totaisUf.baseST,
-                        valorST: summary.totaisUf.valorST,
-                    });
-                }
-            }
-
-            if (summary.resumoPorCFOP?.length) {
-                summaryRows.push({ __rowType: 'blank' });
-                summaryRows.push({ __rowType: 'section', sectionTitle: 'RESUMO POR CFOP' });
-                summaryRows.push({
-                    __rowType: 'summary',
-                    dia: '',
-                    uf: 'CFOP',
-                    modelo: 'VALOR CONTÁBIL',
-                    cfop: '',
-                    numero: 'BASE ICMS',
-                    aliquota: 'VALOR ICMS',
-                    valorContabil: 'BASE ST',
-                    baseICMS: 'VALOR ST',
-                    valorICMS: '',
-                    baseST: '',
-                    valorST: '',
-                });
-                for (const cfopItem of summary.resumoPorCFOP) {
-                    summaryRows.push({
-                        __rowType: 'subtotal',
-                        dia: '',
-                        uf: '',
-                        modelo: cfopItem.cfop ?? '',
-                        cfop: '',
-                        numero: cfopItem.totalValorContabil,
-                        aliquota: cfopItem.totalBaseICMS,
-                        valorContabil: cfopItem.totalValorICMS,
-                        baseICMS: cfopItem.totalBaseST,
-                        valorICMS: cfopItem.totalValorST,
-                        baseST: '',
-                        valorST: '',
-                    });
-                }
-                if (summary.totaisCfop) {
-                    summaryRows.push({
-                        __rowType: 'summary',
-                        dia: '',
-                        uf: '',
-                        modelo: '',
-                        cfop: '',
-                        numero: 'TOTAL RESUMO POR CFOP',
-                        aliquota: '',
-                        valorContabil: summary.totaisCfop.valorContabil,
-                        baseICMS: summary.totaisCfop.baseICMS,
-                        valorICMS: summary.totaisCfop.valorICMS,
-                        baseST: summary.totaisCfop.baseST,
-                        valorST: summary.totaisCfop.valorST,
-                    });
-                }
-            }
-
-            if (summary.totalDia) {
-                summaryRows.push({
-                    __rowType: 'summary',
-                    dia: '',
-                    uf: '',
-                    modelo: '',
-                    cfop: '',
-                    numero: 'TOTAL GERAL',
-                    aliquota: '',
-                    valorContabil: summary.totalDia.valorContabil,
-                    baseICMS: summary.totalDia.baseICMS,
-                    valorICMS: summary.totalDia.valorICMS,
-                    baseST: summary.totalDia.baseST,
-                    valorST: summary.totalDia.valorST,
-                });
-            }
-
-            return {
-                data: [...output, ...summaryRows],
-                groupBy: undefined,
-                groupPrefix: '',
-            };
-        }
-
-        const formattedRows = rows.map((row) => ({
-            ...row,
-            entrada: groupBy === 'entrada' ? formatDateForExcel(row?.entrada) : row?.entrada,
-        }));
-
-        const sortedRows = groupBy
-            ? [...formattedRows].sort((a, b) => {
-                const aGroup = String(a[groupBy] ?? "");
-                const bGroup = String(b[groupBy] ?? "");
-                const groupCompare = aGroup.localeCompare(bGroup, "pt-BR", { sensitivity: "base" });
-                if (groupCompare !== 0) return groupCompare;
-                const aNum = Number(a.numero ?? 0);
-                const bNum = Number(b.numero ?? 0);
-                return aNum - bNum;
-            })
-            : formattedRows;
-
-        const totalsAccumulator = () => ({
-            baseSt: 0,
-            icmsSt: 0,
-            ipi: 0,
-            frete: 0,
-            vlrProdutos: 0,
-            vlrTotal: 0,
-        });
-
-        const sumRow = (source: any, target: any) => {
-            target.baseSt += Number(source.baseSt ?? 0);
-            target.icmsSt += Number(source.icmsSt ?? 0);
-            target.ipi += Number(source.ipi ?? 0);
-            target.frete += Number(source.frete ?? 0);
-            target.vlrProdutos += Number(source.vlrProdutos ?? 0);
-            target.vlrTotal += Number(source.vlrTotal ?? 0);
-        };
-
-        const output: any[] = [];
-        const globalTotals = totalsAccumulator();
-        let currentGroupKey: string | null = null;
-        let currentGroupTotals = totalsAccumulator();
-
-        const pushGroupTotal = (groupKey: string) => {
-            output.push({
-                __rowType: 'subtotal',
-                numero: 'Subtotal',
-                fornecedor: groupBy === 'fornecedor' ? groupKey : '',
-                entrada: groupBy === 'entrada' ? groupKey : '',
-                serie: '',
-                baseSt: currentGroupTotals.baseSt,
-                icmsSt: currentGroupTotals.icmsSt,
-                ipi: currentGroupTotals.ipi,
-                frete: currentGroupTotals.frete,
-                vlrProdutos: currentGroupTotals.vlrProdutos,
-                vlrTotal: currentGroupTotals.vlrTotal,
-                natureza: '',
-                chave: '',
-                itemDescricao: '',
-                itemNcm: '',
-                itemCfop: '',
-                itemQuantidade: '',
-                itemVlrUnitario: '',
-                itemVlrDesconto: '',
-                itemVlrTotal: '',
-                ...(groupBy ? { [groupBy]: groupKey } : {}),
-            });
-        };
-
-        for (const row of sortedRows) {
-            const groupKey = groupBy ? String(row[groupBy] ?? '') : '';
-            if (groupBy && currentGroupKey !== null && groupKey !== currentGroupKey) {
-                pushGroupTotal(currentGroupKey);
-                currentGroupTotals = totalsAccumulator();
-            }
-            if (groupBy && currentGroupKey === null) {
-                currentGroupKey = groupKey;
-            }
-            if (groupBy && currentGroupKey !== groupKey) {
-                currentGroupKey = groupKey;
-            }
-
-            const noteRow = {
-                ...row,
-                __rowType: 'note',
-                itemDescricao: '',
-                itemNcm: '',
-                itemCfop: '',
-                itemQuantidade: '',
-                itemVlrUnitario: '',
-                itemVlrDesconto: '',
-                itemVlrTotal: '',
-                ...(groupBy ? { [groupBy]: groupKey } : {}),
-            };
-            output.push(noteRow);
-            sumRow(row, currentGroupTotals);
-            sumRow(row, globalTotals);
-
-            if (exibeItens && Array.isArray(row.itens)) {
-                for (const item of row.itens) {
-                    output.push({
-                        __rowType: 'item',
-                        numero: '',
-                        entrada: '',
-                        fornecedor: row.fornecedor ?? '',
-                        serie: '',
-                        baseSt: '',
-                        icmsSt: '',
-                        ipi: '',
-                        frete: '',
-                        vlrProdutos: '',
-                        vlrTotal: '',
-                        natureza: '',
-                        chave: '',
-                        itemDescricao: item.descricao ?? '',
-                        itemNcm: item.ncm ?? '',
-                        itemCfop: item.cfop ?? '',
-                        itemQuantidade: item.quantidade ?? '',
-                        itemVlrUnitario: item.vlrUnitario ?? '',
-                        itemVlrDesconto: item.vlrDesconto ?? '',
-                        itemVlrTotal: item.vlrTotal ?? '',
-                        ...(groupBy ? { [groupBy]: groupKey } : {}),
-                    });
-                }
-            }
-        }
-
-        if (groupBy && currentGroupKey !== null) {
-            pushGroupTotal(currentGroupKey);
-        }
-
-        output.push({
-            __rowType: 'summary',
-            numero: 'TOTAL GERAL',
-            fornecedor: '',
-            entrada: '',
-            serie: '',
-            baseSt: globalTotals.baseSt,
-            icmsSt: globalTotals.icmsSt,
-            ipi: globalTotals.ipi,
-            frete: globalTotals.frete,
-            vlrProdutos: globalTotals.vlrProdutos,
-            vlrTotal: globalTotals.vlrTotal,
-            natureza: '',
-            chave: '',
-            itemDescricao: '',
-            itemNcm: '',
-            itemCfop: '',
-            itemQuantidade: '',
-            itemVlrUnitario: '',
-            itemVlrDesconto: '',
-            itemVlrTotal: '',
-            ...(groupBy ? { [groupBy]: currentGroupKey ?? '' } : {}),
-        });
-
-        return {
-            data: output,
-            groupBy,
-            groupPrefix,
-        };
-    };
-
-    const handleGenerateExcel = async () => {
-        const params = {
-            dataInicial: dataInicial,
-            dataFinal: dataFinal,
-            orderBy: ordenadoPor,
-            valorInicial: valorInicial,
-            valorFinal: valorFinal,
-            textSearch: textSearch,
-            agrupadoPor: agrupadoPor,
-            exibeItens: exibirItens,
-        };
-        const url = agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? '/entrada-nf/report-cfop-uf' : '/entrada-nf/report';
-        const res = await api.get(url, { params });
-        if (res.status === 200) {
-            const excelColumns = agrupadoPor === EntradaNFAgrupadoPor.CFOP_UF_DIA
-                ? [
-                    { key: 'dia', prefix: 'Dia', align: 'center' },
-                    { key: 'uf', prefix: 'UF', align: 'center' },
-                    { key: 'modelo', prefix: 'Modelo', align: 'center' },
-                    { key: 'cfop', prefix: 'CFOP', align: 'center' },
-                    { key: 'numero', prefix: 'Número', align: 'center' },
-                    { key: 'aliquota', prefix: 'Alíquota', mask: 'number', align: 'right' },
-                    { key: 'valorContabil', prefix: 'Valor Contábil', mask: 'currency', align: 'right' },
-                    { key: 'baseICMS', prefix: 'Base ICMS', mask: 'currency', align: 'right' },
-                    { key: 'valorICMS', prefix: 'Valor ICMS', mask: 'currency', align: 'right' },
-                    { key: 'baseST', prefix: 'Base ST', mask: 'currency', align: 'right' },
-                    { key: 'valorST', prefix: 'Valor ST', mask: 'currency', align: 'right' },
-                ]
-                : [
-                    { key: 'numero', prefix: 'NF', align: 'center' },
-                    { key: 'entrada', prefix: 'Entrada', mask: 'date', align: 'center' },
-                    { key: 'fornecedor', prefix: 'Fornecedor' },
-                    { key: 'serie', prefix: 'Série', align: 'center' },
-                    { key: 'baseSt', prefix: 'Base ST', mask: 'currency', align: 'right' },
-                    { key: 'icmsSt', prefix: 'ICMS ST', mask: 'currency', align: 'right' },
-                    { key: 'ipi', prefix: 'IPI', mask: 'currency', align: 'right' },
-                    { key: 'frete', prefix: 'Frete', mask: 'currency', align: 'right' },
-                    { key: 'vlrProdutos', prefix: 'Valor Produtos', mask: 'currency', align: 'right' },
-                    { key: 'vlrTotal', prefix: 'Valor Total', mask: 'currency', align: 'right' },
-                    { key: 'natureza', prefix: 'Natureza' },
-                    { key: 'chave', prefix: 'Chave Acesso' },
-                ] as TableHeaderDef[];
-
-            if (exibirItens) {
-                excelColumns.push(
-                    //@ts-expect-error
-                    { key: 'itemDescricao', prefix: 'Item Descrição' },
-                    { key: 'itemNcm', prefix: 'Item NCM' },
-                    { key: 'itemCfop', prefix: 'Item CFOP' },
-                    { key: 'itemQuantidade', prefix: 'Item Quantidade', mask: 'number-3', align: 'right' },
-                    { key: 'itemVlrUnitario', prefix: 'Item Valor Unitário', mask: 'currency', align: 'right' },
-                    { key: 'itemVlrDesconto', prefix: 'Item Valor Desconto', mask: 'currency', align: 'right' },
-                    { key: 'itemVlrTotal', prefix: 'Item Valor Total', mask: 'currency', align: 'right' },
-                );
-            }
-
-            const rawData = agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA
-                ? res.data?.agrupadosPorDia?.dados ?? []
-                : res.data;
-            const { data: excelData, groupBy, groupPrefix } = buildNotaEntradaExcelPayload(
-                rawData,
-                agrupadoPor,
-                exibirItens,
-                agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA
-                    ? {
-                        resumoPorUF: res.data?.resumoPorUF?.dados ?? [],
-                        resumoPorCFOP: res.data?.resumoPorCFOP?.dados ?? [],
-                        totaisUf: res.data?.resumoPorUF?.total,
-                        totaisCfop: res.data?.resumoPorCFOP?.total,
-                        totalDia: res.data?.agrupadosPorDia?.total,
-                    }
-                    : undefined,
-            );
-
-            if (excelData.length > 0) {
-                //@ts-expect-error
-                await exportToExcel(excelData, excelColumns, {
-                    fileName: agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? 'notas_entrada_cfop_uf' : 'notas_entrada',
-                    sheetName: 'Notas Entrada',
-                    logo: currLogoRelatorio,
-                    title: agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? 'Relatório Notas Entrada (CFOP UF)' : 'Relatório Notas Entrada',
-                    subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
-                    headerBackgroundColor: '#404040',
-                    groupBy,
-                    groupPrefix,
-                });
-            } else {
-                toast.info('Não encontramos dados suficientes para gerar o Excel!');
-            }
-        } else {
-            toast.info('Não encontramos dados suficientes para gerar o Excel!');
-        }
-    };
 
     const columns: ExtendedColumnDef<any>[] = [
 
@@ -667,6 +246,45 @@ export const ListViewNotaEntreda = () => {
     ]
 
 
+    const handleExcelReport = async () => {
+        const params = {
+            dataInicial: dataInicial,
+            dataFinal: dataFinal,
+            orderBy: ordenadoPor,
+            valorInicial: valorInicial,
+            valorFinal: valorFinal,
+            textSearch: textSearch,
+            agrupadoPor: agrupadoPor,
+            exibeItens: exibirItens
+        }
+        const urlFecth = agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA ? '/entrada-nf/report-cfop-uf' : '/entrada-nf/report';
+        const res = await api.get(urlFecth, { params });
+        if (res?.status == 200) {
+
+
+            const bytes = await handleGenerateEntradaExcelReport(
+                res.data,
+                agrupadoPor,
+                exibirItens,
+                companyInfo,
+                primaryColor,
+                currLogoRelatorio
+            );
+
+            const blob = new Blob([bytes as any], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            7;
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_entrada-nfs.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
+            a.click();
+        }
+        else {
+            toast.info("Não encontramos dados para o filtro selecionado!");
+        }
+    }
 
     return (
         <>
@@ -713,7 +331,9 @@ export const ListViewNotaEntreda = () => {
                                 Cancelar
                             </Flex>
                         </FormButton>
-                        <FormButton className="justify-content-center" style={{ background: '#217145' }} onClick={handleGenerateExcel}>
+                        <FormButton className="justify-content-center" style={{ background: '#217145' }} onClick={() => {
+                            handleExcelReport();
+                        }}>
                             <Flex wrap="nowrap">
                                 <FontAwesomeIcon icon={faFileExcel} />
                                 Gerar Excel
@@ -833,68 +453,14 @@ export const ListViewNotaEntreda = () => {
                 <PdfiumViewer
                     pdfUrl={url}
                     filename="relatorio_notas_entrada"
-                    excelDataset={notasReport.length > 0 ? (() => {
-                        const rawData = notasReportPayload && agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA
-                            ? notasReportPayload.agrupadosPorDia?.dados ?? []
-                            : notasReport as any[];
-                        const { data: excelData, groupBy, groupPrefix } = buildNotaEntradaExcelPayload(
-                            rawData,
-                            agrupadoPor,
-                            exibirItens,
-                            agrupadoPor == EntradaNFAgrupadoPor.CFOP_UF_DIA
-                                ? {
-                                    resumoPorUF: notasReportPayload?.resumoPorUF?.dados ?? [],
-                                    resumoPorCFOP: notasReportPayload?.resumoPorCFOP?.dados ?? [],
-                                    totaisUf: notasReportPayload?.resumoPorUF?.total,
-                                    totaisCfop: notasReportPayload?.resumoPorCFOP?.total,
-                                    totalDia: notasReportPayload?.agrupadosPorDia?.total,
-                                }
-                                : undefined,
-                        );
-                        const columns: TableHeaderDef[] = agrupadoPor === EntradaNFAgrupadoPor.CFOP_UF_DIA
-                            ? [
-                                { key: 'dia', prefix: 'Dia', align: 'center' },
-                                { key: 'uf', prefix: 'UF', align: 'center' },
-                                { key: 'modelo', prefix: 'Modelo', align: 'center' },
-                                { key: 'cfop', prefix: 'CFOP', align: 'center' },
-                                { key: 'numero', prefix: 'Número', align: 'center' },
-                                { key: 'aliquota', prefix: 'Alíquota', mask: 'number', align: 'right' },
-                                { key: 'valorContabil', prefix: 'Valor Contábil', mask: 'currency', align: 'right' },
-                                { key: 'baseICMS', prefix: 'Base ICMS', mask: 'currency', align: 'right' },
-                                { key: 'valorICMS', prefix: 'Valor ICMS', mask: 'currency', align: 'right' },
-                                { key: 'baseST', prefix: 'Base ST', mask: 'currency', align: 'right' },
-                                { key: 'valorST', prefix: 'Valor ST', mask: 'currency', align: 'right' },
-                            ]
-                            : [
-                                { key: 'numero', prefix: 'NF', align: 'center' },
-                                { key: 'entrada', prefix: 'Entrada', mask: 'date', align: 'center' },
-                                { key: 'fornecedor', prefix: 'Fornecedor' },
-                                { key: 'serie', prefix: 'Série', align: 'center' },
-                                { key: 'baseSt', prefix: 'Base ST', mask: 'currency', align: 'right' },
-                                { key: 'icmsSt', prefix: 'ICMS ST', mask: 'currency', align: 'right' },
-                                { key: 'ipi', prefix: 'IPI', mask: 'currency', align: 'right' },
-                                { key: 'frete', prefix: 'Frete', mask: 'currency', align: 'right' },
-                                { key: 'vlrProdutos', prefix: 'Valor Produtos', mask: 'currency', align: 'right' },
-                                { key: 'vlrTotal', prefix: 'Valor Total', mask: 'currency', align: 'right' },
-                                { key: 'natureza', prefix: 'Natureza' },
-                                { key: 'chave', prefix: 'Chave Acesso' },
-                            ];
-                        return {
-                            data: excelData,
-                            columns,
-                            fileName: agrupadoPor === EntradaNFAgrupadoPor.CFOP_UF_DIA ? 'notas_entrada_cfop_uf' : 'notas_entrada',
-                            sheetName: agrupadoPor === EntradaNFAgrupadoPor.CFOP_UF_DIA ? 'CFOP UF Dia' : 'Notas Entrada',
-                            logo: currLogoRelatorio,
-                            title: agrupadoPor === EntradaNFAgrupadoPor.CFOP_UF_DIA ? 'Relatório Notas Entrada (CFOP UF Dia)' : 'Relatório Notas Entrada',
-                            subtitle: `${companyInfo?.cnpj ? (companyInfo.cnpj.length > 11 ? companyInfo.cnpj : companyInfo.cnpj) : ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
-                            headerBackgroundColor: '#404040',
-                            groupBy,
-                            groupPrefix,
-                        };
-                    })() : undefined}
+                    hasExcel
                     onClose={() => {
                         setShowPreviewPdf(false)
                     }}
+                    onExcelClick={() => {
+                        handleExcelReport();
+                    }}
+
                 />
             )}
         </>

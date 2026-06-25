@@ -1,5 +1,6 @@
-import { faArrowRight, faArrowRightArrowLeft, faBookBookmark, faCancel, faCheckCircle, faFileExcel, faFilePdf, faFilter, faList, faPrint, faSignOut, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRightArrowLeft, faBookBookmark, faCancel, faCheckCircle, faFileExcel, faFilePdf, faFilter, faList, faPrint, faSignOut, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import dayjs from "dayjs";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -15,9 +16,9 @@ import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
+import handleGenerateAuditoriaExcelReport from "../../../reports/auditoria/auditoria.excel.report";
 import handleReportAuditoria, { AuditoriaAgrupadoPor } from "../../../reports/auditoria/auditoria.report";
 import { api } from "../../../services/api";
-import { exportToExcel } from "../../../utils/exportToExcel";
 
 
 export enum OperacaoAuditoria {
@@ -32,7 +33,7 @@ export enum OperacaoAuditoria {
 const ListViewAuditoria: React.FC = () => {
     const [operacao, setOperacao] = useState<OperacaoAuditoria>(null)
     const [agrupadoPor, setAgrupadoPor] = useState<AuditoriaAgrupadoPor>(AuditoriaAgrupadoPor.Nenhum)
-    const { dataInicial, dataFinal, currLogoRelatorio, companyInfo } = useApp();
+    const { dataInicial, dataFinal, currLogoRelatorio, companyInfo, primaryColor } = useApp();
     const [showPreviewPdf, setShowPreviewPdf] = useState(false)
     const [url, setUrl] = useState(null)
     const [textSearch, setTextSearch] = useState("");
@@ -189,66 +190,34 @@ const ListViewAuditoria: React.FC = () => {
         return null;
     }
 
-
-    const formatDetalhes = (dadosJson: any) => {
-        if (!dadosJson) return '';
-
-        if (dadosJson.alterados && typeof dadosJson.alterados === 'object') {
-            return Object.entries(dadosJson.alterados)
-                .map(([campo, item]) => {
-                    if (JSON.stringify(item?.antes) === JSON.stringify(item?.depois)) {
-                        return null;
-                    }
-                    return `${campo}: ${item?.antes ?? ''} → ${item?.depois ?? ''}`;
-                })
-                .filter(Boolean)
-                .join(' | ');
-        }
-
-        return JSON.stringify(dadosJson);
-    }
-
     const handleGenerateExcel = async () => {
+
         const dataSet = await fetchDataReport();
-        if (!dataSet || dataSet.length === 0) {
-            toast.info('Não encontramos dados suficientes para gerar o Excel!');
-            return;
+        if (dataSet) {
+            const bytes = await handleGenerateAuditoriaExcelReport(dataSet, agrupadoPor, exibeDetalhes, companyInfo, currLogoRelatorio, primaryColor, {
+                dataInicial: dataInicial, dataFinal: dataFinal,
+                formulario: currForm,
+                pesquisa: textSearch,
+                agrupadoPor: agrupadoPor
+            })
+            const blob = new Blob([bytes as any], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            7;
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_auditoria.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
+            a.click();
+        }
+        else {
+            toast.info("Não encontramos dados pora o filtro selecionado!")
         }
 
-        const excelColumns = [
-            { key: 'idAuditoria', prefix: 'Cód.', align: 'center' },
-            { key: 'formulario', prefix: 'Formulário', align: 'left' },
-            { key: 'nomeColaborador', prefix: 'Colaborador', align: 'left' },
-            { key: 'operacao', prefix: 'Operação', align: 'center' },
-            { key: 'computador', prefix: 'Computador', align: 'center' },
-            { key: 'data', prefix: 'Data', mask: 'date-time', align: 'center' },
-            { key: 'detalhes', prefix: 'Detalhes', align: 'left' },
-        ];
-
-        const excelData = dataSet.map((row: any) => ({
-            ...row,
-            detalhes: formatDetalhes(row.dadosJson),
-        }));
-
-        const excelGroupBy = {
-            [AuditoriaAgrupadoPor.Colaborador]: 'nomeColaborador',
-            [AuditoriaAgrupadoPor.Computador]: 'computador',
-            [AuditoriaAgrupadoPor.Data]: 'data',
-            [AuditoriaAgrupadoPor.Operacao]: 'operacao',
-        };
-
-        await exportToExcel(excelData, excelColumns, {
-            fileName: 'relatorio_auditoria',
-            sheetName: 'Auditoria',
-            logo: currLogoRelatorio,
-            title: 'Relatório Auditoria',
-            subtitle: `${companyInfo?.cnpj ?? ''} ${companyInfo?.nomeCli ?? ''}`.trim(),
-            headerBackgroundColor: '#404040',
-            groupBy: excelGroupBy[agrupadoPor],
-            groupPrefix: agrupadoPor || undefined,
-            nullGroupLabel: '(Sem dados)',
-        });
     }
+
+
+
 
     const handleGeneratePdf = async () => {
         const dataSet = await fetchDataReport();
@@ -272,7 +241,7 @@ const ListViewAuditoria: React.FC = () => {
         <>
             <Modal isOpen={modalDetailShow} onClose={() => { }}>
                 <Modal.Header onClose={() => { setModalDetailShow(false) }}>
-                    <Flex align="center" gap={2}>
+                    <Flex align="center" gap={'xs'}>
                         <FontAwesomeIcon icon={faBookBookmark} style={{ fontSize: 18 }} />
                         <div>
                             <div style={{ fontWeight: 600, fontSize: 16 }}>Auditoria #{id}</div>
@@ -546,7 +515,9 @@ const ListViewAuditoria: React.FC = () => {
                                 Cancelar
                             </Flex>
                         </FormButton>
-                        <FormButton className="justify-content-center" style={{ background: '#217145' }} onClick={handleGenerateExcel}>
+                        <FormButton className="justify-content-center" style={{ background: '#217145' }} onClick={() => {
+                            handleGenerateExcel();
+                        }}>
                             <Flex wrap="nowrap">
                                 <FontAwesomeIcon icon={faFileExcel} />
                                 Gerar Excel
@@ -643,6 +614,7 @@ const ListViewAuditoria: React.FC = () => {
                     onClose={() => {
                         setShowPreviewPdf(false)
                     }}
+                    hasExcel={true}
                 />
             )}
 

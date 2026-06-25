@@ -8,6 +8,7 @@ import DataGrid from "../../../components/DataGrid/DataGrid";
 import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import Select from "../../../components/Inputs/Select/Select";
 
+import dayjs from "dayjs";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
@@ -15,10 +16,10 @@ import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import { useApp } from "../../../contexts/AppContext";
 import { useNavigation } from "../../../contexts/NavigationContext";
+import handleGenerateClientExcelReport from "../../../reports/cliente/client.excel.report";
 import handleGenerateClientReport, { ClienteAgrupadoPor, ModeloRelatorio } from "../../../reports/cliente/client.report";
 import { api } from "../../../services/api";
-import type { TableHeaderDef } from "../../../types/v3.types";
-import { maskCnpj, maskCpf } from "../../../utils/format";
+import dayjsUtc from "../../../utils/dates";
 
 
 const ListViewCliente: React.FC = () => {
@@ -33,7 +34,7 @@ const ListViewCliente: React.FC = () => {
     const [agrupado, setAgrupado] = useState<ClienteAgrupadoPor>(ClienteAgrupadoPor.Nenhum);
     const [tipo, setTipo] = useState<ModeloRelatorio>(ModeloRelatorio.Simplificado);
     const { subscribe } = useNavigation();
-    const { companyInfo, currLogoRelatorio } = useApp();
+    const { companyInfo, currLogoRelatorio, primaryColor } = useApp();
     useEffect(() => {
         const unsubscribeBackView = subscribe('backView', () => {
             // Lógica para voltar à tela anterior
@@ -129,7 +130,7 @@ const ListViewCliente: React.FC = () => {
 
     const handlePrint = async () => {
         await fetchData();
-        console.log(companyInfo)
+        
         const bytes = await handleGenerateClientReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio);
         const blob = new Blob([bytes as any], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
@@ -138,6 +139,27 @@ const ListViewCliente: React.FC = () => {
 
     }
 
+    const handleExcelReport = async () => {
+
+        const bytes = await handleGenerateClientExcelReport(
+            dados,
+            agrupado,
+            tipo,
+            companyInfo,
+            primaryColor,
+            currLogoRelatorio
+        );
+
+        const blob = new Blob([bytes as any], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        7;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `relatorio_clientes.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
+        a.click();
+    }
 
     return (
         <>
@@ -215,63 +237,15 @@ const ListViewCliente: React.FC = () => {
             {
                 url && <PdfiumViewer
                     pdfUrl={url}
-                    filename="relatorio_clientes"
+                    filename={`relatorio_clientes-${dayjsUtc().format("DD-MM-YYYY")}`}
                     onClose={() => {
                         URL.revokeObjectURL(url);
                         setUrl(null);
                     }}
-                    excelDataset={{
-                        data: dados,
-                        columns: tipo === ModeloRelatorio.Simplificado
-                            ? [
-                                { key: 'idCliente', prefix: 'Código' },
-                                { key: 'razaoSocial', prefix: 'Nome' },
-                                { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' },
-                                { key: 'celular', prefix: 'Celular', align: 'center' as const },
-                                { key: 'limiteCredito', prefix: 'Saldo', mask: 'currency', align: 'center' as const },
-                            ] as TableHeaderDef[]
-                            : [] as TableHeaderDef[],
-                        fileName: 'clientes',
-                        sheetName: 'Clientes',
-                        logo: currLogoRelatorio,
-                        title: 'Relatório Clientes',
-                        subtitle: `${companyInfo?.cnpj
-                            ? (companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj))
-                            : ''}  ${companyInfo?.nomeCli ?? ''}`.trim(),
-                        headerBackgroundColor: '#404040',
-                        groupBy: agrupado !== ClienteAgrupadoPor.Nenhum
-                            ? (agrupado === ClienteAgrupadoPor.Bairro ? 'bairro' : 'cidade')
-                            : undefined,
-                        groupPrefix: agrupado === ClienteAgrupadoPor.Bairro
-                            ? 'Bairro: '
-                            : agrupado === ClienteAgrupadoPor.Cidade
-                                ? 'Cidade: '
-                                : undefined,
-                        multiData: tipo === ModeloRelatorio.Detalhado ? {
-                            columns: 8,
-                            titleField: 'razaoSocial',
-                            titlePrefix: 'Cliente: ',
-                            titleBackgroundColor: '#404040',
-                            titleTextColor: '#ffffff',
-                            labelBackgroundColor: '#EEF1F6',
-                            labelColor: '#555e74',
-                            valueColor: '#1e222b',
-                            fields: [
-                                { key: 'idCliente', prefix: 'Código' },
-                                { key: 'dataCadastro', prefix: 'Data Cadastro', mask: 'date-time' as const },
-                                { key: 'celular', prefix: 'Celular' },
-                                { key: 'telefone', prefix: 'Telefone', mask: 'phone' as const },
-                                { key: 'limiteCredito', prefix: 'Limite de Crédito', mask: 'currency' as const, align: 'right' as const },
-                                { key: 'cnpjCpf', prefix: 'CPF / CNPJ', mask: 'cnpjCpf' as const },
-                                { key: 'email', prefix: 'E-mail', span: 2 },
-                                { key: 'logradouro', prefix: 'Endereço', span: 3 },
-                                { key: 'bairro', prefix: 'Bairro', span: 2 },
-                                { key: 'cidade', prefix: 'Cidade' },
-                                { key: 'cep', prefix: 'CEP', mask: 'cep' as const },
-                                { key: 'uf', prefix: 'UF' },
-                            ],
-                        } : undefined,
+                    onExcelClick={() => {
+                        handleExcelReport();
                     }}
+                    hasExcel
                 />
 
             }

@@ -6,45 +6,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "../contexts/AppContext";
-import type { TableHeaderDef } from "../types/v3.types";
-import { exportToExcel, type MultiDataConfig } from "../utils/exportToExcel";
+
+
 import { getPdfiumEngine } from "../wasm/pdfiumEngine";
 import { FormButton } from "./Inputs/Button/FormButton";
 import Fluid from "./Layout/Fluid";
 import styles from "./PdfiumViewer.module.scss";
 
-interface ExcelDataset {
-  data: Record<string, unknown>[];
-  columns: TableHeaderDef[];
-  fileName?: string;
-  sheetName?: string;
-  /** URL ou data-URI da logo (canto superior esquerdo) */
-  logo?: string;
-  /** Título central do cabeçalho */
-  title?: string;
-  /** CNPJ + nome da empresa exibidos no canto superior direito (espelha o header do PDF) */
-  subtitle?: string;
-  /** Cor de fundo do cabeçalho — padrão: #26385E */
-  headerBackgroundColor?: string;
-  /** Cor do texto do cabeçalho — padrão: #FFFFFF */
-  headerTextColor?: string;
-  /** Cor de fundo das linhas alternadas — padrão: #F5F7FC */
-  zebraBackgroundColor?: string;
-  /** Cor do texto das linhas alternadas */
-  zebraTextColor?: string;
-  /** Campo do dataset para agrupar as linhas (igual ao groupBy do V3) */
-  groupBy?: string;
-  /** Prefixo da linha de grupo (ex: "Bairro: ") */
-  groupPrefix?: string;
-  /** Cor de fundo da linha de grupo */
-  groupHeaderBackgroundColor?: string;
-  /** Cor do texto da linha de grupo */
-  groupHeaderTextColor?: string;
-  /** Label para grupos com valor nulo/vazio. Padrão: "(Sem dados)" */
-  nullGroupLabel?: string;
-  /** Quando informado, usa layout multi-bloco em vez de tabela plana */
-  multiData?: MultiDataConfig;
-}
 
 interface PdfiumViewerProps {
   pdfUrl: string;
@@ -54,7 +22,9 @@ interface PdfiumViewerProps {
   /** Chamado quando o PDF falha ao carregar (ex: FPDF_LoadMemDocument failed) */
   onError?: (message: string) => void;
   /** Se informado, exibe botão de download Excel na toolbar */
-  excelDataset?: ExcelDataset;
+  hasExcel?: boolean;
+  onExcelClick?: () => void;
+
 }
 
 /**
@@ -100,7 +70,7 @@ function getTouchDistance(touches: TouchList) {
   return Math.hypot(dx, dy);
 }
 
-export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onError, excelDataset }: PdfiumViewerProps) {
+export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onError, hasExcel, onExcelClick }: PdfiumViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({});
   const engineRef = useRef<PdfEngine<Blob> | null>(null);
@@ -196,7 +166,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
         engineRef.current
           .closeDocument(currentDoc)
           .toPromise()
-          .catch(() => {});
+          .catch(() => { });
       }
       documentRef.current = null;
     };
@@ -374,7 +344,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
         engineRef.current
           .closeDocument(documentRef.current)
           .toPromise()
-          .catch(() => {});
+          .catch(() => { });
       }
     };
   }, []);
@@ -385,7 +355,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
       style={!isMobile ? { left: isCollapsed ? 50 : 200, right: 0 } : { left: 0, right: 0 }}
     >
       <div className={styles.floatingToolbar}>
-        <Fluid xs={excelDataset ? ["expand", "auto", "auto", "auto", "auto", "auto"] : ["expand", "auto", "auto", "auto", "auto"]}>
+        <Fluid xs={hasExcel ? ["expand", "auto", "auto", "auto", "auto", "auto"] : ["expand", "auto", "auto", "auto", "auto"]}>
           <div className="mx-6">
             <FormButton variant="icon" onClick={onClose}>
               <FontAwesomeIcon icon={faClose} size="xs" />
@@ -411,29 +381,15 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
               <FontAwesomeIcon icon={faDownload} size="xs" />
             </FormButton>
           </div>
-          {excelDataset && (
+          {hasExcel && (
             <div>
               <FormButton
                 variant="icon"
                 title="Baixar Excel"
-                onClick={() =>
-                    exportToExcel(excelDataset.data, excelDataset.columns, {
-                      fileName:                   excelDataset.fileName ?? filename.replace(/\.pdf$/i, ""),
-                      sheetName:                  excelDataset.sheetName,
-                      logo:                       excelDataset.logo,
-                      title:                      excelDataset.title,
-                      subtitle:                   excelDataset.subtitle,
-                      headerBackgroundColor:       excelDataset.headerBackgroundColor,
-                      headerTextColor:             excelDataset.headerTextColor,
-                      zebraBackgroundColor:        excelDataset.zebraBackgroundColor,
-                      zebraTextColor:              excelDataset.zebraTextColor,
-                      groupBy:                     excelDataset.groupBy,
-                      groupPrefix:                 excelDataset.groupPrefix,
-                      groupHeaderBackgroundColor:  excelDataset.groupHeaderBackgroundColor,
-                      groupHeaderTextColor:        excelDataset.groupHeaderTextColor,
-                      nullGroupLabel:              excelDataset.nullGroupLabel,
-                      multiData:                   excelDataset.multiData,
-                    })
+                onClick={() => {
+                  //chamar função externa
+                  onExcelClick();
+                }
                 }
               >
                 <FontAwesomeIcon icon={faFileExcel} size="xs" />

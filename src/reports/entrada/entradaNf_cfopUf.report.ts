@@ -1,4 +1,4 @@
-import type { ReportV3, ComponentV3 } from '../../types/v3.types';
+import type { ComponentV3, ReportV3 } from '../../types/v3.types';
 import { getImageBase64FromPath, maskCnpj, maskCpf } from '../../utils/format';
 import { gerarRelatorioPdfV3 } from '../../wasm/pdfium_generator';
 import { formatFiltersForHeader, formatPeriod, type FilterConfig } from '../utils/filterFormatter';
@@ -74,13 +74,7 @@ const handleRelatorioNfCfopUf = async (
   if (filters?.valorInicial != null || filters?.valorFinal != null) {
     const initial = filters?.valorInicial != null ? formatCurrency(filters.valorInicial) : undefined;
     const final = filters?.valorFinal != null ? formatCurrency(filters.valorFinal) : undefined;
-    const valorLabel = initial && final
-      ? `${initial} a ${final}`
-      : initial
-      ? `>= ${initial}`
-      : final
-      ? `<= ${final}`
-      : '';
+    const valorLabel = initial && final ? `${initial} a ${final}` : initial ? `>= ${initial}` : final ? `<= ${final}` : '';
     if (valorLabel) {
       filterConfigs.push({ label: 'Valor', values: [valorLabel], showAll: true });
     }
@@ -148,16 +142,20 @@ const handleRelatorioNfCfopUf = async (
             },
           ],
         },
-        ...(filtrosHeader ? ([{
-          type: 'text' as const,
-          value: `Filtros: $filtros_header`,
-          fontSize: 9,
-          color: '#575757',
-          align: 'left' as const,
-          margin: {
-            four: [10, 0, 0, 0],
-          },
-        }] as ComponentV3[]) : []),
+        ...(filtrosHeader
+          ? ([
+              {
+                type: 'text' as const,
+                value: `Filtros: $filtros_header`,
+                fontSize: 9,
+                color: '#575757',
+                align: 'left' as const,
+                margin: {
+                  four: [10, 0, 0, 0],
+                },
+              },
+            ] as ComponentV3[])
+          : []),
       ],
     },
     footer: {
@@ -240,7 +238,7 @@ const handleRelatorioNfCfopUf = async (
       {
         type: 'table',
         headerBackgroundColor: '#404040',
-        zebraBackgroundColor:'#202020',
+        zebraBackgroundColor: '#202020',
         datasetName: 'notas',
         summaryBox: {
           rows: [
@@ -250,13 +248,12 @@ const handleRelatorioNfCfopUf = async (
             { key: 'valorST', label: 'TOTAL ST', mask: 'currency' },
             {
               key: 'valorContabil',
-              label: 'TOTAL GERAL',
+              label: 'TOTAL VALOR CONTÁBIL',
               mask: 'currency',
-              bold: true,
-              dividerBefore: true,
             },
           ],
           align: 'center',
+          width: 250,
         },
 
         tableHeader: [
@@ -312,9 +309,7 @@ const handleRelatorioNfCfopUf = async (
         margin: {
           four: [40, 0, 0, 0],
         },
-        tableHeader: [
-          { key: 'uf', prefix: 'Resumo por estado', align: 'left' },
-        ],
+        tableHeader: [{ key: 'uf', prefix: 'Resumo por estado', align: 'left' }],
         summaryBox: {
           rows: [
             {
@@ -343,14 +338,13 @@ const handleRelatorioNfCfopUf = async (
             },
             {
               key: 'valorContabil',
-              label: 'TOTAL GERAL',
+              label: 'TOTAL VALOR CONTÁBIL',
               value: '$totalValorContabilResumoUf',
               mask: 'currency',
-              bold: true,
-              dividerBefore: true,
             },
           ],
           align: 'center',
+          width: 250,
         },
         widths: ['auto'],
         items: {
@@ -412,7 +406,6 @@ const handleRelatorioNfCfopUf = async (
               label: 'TOTAL ICMS',
               mask: 'currency',
               value: '$totalValorICMSUF',
-              
             },
             {
               key: 'baseICMS',
@@ -434,14 +427,13 @@ const handleRelatorioNfCfopUf = async (
             },
             {
               key: 'valorContabil',
-              label: 'TOTAL GERAL',
+              label: 'TOTAL VALOR CONTÁBIL',
               value: '$totalValorContabilResumoCFOP',
               mask: 'currency',
-              bold: true,
-              dividerBefore: true,
             },
           ],
           align: 'center',
+          width: 250,
         },
         margin: {
           four: [40, 0, 0, 0],
@@ -516,10 +508,7 @@ const handleRelatorioNfCfopUf = async (
     filtros_header: filtrosHeader,
     data_geracao: new Date().toLocaleDateString('pf-BR'),
     empresa: companyInfo.nomeCli,
-    cnpj:
-      companyInfo.cnpj.length > 11
-        ? maskCnpj(companyInfo.cnpj)
-        : maskCpf(companyInfo.cnpj),
+    cnpj: companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj),
 
     currDate: new Date().toLocaleDateString('pt-BR'),
     logoSistema: imageBase64,
