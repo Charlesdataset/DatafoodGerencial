@@ -13,6 +13,7 @@ import ListViewNfce from './components/ListViewNfce';
 import { ListViewNotaEntreda } from './components/ListViewNotaEntrada';
 import ListViewProduto from './components/ListViewProduto';
 import ReportList from './components/ReportList';
+import ListViewNfe from './components/ListViewNfe';
 
 
 
@@ -49,6 +50,8 @@ const Relatorios: React.FC = () => {
                 return <ListViewContaReceber />;
             case 'nfce':
                 return <ListViewNfce />;
+            case 'nfe':
+                return <ListViewNfe />;
             case 'auditoria':
                 return <ListViewAuditoria />;
             default:
@@ -58,7 +61,7 @@ const Relatorios: React.FC = () => {
 
     return (
         <>
-          
+
             {!listing && (
                 <Card>
                     <Card.Body>
@@ -103,8 +106,8 @@ const Relatorios: React.FC = () => {
                                         onClick: () => handleNavigateToListing('nfce')
                                     },
                                     {
-                                        name: "Produtos",
-                                        onClick: () => handleNavigateToListing('produto')
+                                        name: "Nfe",
+                                        onClick: () => handleNavigateToListing('nfe')
                                     },
                                 ]}
                             />

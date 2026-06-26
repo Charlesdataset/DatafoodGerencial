@@ -576,7 +576,7 @@ const DataGridServerSide = <T extends object>({
         const initialTimer = setTimeout(() => {
             calculateDimensions();
             setIsAutoSizeReady(true);
-        }, 100);
+        }, 200);
 
         // Usa ResizeObserver para detectar mudanças no tamanho do container
         resizeObserverRef.current = new ResizeObserver(() => {
