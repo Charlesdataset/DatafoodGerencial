@@ -33,6 +33,11 @@
   }
 
   // Sizes
+  &--xs {
+    padding: 10px 20px;
+    font-size: 0.8rem;
+    border-radius: 10px;
+  }
   &--sm {
     padding: $spacing-sm $spacing-md;
     font-size: $font-size-sm;

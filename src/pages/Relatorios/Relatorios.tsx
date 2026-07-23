@@ -1,4 +1,4 @@
-import { faCog, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faFileAlt, faUtensils } from '@fortawesome/free-solid-svg-icons';
 import React, { useEffect } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -10,10 +10,11 @@ import ListViewBairro from './components/ListViewBairro';
 import ListViewCliente from './components/ListViewCliente';
 import ListViewContaReceber from './components/ListViewContaReceber';
 import ListViewNfce from './components/ListViewNfce';
+import ListViewNfe from './components/ListViewNfe';
 import { ListViewNotaEntreda } from './components/ListViewNotaEntrada';
 import ListViewProduto from './components/ListViewProduto';
 import ReportList from './components/ReportList';
-import ListViewNfe from './components/ListViewNfe';
+import SaidaPorProduto from './components/SaidaPorProduto';
 
 
 
@@ -54,6 +55,8 @@ const Relatorios: React.FC = () => {
                 return <ListViewNfe />;
             case 'auditoria':
                 return <ListViewAuditoria />;
+            case 'saida-por-produto':
+                return <SaidaPorProduto />;
             default:
                 return null;
         }
@@ -140,6 +143,26 @@ const Relatorios: React.FC = () => {
                                     {
                                         name: "Auditoria",
                                         onClick: () => handleNavigateToListing('auditoria')
+                                    },
+                                    {
+                                        name: "Bairros",
+                                        onClick: () => handleNavigateToListing('bairro')
+                                    },
+                                    {
+                                        name: "Produtos",
+                                        onClick: () => handleNavigateToListing('produto')
+                                    },
+                                ]}
+                            />
+                            <ReportList
+                                icon={faUtensils}
+                                title="Restaurante"
+                                accentColor=" #E68025"
+                                accentBg="rgba(230, 128, 37, 0.12)"
+                                reports={[
+                                    {
+                                        name: "Saída por produto",
+                                        onClick: () => handleNavigateToListing('saida-por-produto')
                                     },
                                     {
                                         name: "Bairros",

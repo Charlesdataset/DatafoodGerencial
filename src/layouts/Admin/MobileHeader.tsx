@@ -33,6 +33,7 @@ export const pageIcons: Record<string, any> = {
   "/reports?listing=bairro": faMap,
   "/reports?listing=produto": faBox,
   "/reports?listing=auditoria": faMagnifyingGlass,
+  "/reports?listing=saida-por-produto": faBox,
 
 };
 
@@ -46,6 +47,7 @@ export const pageTitles: Record<string, string> = {
   "/reports?listing=bairro": 'Bairros',
   "/reports?listing=produto": 'Produtos',
   "/reports?listing=auditoria": 'Auditoria',
+  "/reports?listing=saida-por-produto": 'Saida por produto',
 };
 const MobileHeader = () => {
   const location = useLocation();

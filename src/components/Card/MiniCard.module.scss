@@ -1,0 +1,81 @@
+// src/components/Card/MiniCard.module.scss
+@use "../../styles/abstracts/variables" as *;
+
+.miniCardWrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  min-width: fit-content;
+}
+
+.label {
+  display: block;
+  font-size: $font-size-base;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: $gray;
+
+  .required {
+    color: $danger;
+    margin-left: 4px;
+  }
+}
+
+.miniCardContainer {
+  min-height: 40px;
+  height: auto;
+  padding: 10px 15px;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #e9ecef;
+  cursor: default;
+  
+  display: flex;
+  
+  align-items: center;  // ← era "center"
+  justify-content: space-between;
+  position: relative;
+  gap: 10px;
+  transition: all 0.2s ease;
+  
+
+  &:hover {
+    border-color: $border-color;
+    background-color: #e9ecef;
+  }
+
+  &.disabled {
+    background: #e9ecef;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  &.error {
+    border-color: $danger;
+  }
+}
+
+.description {
+  flex: 1;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  color: $dark;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.errorMessage {
+  position: absolute;
+  display: block;
+  font-size: 11px;
+  color: $danger;
+  margin-top: 4px;
+}

@@ -1,0 +1,494 @@
+// ButtonGroup.module.scss
+@use "../../../styles/abstracts/variables" as *;
+
+.buttonGroup {
+  display: inline-flex;
+  position: relative;
+  
+  &.fullWidth {
+    display: flex;
+    width: 100%;
+    
+    .groupButton {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+}
+
+.groupButton {
+  position: relative;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  z-index: 1;
+  
+  // Remove bordas duplicadas entre botões
+  &:not(:first-child) {
+    margin-left: -1px;
+  }
+  
+  &:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+  
+  &:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+  
+  // Efeito de foco
+  &:focus-visible {
+    z-index: 2;
+    outline: 2px solid $primary;
+    outline-offset: 1px;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// ========== TAMANHOS ==========
+.sm .groupButton {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+.md .groupButton {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
+.lg .groupButton {
+  height: 48px;
+  padding: 0 24px;
+  font-size: 16px;
+}
+
+// ========== VARIANTE PRIMARY (padrão) ==========
+.primary {
+  .groupButton {
+    background: white;
+    border: 1px solid $gray-300;
+    color: $gray-700;
+    
+    &:hover:not(:disabled):not(.active) {
+      background: $gray-100;
+      border-color: $gray-400;
+      z-index: 2;
+    }
+  }
+  
+  .groupButton.active {
+    background: $primary;
+    border-color: $primary;
+    color: white;
+    z-index: 2;
+    box-shadow: 0 1px 3px rgba($primary, 0.2);
+    
+    &:hover {
+      background: $primary-dark;
+      border-color: $primary-dark;
+    }
+    
+    // Remove efeito de hover duplicado
+    & + .groupButton {
+      border-left-color: $primary;
+    }
+  }
+  
+  // Botão ativo adjacente
+  .groupButton.active:hover + .groupButton {
+    border-left-color: $primary-dark;
+  }
+}
+
+// ========== VARIANTE SECONDARY ==========
+.secondary {
+  .groupButton {
+    background: white;
+    border: 1px solid $gray-300;
+    color: $gray-700;
+    
+    &:hover:not(:disabled):not(.active) {
+      background: $gray-100;
+      border-color: $gray-400;
+      z-index: 2;
+    }
+  }
+  
+  .groupButton.active {
+    background: $secondary;
+    border-color: $secondary;
+    color: white;
+    z-index: 2;
+    box-shadow: 0 1px 3px rgba($secondary, 0.2);
+    
+    &:hover {
+      background: $secondary-dark;
+      border-color: $secondary-dark;
+    }
+    
+    & + .groupButton {
+      border-left-color: $secondary;
+    }
+  }
+}
+
+// ========== VARIANTE OUTLINE ==========
+.outline {
+  .groupButton {
+    background: transparent;
+    border: 1px solid $gray-300;
+    color: $gray-700;
+    
+    &:hover:not(:disabled):not(.active) {
+      background: rgba($primary, 0.04);
+      border-color: $primary;
+      color: $primary;
+      z-index: 2;
+    }
+  }
+  
+  .groupButton.active {
+    background: transparent;
+    border-color: $primary;
+    color: $primary;
+    z-index: 2;
+    
+    &:hover {
+      background: rgba($primary, 0.04);
+    }
+  }
+}
+
+// ========== VARIANTE DANGER ==========
+.danger {
+  .groupButton {
+    background: white;
+    border: 1px solid $gray-300;
+    color: $gray-700;
+    
+    &:hover:not(:disabled):not(.active) {
+      background: rgba($danger, 0.04);
+      border-color: $danger;
+      color: $danger;
+      z-index: 2;
+    }
+  }
+  
+  .groupButton.active {
+    background: $danger;
+    border-color: $danger;
+    color: white;
+    z-index: 2;
+    box-shadow: 0 1px 3px rgba($danger, 0.2);
+    
+    &:hover {
+      background: $danger-dark;
+      border-color: $danger-dark;
+    }
+    
+    & + .groupButton {
+      border-left-color: $danger;
+    }
+  }
+}
+
+// ========== VARIANTE SUCCESS ==========
+.success {
+  .groupButton {
+    background: white;
+    border: 1px solid $gray-300;
+    color: $gray-700;
+    
+    &:hover:not(:disabled):not(.active) {
+      background: rgba($success, 0.04);
+      border-color: $success;
+      color: $success;
+      z-index: 2;
+    }
+  }
+  
+  .groupButton.active {
+    background: $success;
+    border-color: $success;
+    color: white;
+    z-index: 2;
+    box-shadow: 0 1px 3px rgba($success, 0.2);
+    
+    &:hover {
+      background: $success-dark;
+      border-color: $success-dark;
+    }
+    
+    & + .groupButton {
+      border-left-color: $success;
+    }
+  }
+}
+
+// ========== VARIANTE INFO ==========
+.info {
+  .groupButton {
+    background: white;
+    border: 1px solid $gray-300;
+    color: $gray-700;
+    
+    &:hover:not(:disabled):not(.active) {
+      background: rgba($info, 0.04);
+      border-color: $info;
+      color: $info;
+      z-index: 2;
+    }
+  }
+  
+  .groupButton.active {
+    background: $info;
+    border-color: $info;
+    color: white;
+    z-index: 2;
+    box-shadow: 0 1px 3px rgba($info, 0.2);
+    
+    &:hover {
+      background: $info-dark;
+      border-color: $info-dark;
+    }
+    
+    & + .groupButton {
+      border-left-color: $info;
+    }
+  }
+}
+
+// ========== VARIANTE PILL (formato pílula) ==========
+.pill {
+  .groupButton {
+    &:first-child {
+      border-top-left-radius: 999px;
+      border-bottom-left-radius: 999px;
+    }
+    
+    &:last-child {
+      border-top-right-radius: 999px;
+      border-bottom-right-radius: 999px;
+    }
+  }
+}
+
+// ========== VARIANTE GHOST (sem bordas) ==========
+.ghost {
+  .groupButton {
+    background: transparent;
+    border: none;
+    color: $gray-600;
+    
+    &:hover:not(:disabled):not(.active) {
+      background: $gray-100;
+      color: $gray-900;
+    }
+  }
+  
+  .groupButton.active {
+    background: $gray-100;
+    color: $gray-900;
+    font-weight: 600;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 2px;
+    }
+  }
+}
+
+// ButtonGroup.module.scss - adicione no final do arquivo
+
+// ─── Wrap ──────────────────────────────────────────────────────────────────────
+.wrap {
+  flex-wrap: wrap;
+  gap: 4px;
+  
+  .groupButton {
+      // Remove a margem negativa que causa sobreposição
+      &:not(:first-child) {
+          margin-left: 0;
+      }
+      
+      // Mantém o border-radius em todos os botões quando wrap
+      border-radius: 8px;
+      
+      // Para o caso de pill
+      &.pill .groupButton {
+          border-radius: 999px;
+      }
+  }
+}
+
+// Ajuste para quando wrap e fullWidth juntos
+.fullWidth.wrap {
+  display: flex;
+  width: 100%;
+  
+  .groupButton {
+      flex: 1 1 auto;
+      min-width: fit-content;
+      justify-content: center;
+  }
+}
+
+// Responsivo - em telas pequenas, wrap automaticamente
+@media (max-width: 768px) {
+  .buttonGroup:not(.wrap) {
+      // Opcional: força wrap em mobile mesmo sem prop
+      // flex-wrap: wrap;
+      // gap: 4px;
+      //
+      // .groupButton:not(:first-child) {
+      //     margin-left: 0;
+      // }
+      // .groupButton {
+      //     border-radius: 8px;
+      // }
+  }
+}
+
+// ButtonGroup.module.scss - adicione no final do arquivo
+
+// ========== VARIANTE TOGGLE (estilo lista/gráfico) ==========
+.toggle {
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 3px;
+  
+  .groupButton {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    height: 32px;
+    min-width: fit-content;
+    
+    // Remove margem negativa que causa sobreposição
+    &:not(:first-child) {
+      margin-left: 0;
+    }
+    
+    // Remove bordas arredondadas padrão
+    &:first-child {
+      border-radius: 8px;
+    }
+    
+    &:last-child {
+      border-radius: 8px;
+    }
+    
+    &:hover:not(:disabled):not(.active) {
+      color: #3b82f6;
+    }
+    
+    .icon {
+      font-size: 0.75rem;
+    }
+    
+    &.active {
+      background: #ffffff;
+      color: #3b82f6;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+  }
+  
+  // Quando fullWidth
+  &.fullWidth {
+    .groupButton {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+  
+  // Pill shape dentro do toggle
+  &.pill {
+    .groupButton {
+      border-radius: 999px;
+      
+      &:first-child {
+        border-radius: 999px 0 0 999px;
+      }
+      
+      &:last-child {
+        border-radius: 0 999px 999px 0;
+      }
+    }
+  }
+}
+
+// Tamanhos para toggle
+.toggle.sm .groupButton {
+  height: 28px;
+  font-size: 0.7rem;
+  padding: 4px 10px;
+}
+
+.toggle.md .groupButton {
+  height: 32px;
+  font-size: 0.75rem;
+  padding: 6px 14px;
+}
+
+.toggle.lg .groupButton {
+  height: 38px;
+  font-size: 0.85rem;
+  padding: 8px 18px;
+}
+
+// ─── Wrap ──────────────────────────────────────────────────────────────────────
+.wrap {
+  flex-wrap: wrap;
+  gap: 4px;
+  
+  .groupButton {
+    &:not(:first-child) {
+      margin-left: 0;
+    }
+    
+    border-radius: 8px;
+  }
+  
+  &.pill .groupButton {
+    border-radius: 999px;
+  }
+}
+
+// Ajuste para quando wrap e fullWidth juntos
+.fullWidth.wrap {
+  display: flex;
+  width: 100%;
+  
+  .groupButton {
+    flex: 1 1 auto;
+    min-width: fit-content;
+    justify-content: center;
+  }
+}
