@@ -506,6 +506,10 @@ const DataGridServerSide = <T extends object>({
 
     const effectiveLimit =
         autoPageSizeOnDesktop && up("nt") && calculatedLimit ? calculatedLimit : limit;
+    const gridHeightStyle =
+        autoPageSizeOnDesktop && up("nt") && gridHeight
+            ? { height: `${gridHeight}px` }
+            : undefined;
 
     const currentPage = Math.floor(offset / effectiveLimit) + 1;
     const totalPages = Math.ceil(totalRows / effectiveLimit);
@@ -894,6 +898,7 @@ const DataGridServerSide = <T extends object>({
     return (
         <div
             ref={rootRef}
+            style={gridHeightStyle}
             className={`${styles.root} ${className} ${compact ? styles.compact : ""}`}
         >
             {(title ||
@@ -931,7 +936,7 @@ const DataGridServerSide = <T extends object>({
                     </div>
                 )}
 
-            <div className={styles.tableWrap} style={gridHeight && autoPageSizeOnDesktop && up("nt") ? { height: `${gridHeight}px` } : undefined}>
+            <div className={styles.tableWrap}>
                 <table
                     ref={tableRef}
                     className={[

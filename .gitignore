@@ -29,3 +29,4 @@ pdf-wasm/target/
 excel-wasm/target
 # wasm-pack generated output (rebuilt via npm run build:wasm)
 src/wasm/pdf_generator/
+vite.cofnig.ts
