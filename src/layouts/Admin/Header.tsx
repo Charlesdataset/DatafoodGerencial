@@ -17,6 +17,7 @@ import { Flex } from "../../components/Layout";
 import SelectModal from "../../components/Modal/SelectModal/SelectModal";
 import { useApp } from "../../contexts/AppContext";
 import { useNavigation } from "../../contexts/NavigationContext";
+import { useRememberMe } from "../../hooks/userRememberMe";
 import { api } from "../../services/api";
 import styles from "./Header.module.scss";
 import { pageIcons, pageTitles } from "./MobileHeader";
@@ -38,7 +39,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
   const [inAction, setInAction] = useState(false);
   const [inLoad, setInLoad] = useState(false);
   const [showBackButton, setShowBackButton] = useState(false);
-
+  const { lembrar } = useRememberMe();
   const currentIcon = pageIcons[`${location.pathname}${location.search}`] || "📌";
   const currentTitle = pageTitles[`${location.pathname}${location.search}`] || "TicketFlow";
   const isMobile = window.innerWidth <= 992;
@@ -116,7 +117,10 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
   const handleLogout = () => {
     const cnpj = localStorage.getItem("cnpj");
-    localStorage.clear();
+    if (!lembrar) {
+      localStorage.clear();
+
+    }
     setIsAuthenticated(false)
     navigate(`/login?cnpj=${cnpj}`);
   };
@@ -145,7 +149,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             },
 
           ],
-          primary: [{ key: "label",  marginStart: 0 },]
+          primary: [{ key: "label", marginStart: 0 },]
         }}
         mode="multi"
         selectedData={turnosSelecionados}

@@ -10,7 +10,7 @@ export default defineConfig({
 
   server: {
     port: 3000,
-    host: '192.168.0.118',
+    host: '192.168.0.121',
     open: true,
     watch: {
       usePolling: false,
@@ -38,18 +38,7 @@ export default defineConfig({
   assetsInclude: ['**/*.wasm'],
   optimizeDeps: {
     exclude: ['pdf_wasm', '@vitejs/pluguin-react-swc'],
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      'axios',
-      '@tanstack/react-table',
-      'react-toastify',
-      'dayjs',
-      '@embedpdf/engines',
-      '@embedpdf/pdfium',
-      'exceljs',
-    ],
+    include: ['react', 'react-dom', 'react-router-dom', 'axios', '@tanstack/react-table', 'react-toastify', 'dayjs', '@embedpdf/engines', '@embedpdf/pdfium', 'exceljs'],
     force: true,
   },
 
@@ -63,26 +52,15 @@ export default defineConfig({
       output: {
         manualChunks: (id: string) => {
           if (id.includes('node_modules')) {
-            if (
-              id.includes('react') ||
-              id.includes('react-dom') ||
-              id.includes('react-router')
-            )
-              return 'vendor-react';
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'vendor-react';
             if (id.includes('@tanstack/react-table')) return 'vendor-table';
-            if (
-              id.includes('axios') ||
-              id.includes('dayjs') ||
-              id.includes('react-toastify')
-            )
-              return 'vendor-misc';
+            if (id.includes('axios') || id.includes('dayjs') || id.includes('react-toastify')) return 'vendor-misc';
           }
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: ({ name }) => {
-          if (name && name.endsWith('.css'))
-            return 'assets/css/[name]-[hash][extname]';
+          if (name && name.endsWith('.css')) return 'assets/css/[name]-[hash][extname]';
           return 'assets/[name]-[hash][extname]';
         },
       },

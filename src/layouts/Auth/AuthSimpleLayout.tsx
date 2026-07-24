@@ -104,7 +104,7 @@ function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>, rea
     const drawDots = () => {
       // Verifica se o canvas ainda existe
       if (!canvas || !canvas.parentElement) return;
-      
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       dotsRef.current.forEach((d, i) => {
@@ -161,25 +161,25 @@ const AuthSimpleLayout = ({
   const [canShow, setChanShow] = useState(false);
   const [companyValidated, setCompanyValidated] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
-  const {isAuthenticated, setCompanyInfo} = useApp();
+  const { isAuthenticated, setCompanyInfo } = useApp();
 
   useEffect(() => {
-    const onFocusIn  = (e: FocusEvent) => { if ((e.target as HTMLInputElement)?.type === 'password') setPasswordFocused(true);  };
+    const onFocusIn = (e: FocusEvent) => { if ((e.target as HTMLInputElement)?.type === 'password') setPasswordFocused(true); };
     const onFocusOut = (e: FocusEvent) => { if ((e.target as HTMLInputElement)?.type === 'password') setPasswordFocused(false); };
-    document.addEventListener('focusin',  onFocusIn);
+    document.addEventListener('focusin', onFocusIn);
     document.addEventListener('focusout', onFocusOut);
     return () => {
-      document.removeEventListener('focusin',  onFocusIn);
+      document.removeEventListener('focusin', onFocusIn);
       document.removeEventListener('focusout', onFocusOut);
     };
   }, []);
   useEffect(() => {
-    if(!isAuthenticated) {
-      
+    if (!isAuthenticated) {
+
       const cnpj = new URLSearchParams(window.location.search).get("cnpj");
       if (cnpj) {
         handleValidateCompany(cnpj);
-        
+
       }
     }
   }, [])
@@ -196,7 +196,7 @@ const AuthSimpleLayout = ({
             "GIGABYTE": "laranja",
             "ARS": "marinho"
           };
-          
+
           handleThemeChange(franquiaTheme[franquia])
           setCompanyValidated(true);
           setChanShow(true)
@@ -228,10 +228,7 @@ const AuthSimpleLayout = ({
 
   return (
     <>
-     <div style={{ '--primary-color':THEMES[currentTheme].accent} as React.CSSProperties} >
-
-    
-      {canShow == true ? (
+      <div style={{ '--primary-color': THEMES[currentTheme].accent } as React.CSSProperties} >
 
         <div className={styles.login_card}>
           {showThemeSelector && (
@@ -267,16 +264,16 @@ const AuthSimpleLayout = ({
                   <div className={styles.logo_brand}>
                     {currentTheme === "verde" ? (
                       <>
-                      DATA<span style={{ color: t.accent }}>FOOD</span>
+                        DATA<span style={{ color: t.accent }}>FOOD</span>
                       </>
 
                     ) : currentTheme === "laranja" ? (
                       <>
-                      GIGA<span style={{ color: t.accent }}>BYTE</span>
+                        GIGA<span style={{ color: t.accent }}>BYTE</span>
                       </>
                     ) : currentTheme === "marinho" ? (
                       <>
-                      ARS<span style={{ color: t.accent }}>AUTOMAÇÃO</span>
+                        ARS<span style={{ color: t.accent }}>AUTOMAÇÃO</span>
                       </>
                     ) : null}
                   </div>
@@ -325,50 +322,8 @@ const AuthSimpleLayout = ({
             </div>
           </div>
         </div>
-      ) : (
-        <div className={styles.restricted}>
-          <div className={styles.restricted_card}>
+      </div>
 
-            {!companyValidated ? (
-              // Estado: empresa não encontrada
-              <>
-                <svg className={styles.restricted_icon} width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1a2a3a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 8v4" />
-                  <circle cx="12" cy="16" r="0.5" fill="#1a2a3a" />
-                </svg>
-                <div className={styles.restricted_brand}>
-                  OPS!
-                </div>
-                <div className={styles.restricted_divider} />
-                <h2 className={styles.restricted_title}>Empresa não encontrada</h2>
-                <p className={styles.restricted_desc}>
-                  Não foi possível identificar sua empresa. Verifique o link de acesso ou entre em contato com o suporte.
-                </p>
-              </>
-            ) : (
-              // Estado: acesso restrito (sem CNPJ)
-              <>
-                <svg className={styles.restricted_icon} width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1a2a3a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  <circle cx="12" cy="16" r="1" fill="#1a2a3a" />
-                </svg>
-                <div className={styles.restricted_brand}>
-                  OPS!
-                </div>
-                <div className={styles.restricted_divider} />
-                <h2 className={styles.restricted_title}>Acesso Restrito</h2>
-                <p className={styles.restricted_desc}>
-                  Por favor, acesse a página de login através do link fornecido pela sua empresa.
-                </p>
-              </>
-            )}
-
-          </div>
-        </div>
-      )}
-       </div>
     </>
   );
 };

@@ -11,6 +11,7 @@ import Relatorios from "./pages/Relatorios/Relatorios";
 
 function App() {
   return (
+
     <AppProvider>
       <MessageBoxProvider>
         <NavigationProvider>
