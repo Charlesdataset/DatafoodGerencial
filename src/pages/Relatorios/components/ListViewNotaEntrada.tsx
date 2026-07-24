@@ -405,7 +405,7 @@ export const ListViewNotaEntreda = () => {
                 totalRows={totalRows}
                 rowHeight={ROW_HEIGHT}
                 autoPageSizeOnDesktop
-                offsets={80}
+                offsets={100}
                 onPaginationChange={(newLimit, newOffset) => {
                     setLimit(newLimit);
                     setOffset(newOffset);
