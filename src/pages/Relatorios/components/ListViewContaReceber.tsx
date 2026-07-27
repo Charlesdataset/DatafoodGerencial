@@ -69,6 +69,7 @@ const ListViewContaReceber: React.FC = () => {
                 }}
                 autoPageSizeOnDesktop={true}
                 totalRows={0}
+                offsets={100}
                 className="mt-4"
 
             />

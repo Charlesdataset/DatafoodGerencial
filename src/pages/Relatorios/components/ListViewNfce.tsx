@@ -525,7 +525,7 @@ const ListViewNfce: React.FC = () => {
                 totalRows={totais?.totalRows}
                 loading={loading}
                 showPagination
-                offsets={80}
+                offsets={100}
                 autoPageSizeOnDesktop
                 onPaginationChange={(newLimit, newOffset) => {
                     console.log("Estamos te enviando", newLimit, newOffset)
