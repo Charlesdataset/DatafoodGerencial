@@ -22,6 +22,7 @@ import Fluid from "../../../components/Layout/Fluid";
 
 import dayjs from "dayjs";
 import { toast } from "react-toastify";
+import { Button } from "../../../components/Button";
 import { Flex } from "../../../components/Layout";
 import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
@@ -242,22 +243,12 @@ const ListViewNfce: React.FC = () => {
 
                         {/* Botão aparece só se tiver XML autorizado */}
                         {original.xmlAutorizacao && (
-                            <button
-                                onClick={() => handleImprimirNfce(original.xmlAutorizacao)}
-                                style={{
-                                    padding: '4px 8px',
-                                    fontSize: '12px',
-                                    cursor: 'pointer',
-                                    backgroundColor: '#4CAF50',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px'
-                                }}
-                            >
-                                🖨️ Imprimir
-                            </button>
-                        )}
-                    </div>
+                            <Button variant="text" onClick={() => handleImprimirNfce(original.xmlAutorizacao)}>
+                                <FontAwesomeIcon icon={faPrint} />
+                            </Button>
+                        )
+                        }
+                    </div >
                 );
             }
         },
@@ -505,34 +496,34 @@ const ListViewNfce: React.FC = () => {
 
                         <FormButton
                             className="justify-content-center"
-                            variant="secondary"
+                            bgColor="#C50606"
                             onClick={() => setModalReportShow(true)}
                             disabled={loading}
                         >
-                            <FontAwesomeIcon icon={faPrint} />
-                            Relatório
+                            <FontAwesomeIcon icon={faFilePdf} />
+
                         </FormButton>
                     </Fluid>
+                    <DataGridServerSide
+                        className="mt-4"
+                        columns={columns}
+                        data={data}
+                        limit={limit}
+                        offset={offset}
+                        totalRows={totais?.totalRows}
+                        loading={loading}
+                        showPagination
+                        offsets={110}
+                        autoPageSizeOnDesktop
+                        onPaginationChange={(newLimit, newOffset) => {
+                            console.log("Estamos te enviando", newLimit, newOffset)
+                            setLimit(newLimit);
+                            setOffset(newOffset);
+                        }}
+                    />
                 </Card.Body>
             </Card>
 
-            <DataGridServerSide
-                className="mt-4"
-                columns={columns}
-                data={data}
-                limit={limit}
-                offset={offset}
-                totalRows={totais?.totalRows}
-                loading={loading}
-                showPagination
-                offsets={100}
-                autoPageSizeOnDesktop
-                onPaginationChange={(newLimit, newOffset) => {
-                    console.log("Estamos te enviando", newLimit, newOffset)
-                    setLimit(newLimit);
-                    setOffset(newOffset);
-                }}
-            />
 
             <Fluid
                 className="mt-4"

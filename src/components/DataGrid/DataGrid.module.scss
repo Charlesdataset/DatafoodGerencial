@@ -24,10 +24,10 @@ $surface-2:     #f1f0ed;   // hover secundário, inputs
   flex-direction: column;
   background: $white;
   border-radius: $radius;
-  border: 1px solid rgba($warm, 0.22);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.07),
-    0 4px 20px rgba(0, 0, 0, 0.05);
+  //border: 1px solid rgba($warm, 0.22);
+  // box-shadow:
+  //   0 1px 3px rgba(0, 0, 0, 0.07),
+  //   0 4px 20px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   font-size: $font-size-sm;
   color: $text-primary;

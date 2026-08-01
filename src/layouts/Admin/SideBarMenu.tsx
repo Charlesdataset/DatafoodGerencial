@@ -1,6 +1,7 @@
 import {
-  faChartPie,
   faChevronRight,
+  faHome,
+
   faPrint
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -34,18 +35,18 @@ export const SidebarMenu = ({ isCollapsed, onLinkClick }: SidebarMenuProps) => {
 
   const menuItems: MenuItem[] = [
     {
-      name: "Dashboard",
-      icon: faChartPie,
+      name: "Inicio",
+      icon: faHome,
       to: "/dashboard",
-      
+
     },
     {
       name: "Relatorios",
       icon: faPrint,
       to: "/reports",
-      
+
     },
-  
+
   ];
 
   const toggleMenu = (menuName: string) => {
@@ -98,17 +99,20 @@ export const SidebarMenu = ({ isCollapsed, onLinkClick }: SidebarMenuProps) => {
     const linkClassName = `${styles.menuLink} ${isChild ? styles.childLink : ""}`;
 
     return (
-      <NavLink
-        key={item.name}
-        to={item.to!}
-        onClick={onLinkClick}
-        className={({ isActive }) =>
-          `${linkClassName} ${isActive ? styles.active : ""}`
-        }
-      >
-        <FontAwesomeIcon icon={item.icon} className={styles.menuIcon} />
-        {!isCollapsed && <span className={styles.menuLabel}>{item.name}</span>}
-      </NavLink>
+      <>
+
+        <NavLink
+          key={item.name}
+          to={item.to!}
+          onClick={onLinkClick}
+          className={({ isActive }) =>
+            `${linkClassName} ${isActive ? styles.active : ""}`
+          }
+        >
+          <FontAwesomeIcon icon={item.icon} className={styles.menuIcon} />
+          {!isCollapsed && <span className={styles.menuLabel}>{item.name}</span>}
+        </NavLink>
+      </>
     );
   };
 

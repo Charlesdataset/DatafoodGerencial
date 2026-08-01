@@ -14,7 +14,7 @@ $accent-bg: var(--accent-bg-color, rgba(52, 152, 219, 0.12));
 .iconContainer {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 50%;
   background-color: $accent-bg;
   display: flex;
   align-items: center;
@@ -22,28 +22,31 @@ $accent-bg: var(--accent-bg-color, rgba(52, 152, 219, 0.12));
   flex-shrink: 0;
 
   .icon {
-    font-size: 18px;
+    width: 15px;
+    height: 20px;
+    font-size: 1.25em;
     color: $accent;
   }
 }
 
 .title {
-  font-size: 15px;
-  font-weight: 500;
-  color: $gray-800;
+  font-size: 19px;
+  font-weight: 700;
+  color: $accent;
 }
 
 .containerItems {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 5px;
+  margin-left: 20px;
 }
 
 .titleWrarp {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  gap: 5px;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.15s ease;
@@ -58,12 +61,18 @@ $accent-bg: var(--accent-bg-color, rgba(52, 152, 219, 0.12));
 }
 
 .titleList {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
-  color: $gray-700;
+  color: $gray-600;
 }
 
 .arrow {
   font-size: 14px;
   color: $gray-400;
 }
+
+.btn-print {
+  background-color: transparent;
+  
+}
+

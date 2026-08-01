@@ -1,4 +1,4 @@
-import { faCancel, faFileAlt, faPrint, faRedo } from "@fortawesome/free-solid-svg-icons";
+import { faCancel, faFileAlt, faFilePdf, faPrint, faRedo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -130,7 +130,7 @@ const ListViewCliente: React.FC = () => {
 
     const handlePrint = async () => {
         await fetchData();
-        
+
         const bytes = await handleGenerateClientReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio);
         const blob = new Blob([bytes as any], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
@@ -219,36 +219,39 @@ const ListViewCliente: React.FC = () => {
                         }} >
                             <FontAwesomeIcon icon={faRedo} />
                         </FormButton>
-                        <FormButton variant="secondary" className="justify-content-center" onClick={() => {
+                        <FormButton bgColor="#C50606" className="justify-content-center" onClick={() => {
                             setModalShow(true);
                         }}>
-                            <FontAwesomeIcon icon={faPrint} />
-                            imprimir
+                            <FontAwesomeIcon icon={faFilePdf} color="#fff" size="lg" />
+
                         </FormButton>
                     </Fluid>
+
+
+                    <DataGrid
+
+                        columns={columns}
+                        data={dados}
+                        refreshKey={refreshKey}
+                        autoPageSizeOnDesktop
+                    />
+                    {
+                        url && <PdfiumViewer
+                            pdfUrl={url}
+                            filename={`relatorio_clientes-${dayjsUtc().format("DD-MM-YYYY")}`}
+                            onClose={() => {
+                                URL.revokeObjectURL(url);
+                                setUrl(null);
+                            }}
+                            onExcelClick={() => {
+                                handleExcelReport();
+                            }}
+                            hasExcel
+                        />
+
+                    }
                 </Card.Body>
             </Card>
-            <DataGrid
-                columns={columns}
-                data={dados}
-                refreshKey={refreshKey}
-                autoPageSizeOnDesktop
-            />
-            {
-                url && <PdfiumViewer
-                    pdfUrl={url}
-                    filename={`relatorio_clientes-${dayjsUtc().format("DD-MM-YYYY")}`}
-                    onClose={() => {
-                        URL.revokeObjectURL(url);
-                        setUrl(null);
-                    }}
-                    onExcelClick={() => {
-                        handleExcelReport();
-                    }}
-                    hasExcel
-                />
-
-            }
 
 
 

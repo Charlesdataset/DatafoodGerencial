@@ -7,8 +7,8 @@ import React, {
 } from "react";
 import logoArsRelatorio from '../assets/icones/ars/logo-a-fundo-branco.jpg';
 import logoArs from "../assets/icones/ars/logo-a-fundo-branco.png";
-import logoDataSet from "../assets/icones/dataset/logo-d-branco-transparente.png";
 import logoDataSetRelatorio from '../assets/icones/dataset/logo-d-fundo-branco.jpg';
+import logoDataSet from "../assets/icones/dataset/logo-d-fundo-branco.png";
 import logoGigaByte from "../assets/icones/gigabyte/logo-g-fundo-branco.png";
 import logoGigaByteRelatorio from '../assets/icones/gigabyte/logo-g-relatorio.jpg';
 import { initialUser } from "../types/user.types";
@@ -50,6 +50,7 @@ interface AppContextType {
   setTurnosSelecionados: (turno: any) => void;
   canShowTurnoTipo: boolean;
   setCanShowTurnoTipo: (canShow: boolean) => void;
+  version: string
 }
 
 export interface CompanyInfo {
@@ -81,6 +82,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [tipoTurnos, setTipoTurnos] = useState([]);
   const [turnosSelecionados, setTurnosSelecionados] = useState([]);
   const [canShowTurnoTipo, setCanShowTurnoTipo] = useState(false);
+  const version = 'v1.0.5';
 
   useEffect(() => {
     if (companyInfo) {
@@ -180,6 +182,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setTurnosSelecionados,
       canShowTurnoTipo,
       setCanShowTurnoTipo,
+      version
     }),
     [
       currLogo,

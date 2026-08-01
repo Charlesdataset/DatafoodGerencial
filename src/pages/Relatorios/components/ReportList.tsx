@@ -1,6 +1,4 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useNavigate } from "react-router-dom";
-import ListViewCliente from "./ListViewCliente";
 import styles from "./ReportList.module.scss";
 
 export interface ReportListProps {
@@ -24,8 +22,8 @@ const ReportList: React.FC<ReportListProps> = ({
     accentBg,
 }) => {
 
-   
-    
+
+
 
     return (
         <>
@@ -39,7 +37,7 @@ const ReportList: React.FC<ReportListProps> = ({
                     <div className={styles.iconContainer}>
                         <FontAwesomeIcon icon={icon} className={styles.icon} />
                     </div>
-                    <span className={styles.title}>{title}</span>
+                    <h5 className={styles.title}>{title}</h5>
                 </div>
 
                 <div className={styles.containerItems}>
@@ -56,7 +54,7 @@ const ReportList: React.FC<ReportListProps> = ({
                 </div>
             </div>
 
-          
+
         </>
     );
 };

@@ -244,6 +244,7 @@ export const DateRangePicker = ({
           placeholder={`${placeholderStart} - ${placeholderEnd}`}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           readOnly
+
           disabled={disabled}
         />
         {(startDate || endDate) && !disabled && (

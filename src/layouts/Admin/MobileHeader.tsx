@@ -2,6 +2,7 @@ import {
   faBox,
   faCancel,
   faChartPie,
+  faChartSimple,
   faFilter,
   faMagnifyingGlass,
   faMap,
@@ -25,7 +26,7 @@ import styles from "./MobileHeader.module.scss";
 
 export const pageIcons: Record<string, any> = {
   "/": faChartPie,
-  "/dashboard": faChartPie,
+  "/dashboard": faChartSimple,
   "/reports": faChartPie,
   "/reports?listing=nota-entrada": faNoteSticky,
   "/reports?listing=nfce": faNoteSticky,

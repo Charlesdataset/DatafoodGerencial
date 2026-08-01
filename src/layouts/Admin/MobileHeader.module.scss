@@ -7,11 +7,12 @@
   text-align: center;
   justify-content: spa;
   align-items: center;
-  background: $white;
+  background-color: #EDF2F9;
   border-bottom: 1px solid $border-color;
 
   @media (max-width: 992px) {
     display: block;
+    
   }
 }
 

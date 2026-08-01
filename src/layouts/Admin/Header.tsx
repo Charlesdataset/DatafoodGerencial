@@ -32,7 +32,7 @@ interface HeaderProps {
 export const Header = ({ onMenuClick }: HeaderProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, setIsAuthenticated, dataInicial, dataFinal, tipoTurnos, setTipoTurnos, turnosSelecionados, setTurnosSelecionados, setDataInicial, setDataFinal, currLogo, currLogoRelatorio, canShowTurnoTipo, setCanShowTurnoTipo } =
+  const { user, version, setIsAuthenticated, dataInicial, dataFinal, tipoTurnos, setTipoTurnos, turnosSelecionados, setTurnosSelecionados, setDataInicial, setDataFinal, currLogo, currLogoRelatorio, canShowTurnoTipo, setCanShowTurnoTipo } =
     useApp();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -175,7 +175,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
             {/* Logo centralizada no mobile */}
             <div className={styles.mobileLogo}>
-              <span ><img src={currLogoRelatorio} style={{ width: 150 }} /></span>
+              <span ><img src={currLogo} style={{ width: 150 }} /></span>
             </div>
 
             {/* Título com ícone - visível apenas no desktop */}
@@ -315,7 +315,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
                       >
                         DataSet Sistemas
                       </a>
-                      <span className={styles.versionText}>V.1.0.0</span>
+                      <span className={styles.versionText}>{version}</span>
                     </div>
                   </div>
                 </div>

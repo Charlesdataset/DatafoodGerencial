@@ -383,36 +383,36 @@ export const ListViewNotaEntreda = () => {
 
 
 
-                        <FormButton variant="secondary" className="mb-0 justify-content-center" onClick={() => {
+                        <FormButton bgColor="#C50606" className="mb-0 justify-content-center" onClick={() => {
                             setModalReportShow(true)
                         }}>
-                            <FontAwesomeIcon icon={faPrint} />
-                            Relatório
+                            <FontAwesomeIcon icon={faFilePdf} />
+
 
                         </FormButton>
                     </Fluid>
+                    <DataGridServerSide
+                        className="mt-4"
+                        showVerticalGrid
+                        columns={columns}
+                        data={notas}
+                        limit={limit}
+                        offset={offset}
+                        totalRows={totalRows}
+                        rowHeight={ROW_HEIGHT}
+                        autoPageSizeOnDesktop
+                        offsets={110}
+                        onPaginationChange={(newLimit, newOffset) => {
+                            setLimit(newLimit);
+                            setOffset(newOffset);
+                        }}
+                        showPagination
+                        showPageSizeSelector
+                    />
                 </Card.Body>
             </Card>
 
 
-            <DataGridServerSide
-                className="mt-4"
-                showVerticalGrid
-                columns={columns}
-                data={notas}
-                limit={limit}
-                offset={offset}
-                totalRows={totalRows}
-                rowHeight={ROW_HEIGHT}
-                autoPageSizeOnDesktop
-                offsets={100}
-                onPaginationChange={(newLimit, newOffset) => {
-                    setLimit(newLimit);
-                    setOffset(newOffset);
-                }}
-                showPagination
-                showPageSizeSelector
-            />
 
 
             <Fluid

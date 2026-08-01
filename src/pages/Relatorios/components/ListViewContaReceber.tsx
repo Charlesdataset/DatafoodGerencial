@@ -1,4 +1,4 @@
-import { faDollar, faHandHoldingDollar, faPrint } from "@fortawesome/free-solid-svg-icons";
+import { faDollar, faFilePdf, faHandHoldingDollar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type React from "react";
 import { useState } from "react";
@@ -51,28 +51,28 @@ const ListViewContaReceber: React.FC = () => {
                         <Select placeholder="Ordenado por" value="" options={[]} onChange={() => { }} />
                         <Select placeholder="Tipo" value="" options={[]} onChange={() => { }} />
                         <Select placeholder="Status" value="" options={[]} onChange={() => { }} />
-                        <FormButton>
-                            <FontAwesomeIcon icon={faPrint} />
+                        <FormButton bgColor="#C50606" >
+                            <FontAwesomeIcon icon={faFilePdf} />
                         </FormButton>
                     </Fluid>
 
+                    <DataGridServerSide
+                        data={data}
+                        columns={columns}
+                        limit={10}
+                        offset={0}
+                        onPaginationChange={() => {
+
+                        }}
+                        autoPageSizeOnDesktop={true}
+                        totalRows={0}
+                        offsets={110}
+                        className="mt-4"
+
+                    />
                 </Card.Body>
             </Card>
 
-            <DataGridServerSide
-                data={data}
-                columns={columns}
-                limit={10}
-                offset={0}
-                onPaginationChange={() => {
-
-                }}
-                autoPageSizeOnDesktop={true}
-                totalRows={0}
-                offsets={100}
-                className="mt-4"
-
-            />
 
             <Fluid
                 className="mt-4"

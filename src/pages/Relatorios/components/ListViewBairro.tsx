@@ -1,4 +1,4 @@
-import { faPrint, faRedo } from "@fortawesome/free-solid-svg-icons";
+import { faFilePdf, faRedo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -189,36 +189,36 @@ const ListViewBairro: React.FC = () => {
                         }} >
                             <FontAwesomeIcon icon={faRedo} />
                         </FormButton>
-                        <FormButton variant="secondary" className="justify-content-center" onClick={() => {
+                        <FormButton bgColor="#C50606" className="justify-content-center" onClick={() => {
                             handlePrint();
                         }}>
-                            <FontAwesomeIcon icon={faPrint} />
-                            imprimir
+                            <FontAwesomeIcon icon={faFilePdf} />
+
                         </FormButton>
                     </Fluid>
+                    <DataGrid
+                        columns={columns}
+                        data={dados}
+                        refreshKey={refreshKey}
+                        autoPageSizeOnDesktop
+                    />
+                    {
+                        url && <PdfiumViewer
+                            pdfUrl={url}
+                            filename="relatorio_bairros"
+                            onClose={() => {
+                                URL.revokeObjectURL(url);
+                                setUrl(null);
+                            }}
+                            hasExcel
+                            onExcelClick={() => {
+                                handleExcelReport();
+                            }}
+
+                        />
+                    }
                 </Card.Body>
             </Card>
-            <DataGrid
-                columns={columns}
-                data={dados}
-                refreshKey={refreshKey}
-                autoPageSizeOnDesktop
-            />
-            {
-                url && <PdfiumViewer
-                    pdfUrl={url}
-                    filename="relatorio_bairros"
-                    onClose={() => {
-                        URL.revokeObjectURL(url);
-                        setUrl(null);
-                    }}
-                    hasExcel
-                    onExcelClick={() => {
-                        handleExcelReport();
-                    }}
-
-                />
-            }
 
 
 

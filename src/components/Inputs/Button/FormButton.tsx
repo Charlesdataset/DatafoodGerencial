@@ -3,31 +3,50 @@ import styles from "./FormButton.module.scss";
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?:
-    | "primary"
-    | "secondary"
-    | "outline"
-    | "danger"
-    | "success"
-    | "text"
-    | "outline-secondary"
-    | "text-secondary"
-    | "link"
-    | "link-secondary"
-    | "link-danger"
-    | "link-info"
-    | "icon"
-    | "info"
-    | "outline-success"
-    | "outline-danger"
-    | "outline-info";
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "danger"
+  | "success"
+  | "text"
+  | "outline-secondary"
+  | "text-secondary"
+  | "link"
+  | "link-secondary"
+  | "link-danger"
+  | "link-info"
+  | "icon"
+  | "info"
+  | "outline-success"
+  | "outline-danger"
+  | "outline-info";
+  color?: string; // Nova prop para cor personalizada
+  bgColor?: string; // Opcional: cor de fundo
   isLoading?: boolean;
   fullWidth?: boolean;
   loadAlone?: boolean;
 }
 
-export const FormButton: React.FC<ButtonProps> = ({ fullWidth = false, variant = "primary", children, isLoading, className = "", loadAlone, disabled, ...props }) => {
-  const buttonClasses = [fullWidth ? styles["btn--full"] : "", isLoading ? styles["btn--loading"] : "", className].filter(Boolean).join(" ");
+export const FormButton: React.FC<ButtonProps> = ({
+  fullWidth = false,
+  variant = "primary",
+  children,
+  isLoading,
+  className = "",
+  loadAlone,
+  disabled,
+  color,
+  bgColor,
+  style,
+  ...props
+}) => {
+  const buttonClasses = [
+    fullWidth ? styles["btn--full"] : "",
+    isLoading ? styles["btn--loading"] : "",
+    className
+  ].filter(Boolean).join(" ");
 
+  // Estilos existentes por variante
   const currStyle: Record<string, string> = {
     primary: styles.buttonForm,
     secondary: styles.buttonSecondary,
@@ -62,14 +81,26 @@ export const FormButton: React.FC<ButtonProps> = ({ fullWidth = false, variant =
     "link-danger": styles.SpinerLinkDanger,
     "link-info": styles.SpinerLinkInfo,
     icon: styles.SpinerIcon,
-    info: styles.Spiner, // mesmo spinner de primary (branco)
+    info: styles.Spiner,
     "outline-success": styles.SpinerOutlineSuccess,
     "outline-danger": styles.SpinerOutlineDanger,
     "outline-info": styles.SpinerOutlineInfo,
   };
 
+  // Combinar estilos: se tiver cor personalizada, sobrescreve
+  const customStyle = {
+    ...(color && { color }),
+    ...(bgColor && { backgroundColor: bgColor }),
+    ...style,
+  };
+
   return (
-    <button className={`${currStyle[variant]} ${buttonClasses}`} disabled={disabled || isLoading} {...props}>
+    <button
+      className={`${currStyle[variant]} ${buttonClasses}`}
+      disabled={disabled || isLoading}
+      style={customStyle}
+      {...props}
+    >
       {isLoading && <span className={currStyleSpiner[variant]} />}
       {!(isLoading && loadAlone) && children}
     </button>
