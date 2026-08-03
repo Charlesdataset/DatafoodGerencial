@@ -7,6 +7,7 @@ import {
   faMagnifyingGlass,
   faMap,
   faMobileRetro,
+  faMoneyCheckDollar,
   faNoteSticky,
   faUsers
 } from "@fortawesome/free-solid-svg-icons";
@@ -30,6 +31,8 @@ export const pageIcons: Record<string, any> = {
   "/reports": faChartPie,
   "/reports?listing=nota-entrada": faNoteSticky,
   "/reports?listing=nfce": faNoteSticky,
+  "/reports?listing=nfe": faNoteSticky,
+  "/reports?listing=conta-receber": faMoneyCheckDollar,
   "/reports?listing=cliente": faUsers,
   "/reports?listing=bairro": faMap,
   "/reports?listing=produto": faBox,
@@ -44,7 +47,9 @@ export const pageTitles: Record<string, string> = {
   "/reports": 'Relatórios',
   "/reports?listing=nota-entrada": 'Nota de entrada',
   "/reports?listing=nfce": 'NFC-e',
+  "/reports?listing=nfe": 'NF-e',
   "/reports?listing=cliente": 'Clientes',
+  "/reports?listing=conta-receber": 'Contas a receber',
   "/reports?listing=bairro": 'Bairros',
   "/reports?listing=produto": 'Produtos',
   "/reports?listing=auditoria": 'Auditoria',

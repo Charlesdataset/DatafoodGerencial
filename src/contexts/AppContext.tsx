@@ -11,6 +11,7 @@ import logoDataSetRelatorio from '../assets/icones/dataset/logo-d-fundo-branco.j
 import logoDataSet from "../assets/icones/dataset/logo-d-fundo-branco.png";
 import logoGigaByte from "../assets/icones/gigabyte/logo-g-fundo-branco.png";
 import logoGigaByteRelatorio from '../assets/icones/gigabyte/logo-g-relatorio.jpg';
+import { api } from "../services/api";
 import { initialUser } from "../types/user.types";
 
 export interface CompanyInfo {
@@ -144,11 +145,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setCurrLogo(logoDataSet);
         break;
     }
-
+    buscarDataUltimoTurno();
 
 
 
   }, [companyInfo?.franquia]);
+
+  const buscarDataUltimoTurno = async () => {
+    const data = await api.get("turnos/ultima-data");
+    if (data.status == 200) {
+      const ultimaData = data.data;
+      if (ultimaData) {
+        setDataInicial(new Date(ultimaData));
+        setDataFinal(new Date())
+      }
+    }
+  }
 
 
 

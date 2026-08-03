@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
     const [hasLoaded, setHasLoaded] = useState(false);
     const [comparacaoMes, setComparacaoMes] = useState<any>(null);
 
-    const { dataInicial, dataFinal, turnosSelecionados, primaryColor, setCanShowTurnoTipo } = useApp();
+    const { dataInicial, dataFinal, turnosSelecionados, primaryColor, setCanShowTurnoTipo, setDataInicial, setDataFinal } = useApp();
 
     const findAllData = async () => {
         try {
@@ -175,6 +175,7 @@ const Dashboard: React.FC = () => {
                 topClientesResult,
                 vendasPorCanalResult,
                 comparacaoMesResult,
+              
             ] = await Promise.allSettled([
                 api.get(`/dashboard/resumo${queryString ? `?${queryString}` : ''}`),
                 api.get(`/dashboard/vendas-por-hora${queryString ? `?${queryString}` : ''}`),
@@ -187,6 +188,7 @@ const Dashboard: React.FC = () => {
                 api.get(`/dashboard/top-clientes${queryString ? `?${queryString}` : ''}`),
                 api.get(`/dashboard/vendas-canais${queryString ? `?${queryString}` : ''}`),
                 api.get(`/dashboard/comparacao-mes${queryString ? `?${queryString}` : ''}`),
+             
             ]);
 
             if (resumoResult.status === 'fulfilled' && resumoResult.value.status === 200) {
@@ -233,6 +235,8 @@ const Dashboard: React.FC = () => {
             if (comparacaoMesResult.status === 'fulfilled' && comparacaoMesResult.value.status === 200) {
                 setComparacaoMes(comparacaoMesResult.value.data);
             }
+
+            
 
             setHasLoaded(true);
         }
