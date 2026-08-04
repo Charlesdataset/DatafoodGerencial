@@ -1,8 +1,9 @@
-import { faArrowRightArrowLeft, faBookBookmark, faCancel, faCheckCircle, faFileExcel, faFilePdf, faFilter, faList, faPrint, faSignOut, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRightArrowLeft, faBookBookmark, faCancel, faCheckCircle, faFileExcel, faFilePdf, faFilter, faMagnifyingGlass, faPrint, faSignOut, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Card from "../../../components/Card/Card";
 import type { ExtendedColumnDef } from "../../../components/DataGrid/DataGrid";
@@ -16,6 +17,7 @@ import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
+import { useNavigation } from "../../../contexts/NavigationContext";
 import handleGenerateAuditoriaExcelReport from "../../../reports/auditoria/auditoria.excel.report";
 import handleReportAuditoria, { AuditoriaAgrupadoPor } from "../../../reports/auditoria/auditoria.report";
 import { api } from "../../../services/api";
@@ -48,7 +50,8 @@ const ListViewAuditoria: React.FC = () => {
     const [dadosJson, setDadosJson] = useState(null)
     const [modalDetailShow, setModalDetailShow] = useState(false)
     const [showModalReport, setShowModalReport] = useState(false)
-
+    const { subscribe } = useNavigation();
+    const navigate = useNavigate();
     const fetchForms = async () => {
         const res = await api("auditoria/auto-complete");
         if (res.status === 200) {
@@ -58,10 +61,19 @@ const ListViewAuditoria: React.FC = () => {
         }
     }
     useEffect(() => {
+        const unsubscribeBackView = subscribe('backView', () => {
+            // Lógica para voltar à tela anterior
+            navigate(`/reports`)
+        }
+        );
+        return () => {
+            unsubscribeBackView();
+        }
         fetchForms();
         fetchData();
         fetchTotal();
     }, [])
+
 
     useEffect(() => {
         fetchData();
@@ -163,7 +175,7 @@ const ListViewAuditoria: React.FC = () => {
                                     setId(id)
                                     setModalDetailShow(true)
                                 }} >
-                                    <FontAwesomeIcon icon={faList} />
+                                    <FontAwesomeIcon icon={faMagnifyingGlass} size="xs" />
                                 </FormButton>
                             )
                         }
@@ -574,11 +586,11 @@ const ListViewAuditoria: React.FC = () => {
                             value={currForm}
                         />
 
-                        <FormButton variant="secondary" onClick={() => {
+                        <FormButton onClick={() => {
                             setShowModalReport(true)
                         }}>
                             <FontAwesomeIcon icon={faPrint} />
-                            Relatório
+
                         </FormButton>
 
 
@@ -586,25 +598,26 @@ const ListViewAuditoria: React.FC = () => {
 
 
 
+                    <DataGridServerSide
+                        className="mt-4"
+                        data={data}
+                        columns={columns}
+                        limit={limit}
+                        offset={offset}
+                        showSorting={false}
+                        onPaginationChange={(l, o) => {
+                            setLimit(l);
+                            setOffset(o)
+                        }}
+                        showPageSizeSelector
+                        showPagination
+                        offsets={12}
+                        autoPageSizeOnDesktop
+                        totalRows={totalRows?.totalRows ?? 0}
+                    />
                 </Card.Body>
             </Card>
 
-            <DataGridServerSide
-                className="mt-4"
-                data={data}
-                columns={columns}
-                limit={limit}
-                offset={offset}
-                showSorting={false}
-                onPaginationChange={(l, o) => {
-                    setLimit(l);
-                    setOffset(o)
-                }}
-                showPageSizeSelector
-                showPagination
-                autoPageSizeOnDesktop
-                totalRows={totalRows?.totalRows ?? 0}
-            />
 
             {showPreviewPdf && url && (
                 <PdfiumViewer

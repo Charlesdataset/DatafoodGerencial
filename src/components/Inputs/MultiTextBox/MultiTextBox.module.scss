@@ -64,7 +64,7 @@
   align-items: flex-start;
   align-content: flex-start;
   gap: 6px;
-  min-height: 42px;
+  min-height: 35px;
   padding: 6px 44px 6px 10px; // padding-right reserva espaço para clear/actions
   border: 1px solid $border-color;
   border-radius: 8px;
@@ -104,7 +104,7 @@
   border: none;
   outline: none;
   background: transparent;
-  font-size: 14px;
+  font-size: 12px;
   font-family: inherit;
   color: $gray-dark;
   min-width: 120px;
@@ -120,7 +120,7 @@
 // ── Placeholder quando não há pills e não está focado ────────────────────────
 .placeholder {
   color: $gray-light;
-  font-size: 14px;
+  font-size: 16px;
   pointer-events: none;
   user-select: none;
 }

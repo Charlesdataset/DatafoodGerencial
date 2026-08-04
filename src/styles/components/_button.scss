@@ -38,6 +38,12 @@
     font-size: 0.8rem;
     border-radius: 10px;
   }
+  &--xxs {
+    padding: 8px 15px;
+    font-size: 0.8rem;
+    height: 30px;
+    border-radius: 8px;
+  }
   &--sm {
     padding: $spacing-sm $spacing-md;
     font-size: $font-size-sm;

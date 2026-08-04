@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Card from '../../components/Card/Card';
 import Fluid from '../../components/Layout/Fluid';
 import { useApp } from '../../contexts/AppContext';
+import { useNavigation } from '../../contexts/NavigationContext';
 import ListViewAuditoria from './components/ListViewAuditoria';
 import ListViewBairro from './components/ListViewBairro';
 import ListViewCliente from './components/ListViewCliente';
@@ -20,13 +21,24 @@ import SaidaPorProduto from './components/SaidaPorProduto';
 
 const Relatorios: React.FC = () => {
     const navigate = useNavigate();
-    const location = useLocation();
     const { setCanShowTurnoTipo } = useApp();
 
+
+    const { emit } = useNavigation();
+
+    const location = useLocation();
 
     // Pega o parâmetro 'listing' da URL
     const searchParams = new URLSearchParams(location.search);
     const listing = searchParams.get('listing');
+    useEffect(() => {
+
+        if (location.search.includes("listing")) {
+
+            emit('showBackButton');
+        }
+        else emit('showBackButton', false)
+    }, [location.search])
 
     // Função para navegar com o parâmetro listing
     const handleNavigateToListing = (tipo: string) => {
@@ -34,6 +46,9 @@ const Relatorios: React.FC = () => {
     };
     useEffect(() => {
         setCanShowTurnoTipo(false)
+        return () => {
+            emit('showBackButton', false)
+        }
     }, [])
 
     // Decide qual componente de listagem renderizar baseado no parâmetro

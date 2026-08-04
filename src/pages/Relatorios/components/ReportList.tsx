@@ -1,4 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useNavigation } from "../../../contexts/NavigationContext";
 import styles from "./ReportList.module.scss";
 
 export interface ReportListProps {
@@ -21,8 +25,7 @@ const ReportList: React.FC<ReportListProps> = ({
     accentColor,
     accentBg,
 }) => {
-
-
+   
 
 
     return (

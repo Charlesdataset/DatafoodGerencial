@@ -1,4 +1,4 @@
-import { faCancel, faFileAlt, faFilePdf, faPrint, faRedo } from "@fortawesome/free-solid-svg-icons";
+import { faCancel, faFileAlt, faFileExcel, faFilePdf, faPrint, faRedo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import Select from "../../../components/Inputs/Select/Select";
 
 import dayjs from "dayjs";
+import { toast } from "react-toastify";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
@@ -23,7 +24,6 @@ import dayjsUtc from "../../../utils/dates";
 
 
 const ListViewCliente: React.FC = () => {
-    const navigate = useNavigate();
     const [dados, setDados] = useState([])
     const [refreshKey, setRefreshKey] = useState(0);
     const [url, setUrl] = useState(null);
@@ -33,8 +33,9 @@ const ListViewCliente: React.FC = () => {
     const [modalShow, setModalShow] = useState(false);
     const [agrupado, setAgrupado] = useState<ClienteAgrupadoPor>(ClienteAgrupadoPor.Nenhum);
     const [tipo, setTipo] = useState<ModeloRelatorio>(ModeloRelatorio.Simplificado);
-    const { subscribe } = useNavigation();
     const { companyInfo, currLogoRelatorio, primaryColor } = useApp();
+    const navigate = useNavigate();
+    const { subscribe } = useNavigation();
     useEffect(() => {
         const unsubscribeBackView = subscribe('backView', () => {
             // Lógica para voltar à tela anterior
@@ -56,7 +57,7 @@ const ListViewCliente: React.FC = () => {
         }
 
         const timer = setTimeout(() => {
-            if (textSearch !== "") {
+            if (hasLoaded) {
                 fetchData();
             }
         }, 500);
@@ -128,16 +129,41 @@ const ListViewCliente: React.FC = () => {
         }
     ]
 
-    const handlePrint = async () => {
+    const handlePrintPdf = async () => {
         await fetchData();
-
-        const bytes = await handleGenerateClientReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio);
+        const params = {
+            pesquisa: textSearch
+        }
+        const bytes = await handleGenerateClientReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio, params);
         const blob = new Blob([bytes as any], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
         setUrl(url as any);
+    }
+
+    const handlePrintExcel = async () => {
+        await fetchData();
+
+        if (dados.length && dados.length > 0) {
+            const params = {
+                pesquisa: textSearch || undefined
+            }
+            const bytes = await handleGenerateClientExcelReport(dados, agrupado, tipo, companyInfo, primaryColor, currLogoRelatorio);
+            const blob = new Blob([bytes as any], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_clientes.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
+            a.click();
+
+        } else {
+            toast.info("Não há dados para impressão!");
+        }
 
 
     }
+
 
     const handleExcelReport = async () => {
 
@@ -163,7 +189,7 @@ const ListViewCliente: React.FC = () => {
 
     return (
         <>
-            <Modal isOpen={modalShow} onClose={() => { }} size="xs">
+            <Modal isOpen={modalShow} onClose={() => { }} size="md">
                 <Modal.Header onClose={() => { setModalShow(false) }}>
                     <Flex align="center">
                         <FontAwesomeIcon icon={faFileAlt} />
@@ -187,18 +213,35 @@ const ListViewCliente: React.FC = () => {
                     </Fluid>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Fluid xs={[50, 50]}>
+                    <Fluid
+                        md={['expand']}
+                        sm={[100, 50, 50]}
+                        xs={[100]}
+
+                    >
+
 
                         <FormButton variant="outline-secondary" className="text-center align-items-center justify-content-center" onClick={() => { }}>
                             <FontAwesomeIcon icon={faCancel} />
                             fechar
                         </FormButton>
-                        <FormButton className="justify-content-center" variant="secondary" onClick={() => {
-                            setModalShow(false);
-                            handlePrint();
+
+                        <FormButton className="justify-content-center" style={{ background: '#217145' }} onClick={() => {
+                            handlePrintExcel();
                         }}>
-                            <FontAwesomeIcon icon={faPrint} />
-                            Gerar
+                            <Flex wrap="nowrap">
+                                <FontAwesomeIcon icon={faFileExcel} />
+                                Gerar Excel
+                            </Flex>
+                        </FormButton>
+                        <FormButton className="justify-content-center " style={{ background: '#C50606' }} onClick={() => {
+                            setModalShow(false);
+                            handlePrintPdf();
+                        }}>
+                            <Flex wrap="nowrap">
+                                <FontAwesomeIcon icon={faFilePdf} />
+                                Gerar PDF
+                            </Flex>
                         </FormButton>
                     </Fluid>
                 </Modal.Footer>
@@ -219,10 +262,10 @@ const ListViewCliente: React.FC = () => {
                         }} >
                             <FontAwesomeIcon icon={faRedo} />
                         </FormButton>
-                        <FormButton bgColor="#C50606" className="justify-content-center" onClick={() => {
+                        <FormButton className="justify-content-center" onClick={() => {
                             setModalShow(true);
                         }}>
-                            <FontAwesomeIcon icon={faFilePdf} color="#fff" size="lg" />
+                            <FontAwesomeIcon icon={faPrint} color="#fff" />
 
                         </FormButton>
                     </Fluid>
@@ -234,6 +277,7 @@ const ListViewCliente: React.FC = () => {
                         data={dados}
                         refreshKey={refreshKey}
                         autoPageSizeOnDesktop
+                        offsets={12}
                     />
                     {
                         url && <PdfiumViewer

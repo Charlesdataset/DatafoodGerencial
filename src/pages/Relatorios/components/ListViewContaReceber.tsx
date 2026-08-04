@@ -1,7 +1,8 @@
-import { faDollar, faFilePdf, faHandHoldingDollar } from "@fortawesome/free-solid-svg-icons";
+import { faDollar, faHandHoldingDollar, faPrint } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Card from "../../../components/Card/Card";
 import type { ExtendedColumnDef } from "../../../components/DataGrid/DataGrid";
 import DataGridServerSide from "../../../components/DataGrid/DataGridServerSide";
@@ -11,6 +12,7 @@ import Select from "../../../components/Inputs/Select/Select";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import Fluid from "../../../components/Layout/Fluid";
 import { useApp } from "../../../contexts/AppContext";
+import { useNavigation } from "../../../contexts/NavigationContext";
 import { InfoCard } from "./InfoCard";
 
 
@@ -25,7 +27,18 @@ const ListViewContaReceber: React.FC = () => {
         totalNaoPagas: 0,
         totalPagas: 0
     })
-
+    const navigate = useNavigate();
+    const { subscribe } = useNavigation();
+    useEffect(() => {
+        const unsubscribeBackView = subscribe('backView', () => {
+            // Lógica para voltar à tela anterior
+            navigate(`/reports`)
+        }
+        );
+        return () => {
+            unsubscribeBackView();
+        }
+    }, [])
 
     const columns: ExtendedColumnDef<any>[] = [
 
@@ -51,8 +64,8 @@ const ListViewContaReceber: React.FC = () => {
                         <Select placeholder="Ordenado por" value="" options={[]} onChange={() => { }} />
                         <Select placeholder="Tipo" value="" options={[]} onChange={() => { }} />
                         <Select placeholder="Status" value="" options={[]} onChange={() => { }} />
-                        <FormButton bgColor="#C50606" >
-                            <FontAwesomeIcon icon={faFilePdf} />
+                        <FormButton  >
+                            <FontAwesomeIcon icon={faPrint} />
                         </FormButton>
                     </Fluid>
 

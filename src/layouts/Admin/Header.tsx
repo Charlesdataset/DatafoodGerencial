@@ -92,8 +92,8 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
       backAction();
     });
 
-    const usubscribeShowBackButton = subscribe("showBackButton", () => {
-      setShowBackButton(true);
+    const usubscribeShowBackButton = subscribe("showBackButton", (e = true) => {
+      setShowBackButton(e);
     });
 
 
@@ -184,7 +184,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
                 {showBackButton &&
                   (
                     <>
-                      <Button onClick={() => {
+                      <Button variant="outline" size="xxs" onClick={() => {
                         emit('backView');
                         setShowBackButton(false);
                       }}>
@@ -242,27 +242,31 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             {!isMobile && (
               <>
                 {canShowTurnoTipo && (
+                  <>
 
-                  <MultiTextBox
 
-                    colorMode="multicolor"
-                    onChange={(labels) => {
-                      setTurnosSelecionados((prev) =>
-                        prev.filter((t) => labels.includes(`${t.label}`))
-                      )
-                    }}
-                    values={turnosSelecionados.map((t) => `${t.label}`)} boxHeight={40} className="mb-0" placeholder="Tipos de turnos"
-                    onInputClick={() => {
-                      setIsTipoTurnoSearchOpen(true);
+                    <MultiTextBox
+
+                      colorMode="multicolor"
+                      onChange={(labels) => {
+                        setTurnosSelecionados((prev) =>
+                          prev.filter((t) => labels.includes(`${t.label}`))
+                        )
+                      }}
+                      values={turnosSelecionados.map((t) => `${t.label}`)} boxHeight={35} className="mb-0" placeholder="Tipos de turnos"
+                      onInputClick={() => {
+                        setIsTipoTurnoSearchOpen(true);
+                      }} />
+
+                    <DateRangePicker isForm={false} startDate={dataInicial} endDate={dataFinal} onChange={(s, e) => {
+                      setDataInicial(s);
+                      setDataFinal(e)
                     }} />
+                  </>
 
                 )}
 
 
-                <DateRangePicker startDate={dataInicial} endDate={dataFinal} onChange={(s, e) => {
-                  setDataInicial(s);
-                  setDataFinal(e)
-                }} />
               </>
 
             )}

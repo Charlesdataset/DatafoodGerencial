@@ -352,11 +352,11 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
   return (
     <div
       className={styles.overlay}
-      style={!isMobile ? { left: isCollapsed ? 50 : 200, right: 0 } : { left: 0, right: 0 }}
+      style={!isMobile ? { left: isCollapsed ? 50 : 250, right: 0 } : { left: 0, right: 0 }}
     >
       <div className={styles.floatingToolbar}>
         <Fluid xs={hasExcel ? ["expand", "auto", "auto", "auto", "auto", "auto"] : ["expand", "auto", "auto", "auto", "auto"]}>
-          <div className="mx-6">
+          <div className="mx-0">
             <FormButton variant="icon" onClick={onClose}>
               <FontAwesomeIcon icon={faClose} size="xs" />
             </FormButton>

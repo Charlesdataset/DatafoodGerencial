@@ -2,10 +2,12 @@ import { faBox, faCancel, faDollar, faFileExcel, faFilePdf, faHandHoldingDollar,
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Card from "../../../components/Card/Card";
 import type { ExtendedColumnDef } from "../../../components/DataGrid/DataGrid";
 import DataGridServerSide from "../../../components/DataGrid/DataGridServerSide";
+import { DateRangePicker } from "../../../components/DatePicker/DateRangePicker";
 import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import Select from "../../../components/Inputs/Select/Select";
 import TextBox from "../../../components/Inputs/TextBox/TextBox";
@@ -16,6 +18,7 @@ import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
+import { useNavigation } from "../../../contexts/NavigationContext";
 import handleReportNotaEntrada from "../../../reports/entrada/entadaNF.report";
 import handleGenerateEntradaExcelReport from "../../../reports/entrada/entradaNf.excel.report";
 import handleRelatorioNfCfopUf from "../../../reports/entrada/entradaNf_cfopUf.report";
@@ -44,11 +47,25 @@ export const ListViewNotaEntreda = () => {
     const [agrupadoPor, setAgrupadoPor] = useState<EntradaNFAgrupadoPor>(EntradaNFAgrupadoPor.NENHUM)
     const ROW_HEIGHT = 42;
     const { dataInicial, dataFinal, companyInfo, currLogoRelatorio, primaryColor } = useApp();
+    const [periodoInicial, setPeriodoInicial] = useState(dataInicial);
+    const [periodoFinal, setPeriodoFinal] = useState(dataFinal);
+    const navigate = useNavigate();
+    const { subscribe } = useNavigation();
+    useEffect(() => {
+        const unsubscribeBackView = subscribe('backView', () => {
+            // Lógica para voltar à tela anterior
+            navigate(`/reports`)
+        }
+        );
+        return () => {
+            unsubscribeBackView();
+        }
+    }, [])
 
     const fetchNotas = async () => {
         const params = {
-            dataInicial: dataInicial,
-            dataFinal: dataFinal,
+            dataInicial: periodoInicial,
+            dataFinal: periodoFinal,
             orderBy: ordenadoPor,
             valorInicial: valorInicial,
             valorFinal: valorFinal,
@@ -66,8 +83,8 @@ export const ListViewNotaEntreda = () => {
     };
     const fetchTotais = async () => {
         const params = {
-            dataInicial: dataInicial,
-            dataFinal: dataFinal,
+            dataInicial: periodoInicial,
+            dataFinal: periodoFinal,
             valorInicial: valorInicial,
             valorFinal: valorFinal,
             textSearch: textSearch,
@@ -90,7 +107,7 @@ export const ListViewNotaEntreda = () => {
         setOffset(0)
         fetchTotais();
         fetchNotas();
-    }, [limit, dataInicial, textSearch, dataFinal, ordenadoPor, valorInicial, valorFinal]);
+    }, [limit, periodoInicial, textSearch, periodoFinal, ordenadoPor, valorInicial, valorFinal]);
     useEffect(() => {
         fetchTotais();
         fetchNotas();
@@ -99,8 +116,8 @@ export const ListViewNotaEntreda = () => {
 
     const handleGeneratePdf = async () => {
         const params = {
-            dataInicial: dataInicial,
-            dataFinal: dataFinal,
+            dataInicial: periodoInicial,
+            dataFinal: periodoFinal,
             orderBy: ordenadoPor,
             valorInicial: valorInicial,
             valorFinal: valorFinal,
@@ -248,8 +265,8 @@ export const ListViewNotaEntreda = () => {
 
     const handleExcelReport = async () => {
         const params = {
-            dataInicial: dataInicial,
-            dataFinal: dataFinal,
+            dataInicial: periodoInicial,
+            dataFinal: periodoFinal,
             orderBy: ordenadoPor,
             valorInicial: valorInicial,
             valorFinal: valorFinal,
@@ -355,12 +372,17 @@ export const ListViewNotaEntreda = () => {
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={[60, 40, 50, 50, 'expand']}
-                        sm={[50, 25, 25, 90, 'expand']}
-                        lg={['expand', 'auto', 'auto', 'auto', 'auto']}
+                        xs={[100, 100, 50, 50, 'expand']}
+                        sm={[100, 50, 50, 33, 33, 'expand']}
+                        md={[60, 40, 25, 25, 25, 'expand']}
+                        lg={['expand', 'auto', 'auto', 14, 14, 'auto']}
                     >
                         <TextSearch value={textSearch} placeholder="Forncedor, numero..." onChange={(e) => {
                             setTextSearch(e.target.value)
+                        }} />
+                        <DateRangePicker startDate={periodoInicial} endDate={periodoFinal} onChange={(s, e) => {
+                            setPeriodoInicial(s);
+                            setPeriodoFinal(e)
                         }} />
                         <Select value={ordenadoPor} className="mb-0" placeholder="Ordenado por" onChange={(e) => {
                             setOrdenadoPor(e as EntradaNFOrderBy)
@@ -383,10 +405,10 @@ export const ListViewNotaEntreda = () => {
 
 
 
-                        <FormButton bgColor="#C50606" className="mb-0 justify-content-center" onClick={() => {
+                        <FormButton className="mb-0 justify-content-center" onClick={() => {
                             setModalReportShow(true)
                         }}>
-                            <FontAwesomeIcon icon={faFilePdf} />
+                            <FontAwesomeIcon icon={faPrint} />
 
 
                         </FormButton>

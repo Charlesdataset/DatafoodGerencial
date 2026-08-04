@@ -1,4 +1,4 @@
-import { faFilePdf, faRedo } from "@fortawesome/free-solid-svg-icons";
+import { faFileAlt, faFileExcel, faFilePdf, faPrint, faRedo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +10,9 @@ import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import dayjs from "dayjs";
 import { toast } from "react-toastify";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
+import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
+import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import { useApp } from "../../../contexts/AppContext";
 import { useNavigation } from "../../../contexts/NavigationContext";
@@ -27,6 +29,7 @@ const ListViewBairro: React.FC = () => {
     const [hasLoaded, setHasLoaded] = useState(false);
     const [textSearch, setTextSearch] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [modalShow, setModalShow] = useState(false);
 
 
     const { subscribe } = useNavigation();
@@ -132,7 +135,7 @@ const ListViewBairro: React.FC = () => {
         },
     ]
 
-    const handlePrint = async () => {
+    const handlePrintPdf = async () => {
         await fetchData();
         if (dados.length > 0) {
 
@@ -141,10 +144,27 @@ const ListViewBairro: React.FC = () => {
             const url = URL.createObjectURL(blob);
             setUrl(url);
         } else {
-            toast.info("Não há dados para imprimir relatório!")
+            toast.info("Não há dados para impressão!");
         }
 
 
+    }
+    const handlePrintExcel = async () => {
+        await fetchData();
+        if (dados.length && dados.length > 0) {
+            console.log("Entrando aqui")
+            const bytes = await handleGenerateBairroExcelReport(dados, companyInfo, primaryColor, currLogoRelatorio);
+            const blob = new Blob([bytes as any], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            7;
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_bairros.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
+            a.click();
+        }
+        else toast.info("Não há dados para impressão!");
     }
 
 
@@ -171,7 +191,37 @@ const ListViewBairro: React.FC = () => {
 
     return (
         <>
+            <Modal isOpen={modalShow} onClose={() => {
+                setModalShow(false);
+            }}>
+                <Modal.Header onClose={() => {
+                    setModalShow(false)
+                }}>
+                    <Flex align="center">
+                        <FontAwesomeIcon icon={faFileAlt} />
+                        Escolha os que gerar
+                    </Flex>
+                </Modal.Header>
+                <Modal.Body>
+                    <Fluid xs={[50, 50]}>
+                        <FormButton style={{ background: '#217145' }} className="justify-content-center" onClick={() => {
 
+                            handlePrintExcel();
+                            setModalShow(false);
+                        }}>
+                            <FontAwesomeIcon icon={faFileExcel} />
+                            Gerar Excel
+                        </FormButton>
+                        <FormButton style={{ background: '#C50606' }} className="justify-content-center" onClick={() => {
+                            handlePrintPdf();
+                            setModalShow(false);
+                        }}>
+                            <FontAwesomeIcon icon={faFilePdf} />
+                            Gerar Pdf
+                        </FormButton>
+                    </Fluid>
+                </Modal.Body>
+            </Modal >
 
             <Card>
                 <Card.Body>
@@ -189,10 +239,10 @@ const ListViewBairro: React.FC = () => {
                         }} >
                             <FontAwesomeIcon icon={faRedo} />
                         </FormButton>
-                        <FormButton bgColor="#C50606" className="justify-content-center" onClick={() => {
-                            handlePrint();
+                        <FormButton className="justify-content-center" onClick={() => {
+                            setModalShow(true)
                         }}>
-                            <FontAwesomeIcon icon={faFilePdf} />
+                            <FontAwesomeIcon icon={faPrint} />
 
                         </FormButton>
                     </Fluid>
@@ -201,6 +251,7 @@ const ListViewBairro: React.FC = () => {
                         data={dados}
                         refreshKey={refreshKey}
                         autoPageSizeOnDesktop
+                        offsets={12}
                     />
                     {
                         url && <PdfiumViewer

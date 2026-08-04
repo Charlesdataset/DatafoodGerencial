@@ -4,8 +4,14 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "./DatePicker.module.scss";
+// ⚠️ Veja também o ajuste necessário em DatePicker.module.scss:
+// trocar `position: absolute;` por `position: fixed;` na regra
+// `.datePickerDropdown` (fora do media query mobile) e remover as
+// classes `.dropdownTop` / `.dropdownBottom`, que não são mais usadas
+// (a posição agora vem 100% de `top`/`left` inline calculados em JS).
 
 interface DatePickerProps {
   value: Date | null;
@@ -205,10 +211,15 @@ export const DatePicker = ({
     value ? value.getMinutes() : 0,
   );
   const [showError, setShowError] = useState(!showErrorOnBlur);
-  const [dropdownPosition, setDropdownPosition] = useState<"top" | "bottom">(
-    "bottom",
-  );
-  const [dropdownLeft, setDropdownLeft] = useState<number>(0);
+
+  // Posição calculada em coordenadas de viewport (usada com position: fixed
+  // no portal, então não sofre com overflow/clip do popup pai)
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({
+    position: "fixed",
+    top: 0,
+    left: 0,
+    visibility: "hidden", // evita "flash" no canto (0,0) antes do primeiro cálculo
+  });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -236,7 +247,10 @@ export const DatePicker = ({
     }
   }, [error]);
 
-  // Fecha ao clicar fora (ignorando cliques no input)
+  // Fecha ao clicar fora (ignorando cliques no input).
+  // Como o dropdown agora vive num portal (fora da árvore DOM do input),
+  // usamos os refs — que continuam válidos mesmo através do portal —
+  // para checar se o clique foi dentro do dropdown ou do input.
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -264,48 +278,93 @@ export const DatePicker = ({
     }
   }, [isOpen, isMobile]);
 
-  // Posicionamento dinâmico (usa altura real do dropdown)
-  useEffect(() => {
+  // ── Posicionamento via Portal ────────────────────────────────────────────
+  // Em vez de posicionar relativo ao ancestral posicionado mais próximo
+  // (o que quebra dentro de popups/modais com overflow:hidden|auto),
+  // calculamos a posição em coordenadas de viewport e renderizamos o
+  // dropdown direto no <body> via createPortal + position: fixed.
+  // Isso garante que ele nunca seja cortado nem gere scroll dentro do popup.
+  useLayoutEffect(() => {
     if (!isOpen || isMobile || !inputRef.current) return;
 
     const updatePosition = () => {
-      // requestAnimationFrame garante que o dropdown já foi renderizado e medido
-      requestAnimationFrame(() => {
-        if (!inputRef.current) return;
-        const inputRect = inputRef.current.getBoundingClientRect();
-        const dropdownEl = dropdownRef.current;
-        const actualHeight = dropdownEl?.offsetHeight || (time ? 420 : 360);
-        const actualWidth = dropdownEl?.offsetWidth || (time ? 490 : 280);
+      if (!inputRef.current) return;
+      const inputRect = inputRef.current.getBoundingClientRect();
+      const dropdownEl = dropdownRef.current;
+      // "natural" height/width do conteúdo (sem cap ainda)
+      const naturalHeight = dropdownEl?.scrollHeight || (time ? 420 : 360);
+      const actualWidth = dropdownEl?.offsetWidth || (time ? 490 : 280);
+      const MARGIN = 8;
+      const GAP = 8;
+      const MIN_HEIGHT = 200; // nunca deixa o dropdown menor que isso
 
-        // Vertical: abre para cima se não couber abaixo mas couber acima
-        const spaceBelow = window.innerHeight - inputRect.bottom;
-        const spaceAbove = inputRect.top;
-        if (spaceBelow < actualHeight && spaceAbove > actualHeight) {
-          setDropdownPosition("top");
-        } else {
-          setDropdownPosition("bottom");
-        }
+      const spaceBelow = window.innerHeight - inputRect.bottom - GAP - MARGIN;
+      const spaceAbove = inputRect.top - GAP - MARGIN;
 
-        // Horizontal: corrige overflow na direita
-        const MARGIN = 8;
-        const rightEdge = inputRect.left + actualWidth;
-        const overflowRight = rightEdge - (window.innerWidth - MARGIN);
-        let leftOffset = 0;
-        if (overflowRight > 0) {
-          // empurra para esquerda
-          leftOffset = -overflowRight;
-          // garante que não saia da borda esquerda
-          const maxShiftLeft = -(inputRect.left - MARGIN);
-          leftOffset = Math.max(leftOffset, maxShiftLeft);
-        }
-        setDropdownLeft(leftOffset);
-      });
+      // Escolhe o lado com espaço suficiente; se nenhum dos dois comportar
+      // o conteúdo inteiro, escolhe o lado com MAIS espaço disponível
+      // (o conteúdo então rola internamente em vez de ser cortado).
+      const openBelow =
+        spaceBelow >= naturalHeight
+          ? true
+          : spaceAbove >= naturalHeight
+            ? false
+            : spaceBelow >= spaceAbove;
+
+      const availableSpace = openBelow ? spaceBelow : spaceAbove;
+      // Se não coube, limita a altura ao espaço disponível (com scroll interno)
+      const maxHeight = Math.max(
+        Math.min(naturalHeight, availableSpace),
+        Math.min(MIN_HEIGHT, availableSpace > 0 ? availableSpace : MIN_HEIGHT),
+      );
+
+      // Horizontal: corrige overflow nas bordas
+      let left = inputRect.left;
+      const rightEdge = left + actualWidth;
+      if (rightEdge > window.innerWidth - MARGIN) {
+        left = window.innerWidth - MARGIN - actualWidth;
+      }
+      if (left < MARGIN) left = MARGIN;
+
+      const base: React.CSSProperties = {
+        position: "fixed",
+        left,
+        maxHeight,
+        overflowY: "auto",
+        visibility: "visible",
+      };
+
+      if (openBelow) {
+        base.top = inputRect.bottom + GAP;
+      } else {
+        base.bottom = window.innerHeight - inputRect.top + GAP;
+      }
+
+      setDropdownStyle(base);
     };
 
-    updatePosition();
+    // rAF garante que o dropdown já foi montado/medido antes do 1º cálculo
+    const raf = requestAnimationFrame(updatePosition);
+
+    // capture:true para pegar scroll de QUALQUER ancestral com overflow
+    // (ex.: o próprio popup), não só o window
+    window.addEventListener("scroll", updatePosition, true);
     window.addEventListener("resize", updatePosition);
-    return () => window.removeEventListener("resize", updatePosition);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
   }, [isOpen, isMobile, time]);
+
+  // Reseta o estado de posição (visibility hidden) sempre que fechar,
+  // pra evitar flash na posição antiga da próxima vez que abrir
+  useEffect(() => {
+    if (!isOpen) {
+      setDropdownStyle((prev) => ({ ...prev, visibility: "hidden" }));
+    }
+  }, [isOpen]);
 
   const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
   const months = [
@@ -481,6 +540,161 @@ export const DatePicker = ({
     ${displayError ? styles.inputError : ""}
   `;
 
+  const dropdownContent = (
+    <>
+      {isMobile && (
+        <div className={styles.overlay} onClick={handleCancel} />
+      )}
+      <div
+        ref={dropdownRef}
+        className={`${styles.datePickerDropdown} ${time ? styles.withTimePicker : ""}`}
+        style={isMobile ? undefined : dropdownStyle}
+      >
+        {isMobile && (
+          <button
+            className={styles.closeBtnMobile}
+            onClick={handleCancel}
+            aria-label="Fechar"
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+        )}
+
+        <div className={styles.datePickerContent}>
+          <div className={styles.calendarSection}>
+            <div className={styles.calendarHeader}>
+              <button
+                onClick={prevMonth}
+                className={styles.navBtn}
+                type="button"
+              >
+                ◀
+              </button>
+              <span className={styles.monthYear}>
+                {months[viewDate.getMonth()]} {viewDate.getFullYear()}
+              </span>
+              <button
+                onClick={nextMonth}
+                className={styles.navBtn}
+                type="button"
+              >
+                ▶
+              </button>
+            </div>
+            <div className={styles.calendarWeekDays}>
+              {weekDays.map((day) => (
+                <div key={day} className={styles.weekDay}>
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className={styles.calendarDays}>
+              {calendarDays.map((date, idx) => (
+                <div key={idx} className={styles.calendarDayCell}>
+                  {date && (
+                    <button
+                      className={`${styles.dayBtn} ${isToday(date) ? styles.today : ""} ${isSelected(date) ? styles.selected : ""}`}
+                      onClick={() => handleDateClick(date)}
+                      type="button"
+                    >
+                      {date.getDate()}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {time && (
+            <div className={styles.timePickerSection}>
+              <div className={styles.timePickerHeader}>
+                <FontAwesomeIcon icon={faClock} />
+                <span>Horário</span>
+              </div>
+              <div className={styles.timeInputs}>
+                <DrumPicker
+                  value={tempHours}
+                  max={timeFormat === "24" ? 24 : 12}
+                  label="Hora"
+                  onChange={(v) => handleTimeChange("hours", v)}
+                />
+                <span className={styles.timeSeparator}>:</span>
+                <DrumPicker
+                  value={tempMinutes}
+                  max={60}
+                  label="Min"
+                  onChange={(v) => handleTimeChange("minutes", v)}
+                />
+              </div>
+              <div className={styles.timePickerActions}>
+                <button
+                  onClick={goToToday}
+                  className={styles.todayBtn}
+                  type="button"
+                >
+                  Hoje
+                </button>
+                <div className={styles.actionButtons}>
+                  <button
+                    onClick={handleCancel}
+                    className={styles.cancelBtn}
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleConfirm}
+                    className={styles.confirmBtn}
+                    type="button"
+                  >
+                    Confirmar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {time && isMobile && (
+          <div className={styles.calendarFooter}>
+            <button
+              onClick={goToToday}
+              className={styles.todayBtn}
+              type="button"
+            >
+              Hoje
+            </button>
+            <button
+              onClick={handleCancel}
+              className={styles.cancelBtn}
+              type="button"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleConfirm}
+              className={styles.confirmBtn}
+              type="button"
+            >
+              Confirmar
+            </button>
+          </div>
+        )}
+        {!time && (
+          <div className={styles.calendarFooter}>
+            <button
+              onClick={goToToday}
+              className={styles.todayBtn}
+              type="button"
+            >
+              Hoje
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
   return (
     <div
       className={`${isFormField ? styles.formField : ''} ${disabled ? styles.disabled : ""} ${className}`}
@@ -530,160 +744,10 @@ export const DatePicker = ({
         <div className={styles.errorMessage}>{errorMessage}</div>
       )}
 
-      {isOpen && !disabled && (
-        <>
-          {isMobile && (
-            <div className={styles.overlay} onClick={handleCancel} />
-          )}
-          <div
-            ref={dropdownRef}
-            className={`${styles.datePickerDropdown} ${time ? styles.withTimePicker : ""} ${dropdownPosition === "top" ? styles.dropdownTop : styles.dropdownBottom}`}
-            style={!isMobile ? { left: dropdownLeft } : undefined}
-          >
-            {isMobile && (
-              <button
-                className={styles.closeBtnMobile}
-                onClick={handleCancel}
-                aria-label="Fechar"
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            )}
-
-            <div className={styles.datePickerContent}>
-              <div className={styles.calendarSection}>
-                <div className={styles.calendarHeader}>
-                  <button
-                    onClick={prevMonth}
-                    className={styles.navBtn}
-                    type="button"
-                  >
-                    ◀
-                  </button>
-                  <span className={styles.monthYear}>
-                    {months[viewDate.getMonth()]} {viewDate.getFullYear()}
-                  </span>
-                  <button
-                    onClick={nextMonth}
-                    className={styles.navBtn}
-                    type="button"
-                  >
-                    ▶
-                  </button>
-                </div>
-                <div className={styles.calendarWeekDays}>
-                  {weekDays.map((day) => (
-                    <div key={day} className={styles.weekDay}>
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                <div className={styles.calendarDays}>
-                  {calendarDays.map((date, idx) => (
-                    <div key={idx} className={styles.calendarDayCell}>
-                      {date && (
-                        <button
-                          className={`${styles.dayBtn} ${isToday(date) ? styles.today : ""} ${isSelected(date) ? styles.selected : ""}`}
-                          onClick={() => handleDateClick(date)}
-                          type="button"
-                        >
-                          {date.getDate()}
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {time && (
-                <div className={styles.timePickerSection}>
-                  <div className={styles.timePickerHeader}>
-                    <FontAwesomeIcon icon={faClock} />
-                    <span>Horário</span>
-                  </div>
-                  <div className={styles.timeInputs}>
-                    <DrumPicker
-                      value={tempHours}
-                      max={timeFormat === "24" ? 24 : 12}
-                      label="Hora"
-                      onChange={(v) => handleTimeChange("hours", v)}
-                    />
-                    <span className={styles.timeSeparator}>:</span>
-                    <DrumPicker
-                      value={tempMinutes}
-                      max={60}
-                      label="Min"
-                      onChange={(v) => handleTimeChange("minutes", v)}
-                    />
-                  </div>
-                  <div className={styles.timePickerActions}>
-                    <button
-                      onClick={goToToday}
-                      className={styles.todayBtn}
-                      type="button"
-                    >
-                      Hoje
-                    </button>
-                    <div className={styles.actionButtons}>
-                      <button
-                        onClick={handleCancel}
-                        className={styles.cancelBtn}
-                        type="button"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        onClick={handleConfirm}
-                        className={styles.confirmBtn}
-                        type="button"
-                      >
-                        Confirmar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {time && isMobile && (
-              <div className={styles.calendarFooter}>
-                <button
-                  onClick={goToToday}
-                  className={styles.todayBtn}
-                  type="button"
-                >
-                  Hoje
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className={styles.cancelBtn}
-                  type="button"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleConfirm}
-                  className={styles.confirmBtn}
-                  type="button"
-                >
-                  Confirmar
-                </button>
-              </div>
-            )}
-            {!time && (
-              <div className={styles.calendarFooter}>
-                <button
-                  onClick={goToToday}
-                  className={styles.todayBtn}
-                  type="button"
-                >
-                  Hoje
-                </button>
-              </div>
-            )}
-          </div>
-        </>
-      )}
+      {isOpen &&
+        !disabled &&
+        typeof document !== "undefined" &&
+        createPortal(dropdownContent, document.body)}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { faCancel, faFileAlt, faFilePdf, faPrint, faRedo } from "@fortawesome/free-solid-svg-icons";
+import { faCancel, faFileAlt, faFileExcel, faFilePdf, faPrint, faRedo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import Select from "../../../components/Inputs/Select/Select";
 
 import dayjs from "dayjs";
+import { toast } from "react-toastify";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import { Flex } from "../../../components/Layout";
 import Fluid from "../../../components/Layout/Fluid";
@@ -56,9 +57,9 @@ const ListViewProduto: React.FC = () => {
         }
 
         const timer = setTimeout(() => {
-            if (textSearch !== "") {
+            if (hasLoaded)
                 fetchData();
-            }
+
         }, 500);
         return () => clearTimeout(timer);
     }, [textSearch])
@@ -137,41 +138,55 @@ const ListViewProduto: React.FC = () => {
         }
     ]
 
-    const handlePrint = async () => {
+
+
+
+    const handlePrintExcel = async () => {
         await fetchData();
-        console.log(companyInfo)
-        const bytes = await handleGenerateProductReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio);
-        const blob = new Blob([bytes], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        setUrl(url);
+        if (dados.length && dados.length > 0) {
 
+            const bytes = await handleGenerateProdutoExcelReport(
+                dados,
+                agrupado,
+                tipo,
+                companyInfo,
+                primaryColor,
+                currLogoRelatorio
+            );
 
+            const blob = new Blob([bytes as any], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            7;
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_produtos.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
+            a.click();
+        }
+        else {
+            toast.info("Não há dados para a impressão!")
+        }
     }
-    const handleExcelReport = async () => {
+    const handlePrintPdf = async () => {
+        await fetchData();
+        if (dados.length && dados.length > 0) {
+            console.log(companyInfo)
+            const bytes = await handleGenerateProductReport(dados, agrupado, tipo, companyInfo, currLogoRelatorio);
+            const blob = new Blob([bytes], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            setUrl(url);
+        }
+        else {
+            toast.info("Não há dados para a impressão!")
+        }
 
-        const bytes = await handleGenerateProdutoExcelReport(
-            dados,
-            agrupado,
-            tipo,
-            companyInfo,
-            primaryColor,
-            currLogoRelatorio
-        );
 
-        const blob = new Blob([bytes as any], {
-            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        });
-        7;
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `relatorio_produtos.xlsx-${dayjs().format('DD-MM-YYYY')}.xlsx`;
-        a.click();
     }
 
     return (
         <>
-            <Modal isOpen={modalShow} onClose={() => { }} size="xs">
+            <Modal isOpen={modalShow} onClose={() => { }} size="md">
                 <Modal.Header onClose={() => { setModalShow(false) }}>
                     <Flex align="center">
                         <FontAwesomeIcon icon={faFileAlt} />
@@ -195,18 +210,29 @@ const ListViewProduto: React.FC = () => {
                     </Fluid>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Fluid xs={[50, 50]}>
+                    <Fluid
+                        xs={[100]}
+                        sm={['expand']}
+                    >
 
                         <FormButton variant="outline-secondary" className="text-center align-items-center justify-content-center" onClick={() => { }}>
                             <FontAwesomeIcon icon={faCancel} />
                             fechar
                         </FormButton>
-                        <FormButton className="justify-content-center" variant="secondary" onClick={() => {
+                        <FormButton style={{ background: '#217145' }} className="justify-content-center" onClick={() => {
+
+                            handlePrintExcel();
                             setModalShow(false);
-                            handlePrint();
                         }}>
-                            <FontAwesomeIcon icon={faPrint} />
-                            Gerar
+                            <FontAwesomeIcon icon={faFileExcel} />
+                            Gerar Excel
+                        </FormButton>
+                        <FormButton style={{ background: '#C50606' }} className="justify-content-center" onClick={() => {
+                            handlePrintPdf();
+                            setModalShow(false);
+                        }}>
+                            <FontAwesomeIcon icon={faFilePdf} />
+                            Gerar Pdf
                         </FormButton>
                     </Fluid>
                 </Modal.Footer>
@@ -226,10 +252,10 @@ const ListViewProduto: React.FC = () => {
                         }} >
                             <FontAwesomeIcon icon={faRedo} />
                         </FormButton>
-                        <FormButton bgColor="#C50606" className="justify-content-center" onClick={() => {
+                        <FormButton className="justify-content-center" onClick={() => {
                             setModalShow(true);
                         }}>
-                            <FontAwesomeIcon icon={faFilePdf} />
+                            <FontAwesomeIcon icon={faPrint} />
 
                         </FormButton>
                     </Fluid>
@@ -238,6 +264,7 @@ const ListViewProduto: React.FC = () => {
                         data={dados}
                         refreshKey={refreshKey}
                         autoPageSizeOnDesktop
+                        offsets={12}
                     />
                     {
                         url && <PdfiumViewer
@@ -249,7 +276,7 @@ const ListViewProduto: React.FC = () => {
                             }}
                             hasExcel
                             onExcelClick={() => {
-                                handleExcelReport()
+                                handlePrintPdf()
                             }}
                         />
 

@@ -2,8 +2,10 @@ import {
     faBox,
     faCancel,
     faDollar,
+    faEraser,
     faFileExcel,
     faFilePdf,
+    faFilter,
     faPrint
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,13 +23,16 @@ import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import Fluid from "../../../components/Layout/Fluid";
 
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Button } from "../../../components/Button";
+import { DateRangePicker } from "../../../components/DatePicker/DateRangePicker";
 import { Flex } from "../../../components/Layout";
 import { Modal } from "../../../components/Modal";
 import { PdfiumViewer } from "../../../components/PdfiumViewer";
 import Switch from "../../../components/Switch/Switch";
 import { useApp } from "../../../contexts/AppContext";
+import { useNavigation } from "../../../contexts/NavigationContext";
 import handleGenerateNfeExcelReport from "../../../reports/nfe/nfe.excel.report";
 import handleReportNfe from "../../../reports/nfe/nfe.report";
 import { api } from "../../../services/api";
@@ -64,7 +69,7 @@ const ListViewNfe: React.FC = () => {
     const { dataInicial, dataFinal, companyInfo, currLogoRelatorio, primaryColor } = useApp();
     const [nfceReport, setNfceReport] = useState([]);
     const [data, setData] = useState<Array<Nfce>>([]);
-
+    const [filtersShow, setFiltersShow] = useState(false)
     const [loading, setLoading] = useState(false);
 
     const [limit, setLimit] = useState(10);
@@ -78,24 +83,37 @@ const ListViewNfe: React.FC = () => {
     const [textSearch, setTextSearch] = useState("");
     const [agrupadoPor, setAgrupadoPor] = useState<NfceAgrupadoPor>(NfceAgrupadoPor.Nenhum)
     const [status, setStatus] = useState("");
-
+    const [periodoInicial, setPeriodoInicial] = useState(dataInicial);
+    const [periodoFinal, setPeriodoFinal] = useState(dataFinal)
     const [valorInicial, setValorInicial] = useState("");
     const [valorFinal, setValorFinal] = useState("");
-
     const [saidaInicial, setSaidaInicial] = useState<Date | undefined>();
     const [saidaFinal, setSaidaFinal] = useState<Date | undefined>();
+    const { subscribe } = useNavigation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const unsubscribeBackView = subscribe('backView', () => {
+            // Lógica para voltar à tela anterior
+            navigate(`/reports`)
+        }
+        );
+        return () => {
+            unsubscribeBackView();
+        }
+    }, [])
 
     useEffect(() => {
         fetchNfces();
         fetchTotais();
-    }, [textSearch, status, valorInicial, valorFinal, dataInicial, dataFinal, saidaInicial, saidaFinal, limit, offset])
+    }, [textSearch, status, valorInicial, valorFinal, periodoInicial, periodoFinal, saidaInicial, saidaFinal, limit, offset])
 
     const fetchNfces = async () => {
         try {
             setLoading(true);
             const params = {
-                dataInicial: dataInicial,
-                dataFinal: dataFinal,
+                dataInicial: periodoInicial,
+                dataFinal: periodoFinal,
                 valorInicial: valorInicial,
                 valorFinal: valorFinal,
                 textSearch: textSearch,
@@ -128,8 +146,8 @@ const ListViewNfe: React.FC = () => {
 
     const fetchTotais = async () => {
         const params = {
-            dataInicial: dataInicial,
-            dataFinal: dataFinal,
+            dataInicial: periodoInicial,
+            dataFinal: periodoFinal,
             valorInicial: valorInicial,
             valorFinal: valorFinal,
             textSearch: textSearch,
@@ -179,8 +197,8 @@ const ListViewNfe: React.FC = () => {
             saidaFinal:
                 saidaFinal?.toISOString(),
             exibirItens,
-            dataInicial: dataInicial,
-            dataFinal: dataFinal
+            dataInicial: periodoInicial,
+            dataFinal: periodoFinal
         }
 
         const res = await api.get("nfe", {
@@ -198,8 +216,8 @@ const ListViewNfe: React.FC = () => {
                 valorInicial,
                 valorFinal,
                 agrupadoPor,
-                dataInicial,
-                dataFinal,
+                dataInicial: periodoInicial,
+                dataFinal: periodoFinal,
                 status
             });
             const blob = new Blob([bytes as any], { type: 'application/pdf' });
@@ -313,8 +331,8 @@ const ListViewNfe: React.FC = () => {
             saidaFinal:
                 saidaFinal?.toISOString(),
             exibirItens,
-            dataInicial: dataInicial,
-            dataFinal: dataFinal
+            dataInicial: periodoInicial,
+            dataFinal: periodoFinal
         }
 
 
@@ -349,6 +367,82 @@ const ListViewNfe: React.FC = () => {
 
     return (
         <>
+            <Modal onClose={() => { setFiltersShow(false) }} isOpen={filtersShow}>
+                <Modal.Header onClose={() => { setFiltersShow(false) }}>
+                    <Flex>
+                        <FontAwesomeIcon icon={faFilter} />
+                        Filtros
+                    </Flex>
+                </Modal.Header>
+                <Modal.Body>
+                    <Fluid xs={[50]}>
+
+                        <TextBox
+                            isFormField={false}
+                            placeholder="Valor Inicial"
+                            value={valorInicial}
+                            onChange={(e: any) => {
+                                setValorInicial(e.target.value);
+                            }}
+                        />
+
+                        <TextBox
+                            isFormField={false}
+                            placeholder="Valor Final"
+                            value={valorFinal}
+                            onChange={(e: any) => {
+                                setValorFinal(e.target.value);
+                            }}
+                        />
+                        <DatePicker
+                            placeholder="Saída Inicial"
+                            value={saidaInicial}
+                            // isFormField={false}
+                            className="mb-0"
+                            onChange={(value: any) => {
+                                setSaidaInicial(value);
+                            }}
+                        />
+
+                        <DatePicker
+                            // isFormField={false}
+                            className="mb-0"
+                            placeholder="Saída Final"
+                            value={saidaFinal}
+                            onChange={(value: any) => {
+                                setSaidaFinal(value);
+                            }}
+                        />
+
+                    </Fluid>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Fluid xs={['expand']}>
+                        <FormButton variant="outline-secondary" className="justify-content-center">
+                            <FontAwesomeIcon icon={faCancel} />
+                            Cancelar
+                        </FormButton>
+                        <FormButton variant="outline-danger" className="justify-content-center" onClick={() => {
+                            setValorInicial("");
+                            setValorFinal("");
+                            setSaidaInicial(null);
+                            setSaidaFinal(null)
+                        }}>
+                            <FontAwesomeIcon icon={faEraser} />
+                            Limpar
+                        </FormButton>
+                        <FormButton variant="success" className="justify-content-center" onClick={() => {
+                            setFiltersShow(false)
+                        }}>
+                            {/* <FontAwesomeIcon icon={faFilter} /> */}
+                            Ok
+                        </FormButton>
+                    </Fluid>
+                </Modal.Footer>
+            </Modal>
+
+
+
             <Modal isOpen={modalReportShow} onClose={() => { }} size="md">
                 <Modal.Header onClose={() => {
                     setModalReportShow(false)
@@ -356,7 +450,6 @@ const ListViewNfe: React.FC = () => {
                     <Flex>
                         <FontAwesomeIcon icon={faPrint} className="mr-2" />
                         Visualização de impressão
-
                     </Flex>
                 </Modal.Header>
                 <Modal.Body>
@@ -416,10 +509,10 @@ const ListViewNfe: React.FC = () => {
             <Card>
                 <Card.Body>
                     <Fluid
-                        xs={[70, 30, 50, 50, 50, 50, 'expand']}
-                        sm={[100, 50, 25, 25, 25, 25, 'expand']}
+                        xs={[100, 100, 100, 50]}
+                        sm={[100, 50, 50, 'expand']}
 
-                        md={[25, 10, 11, 11, 15, 15, 'expand']}
+                        md={['expand', 'auto', 'auto']}
                     >
                         <TextSearch
                             placeholder="Cliente..."
@@ -455,52 +548,24 @@ const ListViewNfe: React.FC = () => {
                             }}
                             placeholder="Status"
                         />
+                        <DateRangePicker startDate={periodoInicial} endDate={periodoFinal} onChange={(s, e) => {
+                            setPeriodoInicial(s);
+                            setPeriodoFinal(e)
+                        }} />
 
-                        <TextBox
-                            isFormField={false}
-                            placeholder="Valor Inicial"
-                            value={valorInicial}
-                            onChange={(e: any) => {
-                                setValorInicial(e.target.value);
-                            }}
-                        />
-
-                        <TextBox
-                            isFormField={false}
-                            placeholder="Valor Final"
-                            value={valorFinal}
-                            onChange={(e: any) => {
-                                setValorFinal(e.target.value);
-                            }}
-                        />
-
-                        <DatePicker
-                            placeholder="Saída Inicial"
-                            value={saidaInicial}
-                            // isFormField={false}
-                            className="mb-0"
-                            onChange={(value: any) => {
-                                setSaidaInicial(value);
-                            }}
-                        />
-
-                        <DatePicker
-                            // isFormField={false}
-                            className="mb-0"
-                            placeholder="Saída Final"
-                            value={saidaFinal}
-                            onChange={(value: any) => {
-                                setSaidaFinal(value);
-                            }}
-                        />
+                        <FormButton className="justify-content-center" variant="secondary" onClick={() => {
+                            setFiltersShow(true)
+                        }}>
+                            <FontAwesomeIcon icon={faFilter} />
+                        </FormButton>
 
                         <FormButton
                             className="justify-content-center"
-                            bgColor="#C50606" 
+
                             onClick={() => setModalReportShow(true)}
                             disabled={loading}
                         >
-                            <FontAwesomeIcon icon={faFilePdf} />
+                            <FontAwesomeIcon icon={faPrint} />
 
                         </FormButton>
                     </Fluid>
@@ -516,7 +581,7 @@ const ListViewNfe: React.FC = () => {
                         offsets={110}
                         autoPageSizeOnDesktop
                         onPaginationChange={(newLimit, newOffset) => {
-                            console.log("Estamos te enviando", newLimit, newOffset)
+
                             setLimit(newLimit);
                             setOffset(newOffset);
                         }}

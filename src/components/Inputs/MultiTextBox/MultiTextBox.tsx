@@ -369,7 +369,7 @@ const MultiTextBox: React.FC<MultiTextBoxProps> = ({
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            onFocus={() => {}}
+            onFocus={() => { }}
             onBlur={handleBlur}
             placeholder={values.length === 0 ? placeholder : ""}
             disabled={disabled}

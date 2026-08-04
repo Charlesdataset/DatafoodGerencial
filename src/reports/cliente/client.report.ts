@@ -1,7 +1,8 @@
 import type { CompanyInfo } from '../../contexts/AppContext';
-import type { ReportV3 } from '../../types/v3.types';
+import type { ComponentV3, ReportV3 } from '../../types/v3.types';
 import { getImageBase64FromPath, maskCnpj, maskCpf } from '../../utils/format';
 import { gerarRelatorioPdfV3 } from '../../wasm/pdfium_generator';
+import { formatFiltersForHeader, type FilterConfig } from '../utils/filterFormatter';
 
 export enum ClienteAgrupadoPor {
   Bairro = 'bairro',
@@ -13,7 +14,14 @@ export enum ModeloRelatorio {
   Detalhado = 'detalhado',
 }
 
-const handleGenerateClientReport = async (dataset: any[], agrupadoPor: ClienteAgrupadoPor, modelo: ModeloRelatorio, companyInfo: CompanyInfo, currLogoRelatorio: string) => {
+const handleGenerateClientReport = async (dataset: any[], agrupadoPor: ClienteAgrupadoPor, modelo: ModeloRelatorio, companyInfo: CompanyInfo, currLogoRelatorio: string, filters: any = []) => {
+  const filterConfigs: FilterConfig[] = [];
+  if (filters?.pesquisa) {
+    filterConfigs.push({ label: 'Pesquisa', values: [filters.pesquisa] });
+  }
+
+  const filtrosHeader = filterConfigs.length > 0 ? formatFiltersForHeader(filterConfigs, 180) : '';
+
   const json: ReportV3 = {
     pageConfiguration: {
       backgroundColor: '#ffffff',
@@ -25,6 +33,7 @@ const handleGenerateClientReport = async (dataset: any[], agrupadoPor: ClienteAg
     header: {
       repeat: false,
       height: 60,
+
       backgroundColor: '#ffffff',
       content: [
         {
@@ -62,6 +71,20 @@ const handleGenerateClientReport = async (dataset: any[], agrupadoPor: ClienteAg
                 four: [25, 0, 0, 50],
               },
             },
+            ...(filtrosHeader
+              ? ([
+                  {
+                    type: 'text' as const,
+                    value: `Filtros: $filtros_header`,
+                    fontSize: 9,
+                    color: '#575757',
+                    align: 'left' as const,
+                    margin: {
+                      four: [10, 0, 0, 0],
+                    },
+                  },
+                ] as ComponentV3[])
+              : []),
           ],
         },
       ],
@@ -255,7 +278,7 @@ const handleGenerateClientReport = async (dataset: any[], agrupadoPor: ClienteAg
     data_geracao: new Date().toLocaleDateString('pf-BR'),
     empresa: companyInfo.nomeCli,
     cnpj: companyInfo.cnpj.length > 11 ? maskCnpj(companyInfo.cnpj) : maskCpf(companyInfo.cnpj),
-
+    filtros_header: filtrosHeader,
     currDate: new Date().toLocaleDateString('pt-BR'),
     logoSistema: imageBase64,
   };
