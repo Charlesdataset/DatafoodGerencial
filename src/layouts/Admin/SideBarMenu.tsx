@@ -1,18 +1,27 @@
 import {
   faChevronRight,
   faHome,
-
-  faPrint
+  faIdCard,
+  faUser,
+  faHeadset,
+  faBusinessTime,
+  faDashboard,
+  faLocationDot,
+  faPrint,
+  faMoneyCheckDollar,
+  faCalculator
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useApp } from "../../contexts/AppContext";
+import Separator from "../../components/Separator/Separator";
 import styles from "./Sidebar.module.scss";
 
 interface SidebarMenuProps {
   isCollapsed: boolean;
   onLinkClick: () => void;
+  isMobile?: boolean;
 }
 
 interface MenuItem {
@@ -23,39 +32,43 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-export const SidebarMenu = ({ isCollapsed, onLinkClick }: SidebarMenuProps) => {
+export const SidebarMenu = ({ isCollapsed, onLinkClick, isMobile = false }: SidebarMenuProps) => {
   const { user } = useApp();
   const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
 
-  const canCadView =
-    user?.idEmpresa === 1 ||
-    user?.permissoes?.maqView === true ||
-    user?.permissoes?.grupView === true ||
-    user?.permissoes?.usuView === true;
-
-  const menuItems: MenuItem[] = [
+  
+  const deliveryItems: MenuItem[] = [
     {
-      name: "Inicio",
+      name: "Início",
       icon: faHome,
       to: "/dashboard",
-
-    },
-    {
-      name: "Relatorios",
-      icon: faPrint,
-      to: "/reports",
-
-    },
-
+    }
   ];
+
+const suporteItems: MenuItem[] = [
+  {
+    name: "Cadastros",
+    icon: faIdCard,
+    children: [
+      {
+        name: "Clientes",
+        icon: faUser,
+        to: "/clientes"
+      },
+      {
+        name: "Cidades",
+        icon: faLocationDot,
+        to: "/cidades"
+      },
+    ]
+  },
+];
 
   const toggleMenu = (menuName: string) => {
     if (!isCollapsed) {
       setOpenMenus((prev) => ({ ...prev, [menuName]: !prev[menuName] }));
     }
   };
-
-  const filteredMenu = menuItems.filter((item) => item.condition !== false);
 
   const renderMenuItem = (item: MenuItem, isChild: boolean = false) => {
     const hasChildren = item.children && item.children.length > 0;
@@ -71,18 +84,14 @@ export const SidebarMenu = ({ isCollapsed, onLinkClick }: SidebarMenuProps) => {
         <div key={item.name} className={styles.menuItem}>
           <button
             className={`${styles.menuButton} ${isOpen ? styles.open : ""}`}
-            onClick={() => {
-              toggleMenu(item.name);
-            }}
+            onClick={() => toggleMenu(item.name)}
           >
             <FontAwesomeIcon icon={item.icon} className={styles.menuIcon} />
             {!isCollapsed && (
               <span className={styles.menuLabel}>{item.name}</span>
             )}
             {!isCollapsed && (
-              <span
-                className={`${styles.menuArrow} ${isOpen ? styles.arrowOpen : ""}`}
-              >
+              <span className={`${styles.menuArrow} ${isOpen ? styles.arrowOpen : ""}`}>
                 <FontAwesomeIcon icon={faChevronRight} />
               </span>
             )}
@@ -99,26 +108,43 @@ export const SidebarMenu = ({ isCollapsed, onLinkClick }: SidebarMenuProps) => {
     const linkClassName = `${styles.menuLink} ${isChild ? styles.childLink : ""}`;
 
     return (
-      <>
+      <NavLink
+        key={item.name}
+        to={item.to!}
+        onClick={onLinkClick}
+        className={({ isActive }) =>
+          `${linkClassName} ${isActive ? styles.active : ""}`
+        }
+      >
+        <FontAwesomeIcon icon={item.icon} className={styles.menuIcon} />
+        {!isCollapsed && <span className={styles.menuLabel}>{item.name}</span>}
+      </NavLink>
+    );
+  };
 
-        <NavLink
-          key={item.name}
-          to={item.to!}
-          onClick={onLinkClick}
-          className={({ isActive }) =>
-            `${linkClassName} ${isActive ? styles.active : ""}`
-          }
-        >
-          <FontAwesomeIcon icon={item.icon} className={styles.menuIcon} />
-          {!isCollapsed && <span className={styles.menuLabel}>{item.name}</span>}
-        </NavLink>
-      </>
+  const renderSection = (title: string, items: MenuItem[]) => {
+    const filteredItems = items.filter((item) => item.condition !== false);
+    if (filteredItems.length === 0) return null;
+
+    return (
+      <div className={styles.menuSection}>
+        <div className={styles.linkHeader}>
+          <p>{title}</p>
+          {!isMobile && <Separator variant="light" size="xs" type="solid" />}
+        </div>
+        <nav className={styles.sidebarNav}>
+          {filteredItems.map((item) => renderMenuItem(item, false))}
+        </nav>
+      </div>
     );
   };
 
   return (
-    <nav className={styles.sidebarNav}>
-      {filteredMenu.map((item) => renderMenuItem(item, false))}
-    </nav>
+    <>
+     
+      {renderSection("DELIVERY", deliveryItems)}
+    
+      {renderSection("SUPORTE", suporteItems)}
+    </>
   );
 };

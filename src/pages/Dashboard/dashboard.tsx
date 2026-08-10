@@ -58,10 +58,6 @@ interface TopResonse {
     period: string;
 }
 
-
-
-
-
 interface TopClienteResponse {
     idCliente: number;
     nomeCliente: string;
@@ -102,8 +98,6 @@ const normalizeEntregador = (item: any) => ({
     percentage: Number(item.participacao ?? item.percentual ?? 0),
 });
 
-
-
 const normalizeTopCliente = (item: any): TopCliente => ({
     clientId: item.idCliente ?? item.id ?? 0,
     client: item.nomeCliente ?? item.client ?? '—',
@@ -136,114 +130,110 @@ const Dashboard: React.FC = () => {
     const { dataInicial, dataFinal, turnosSelecionados, primaryColor, setCanShowTurnoTipo, setDataInicial, setDataFinal } = useApp();
 
     const findAllData = async () => {
-        try {
-            const turnosIds = turnosSelecionados.map(t => t.id);
-            console.log('Turnos selecionados IDs:', turnosIds);
+        // 🔥 TELA BRANCA - COMENTE ESSA PARTE PRA VOLTAR O DASHBOARD NORMAL
+        setHasLoaded(true);
+        return;
+        
+        // ========== CÓDIGO ORIGINAL COMENTADO ==========
+        // try {
+        //     const turnosIds = turnosSelecionados.map(t => t.id);
+        //     console.log('Turnos selecionados IDs:', turnosIds);
 
-            // Construir URLSearchParams para garantir o formato correto
-            const searchParams = new URLSearchParams();
+        //     const searchParams = new URLSearchParams();
 
-            if (dataInicial) {
-                searchParams.append('dataInicio', dataInicial.toISOString());
-            }
-            if (dataFinal) {
-                searchParams.append('dataFim', dataFinal.toISOString());
-            }
+        //     if (dataInicial) {
+        //         searchParams.append('dataInicio', dataInicial.toISOString());
+        //     }
+        //     if (dataFinal) {
+        //         searchParams.append('dataFim', dataFinal.toISOString());
+        //     }
 
-            // Adiciona cada turno como parâmetro separado
-            if (turnosIds.length > 0) {
-                turnosIds.forEach(id => {
-                    searchParams.append('tipoTurnos', id.toString());
-                });
-            }
+        //     if (turnosIds.length > 0) {
+        //         turnosIds.forEach(id => {
+        //             searchParams.append('tipoTurnos', id.toString());
+        //         });
+        //     }
 
-            const queryString = searchParams.toString();
-            console.log('Query string:', queryString);
+        //     const queryString = searchParams.toString();
+        //     console.log('Query string:', queryString);
 
-            // // Usar a query string diretamente
-            // const baseUrl = `/dashboard/resumo${queryString ? `?${queryString}` : ''}`;
+        //     const [
+        //         resumoResult,
+        //         vendasPorHoraResult,
+        //         vendasPorFormaPagtoResult,
+        //         ganhoClientesResult,
+        //         vendasPorVendedorResult,
+        //         vendasPorEntregadorResult,
+        //         produtosCanceladosResult,
+        //         topProdutosResult,
+        //         topClientesResult,
+        //         vendasPorCanalResult,
+        //         comparacaoMesResult,
+        //     ] = await Promise.allSettled([
+        //         api.get(`/dashboard/resumo${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/vendas-por-hora${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/vendas-por-recebimento${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/ganho-clientes${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/top-vendedores${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/top-entregadores${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/produtos-cancelados${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/top-produtos-vendidos${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/top-clientes${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/vendas-canais${queryString ? `?${queryString}` : ''}`),
+        //         api.get(`/dashboard/comparacao-mes${queryString ? `?${queryString}` : ''}`),
+        //     ]);
 
-            const [
-                resumoResult,
-                vendasPorHoraResult,
-                vendasPorFormaPagtoResult,
-                ganhoClientesResult,
-                vendasPorVendedorResult,
-                vendasPorEntregadorResult,
-                produtosCanceladosResult,
-                topProdutosResult,
-                topClientesResult,
-                vendasPorCanalResult,
-                comparacaoMesResult,
-              
-            ] = await Promise.allSettled([
-                api.get(`/dashboard/resumo${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/vendas-por-hora${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/vendas-por-recebimento${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/ganho-clientes${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/top-vendedores${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/top-entregadores${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/produtos-cancelados${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/top-produtos-vendidos${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/top-clientes${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/vendas-canais${queryString ? `?${queryString}` : ''}`),
-                api.get(`/dashboard/comparacao-mes${queryString ? `?${queryString}` : ''}`),
-             
-            ]);
+        //     if (resumoResult.status === 'fulfilled' && resumoResult.value.status === 200) {
+        //         setResumo(resumoResult.value.data);
+        //     }
 
-            if (resumoResult.status === 'fulfilled' && resumoResult.value.status === 200) {
-                setResumo(resumoResult.value.data);
-            }
+        //     if (vendasPorHoraResult.status === 'fulfilled' && vendasPorHoraResult.value.status === 200) {
+        //         setVendasPorHora(vendasPorHoraResult.value.data ?? VENDAS_POR_HORA_EMPTY);
+        //     }
 
-            if (vendasPorHoraResult.status === 'fulfilled' && vendasPorHoraResult.value.status === 200) {
-                setVendasPorHora(vendasPorHoraResult.value.data ?? VENDAS_POR_HORA_EMPTY);
-            }
+        //     if (vendasPorFormaPagtoResult.status === 'fulfilled' && vendasPorFormaPagtoResult.value.status === 200) {
+        //         const receipts = vendasPorFormaPagtoResult.value.data?.receipts ?? [];
+        //         setVendasPorFormaPagto(receipts.map(item => mapRecebimentoToFormaPagamento(item, primaryColor)));
+        //     }
 
-            if (vendasPorFormaPagtoResult.status === 'fulfilled' && vendasPorFormaPagtoResult.value.status === 200) {
-                const receipts = vendasPorFormaPagtoResult.value.data?.receipts ?? [];
-                setVendasPorFormaPagto(receipts.map(item => mapRecebimentoToFormaPagamento(item, primaryColor)));
-            }
+        //     if (ganhoClientesResult.status === 'fulfilled' && ganhoClientesResult.value.status === 200) {
+        //         setGanhoClientes(ganhoClientesResult.value.data && ganhoClientesResult.value.data?.values.length ?
+        //             ganhoClientesResult.value.data : VENDAS_POR_HORA_EMPTY);
+        //     }
 
-            if (ganhoClientesResult.status === 'fulfilled' && ganhoClientesResult.value.status === 200) {
-                setGanhoClientes(ganhoClientesResult.value.data && ganhoClientesResult.value.data?.values.length ?
-                    ganhoClientesResult.value.data : VENDAS_POR_HORA_EMPTY);
-            }
+        //     if (vendasPorVendedorResult.status === 'fulfilled' && vendasPorVendedorResult.value.status === 200) {
+        //         setVendasPorVendedor((vendasPorVendedorResult.value.data ?? []));
+        //     }
 
-            if (vendasPorVendedorResult.status === 'fulfilled' && vendasPorVendedorResult.value.status === 200) {
-                setVendasPorVendedor((vendasPorVendedorResult.value.data ?? []));
-            }
+        //     if (vendasPorEntregadorResult.status === 'fulfilled' && vendasPorEntregadorResult.value.status === 200) {
+        //         setVendasPorEntregador((vendasPorEntregadorResult.value.data ?? []));
+        //     }
 
-            if (vendasPorEntregadorResult.status === 'fulfilled' && vendasPorEntregadorResult.value.status === 200) {
-                setVendasPorEntregador((vendasPorEntregadorResult.value.data ?? []));
-            }
+        //     if (produtosCanceladosResult.status === 'fulfilled' && produtosCanceladosResult.value.status === 200) {
+        //         setProdutosCancelados(produtosCanceladosResult.value.data ?? null);
+        //     }
 
-            if (produtosCanceladosResult.status === 'fulfilled' && produtosCanceladosResult.value.status === 200) {
-                setProdutosCancelados(produtosCanceladosResult.value.data ?? null);
-            }
+        //     if (topProdutosResult.status === 'fulfilled' && topProdutosResult.value.status === 200) {
+        //         setTopProdutos((topProdutosResult.value.data));
+        //     }
 
-            if (topProdutosResult.status === 'fulfilled' && topProdutosResult.value.status === 200) {
-                setTopProdutos((topProdutosResult.value.data));
-            }
+        //     if (topClientesResult.status === 'fulfilled' && topClientesResult.value.status === 200) {
+        //         setTopClientes((topClientesResult.value.data ?? []));
+        //     }
 
-            if (topClientesResult.status === 'fulfilled' && topClientesResult.value.status === 200) {
-                setTopClientes((topClientesResult.value.data ?? []));
-            }
+        //     if (vendasPorCanalResult.status === 'fulfilled' && vendasPorCanalResult.value.status === 200) {
+        //         setVendasPorCanal(vendasPorCanalResult.value.data ?? null);
+        //     }
+        //     if (comparacaoMesResult.status === 'fulfilled' && comparacaoMesResult.value.status === 200) {
+        //         setComparacaoMes(comparacaoMesResult.value.data);
+        //     }
 
-            if (vendasPorCanalResult.status === 'fulfilled' && vendasPorCanalResult.value.status === 200) {
-                setVendasPorCanal(vendasPorCanalResult.value.data ?? null);
-            }
-            if (comparacaoMesResult.status === 'fulfilled' && comparacaoMesResult.value.status === 200) {
-                setComparacaoMes(comparacaoMesResult.value.data);
-            }
-
-            
-
-            setHasLoaded(true);
-        }
-        catch (error: any) {
-            console.log("Erro ao buscar dados do dashboard:", error);
-            setHasLoaded(true);
-        }
+        //     setHasLoaded(true);
+        // }
+        // catch (error: any) {
+        //     console.log("Erro ao buscar dados do dashboard:", error);
+        //     setHasLoaded(true);
+        // }
     };
 
     useEffect(() => {
@@ -254,140 +244,132 @@ const Dashboard: React.FC = () => {
         setCanShowTurnoTipo(true)
     }, [])
 
-
-
-
-
     return (
         <>
             {!hasLoaded && <GlobalLoading />}
             {hasLoaded && (
-                <div>
+                // 🔥 TELA BRANCA - COMENTE ESSA DIV PRA VOLTAR O DASHBOARD NORMAL
+                <div style={{ width: '100%', height: '100vh', background: '#ffffff' }} />
+                
+                // ========== CÓDIGO ORIGINAL COMENTADO ==========
+                // <div>
+                //     {/* KPIs */}
+                //     <Fluid
+                //         xs={[100, 100, 100, 100]}
+                //         sm={[50, 50, 50, 50]}
+                //         lg={[25, 25, 25, 25]}
+                //     >
+                //         <InfoCards
+                //             titulo="Total de Vendas"
+                //             valor={resumo?.vendas.atual}
+                //             tendencia={resumo?.vendas.crescimento}
+                //             subtitulo="vs. período anterior"
+                //             icon={faChartLine}
+                //             cor={primaryColor}
+                //         />
+                //         <InfoCards
+                //             titulo="Nº de Pedidos"
+                //             valor={resumo?.pedidos.atual}
+                //             tendencia={resumo?.pedidos.crescimento}
+                //             subtitulo="vs. período anterior"
+                //             icon={faShoppingCart}
+                //             cor="#10b981"
+                //         />
+                //         <InfoCards
+                //             titulo="Ticket Médio"
+                //             valor={resumo?.ticketMedio.atual}
+                //             tendencia={resumo?.ticketMedio.crescimento}
+                //             subtitulo="vs. período anterior"
+                //             icon={faReceipt}
+                //             cor="#f59e0b"
+                //         />
+                //         <InfoCards
+                //             titulo="Meta Mensal"
+                //             valor="182%"
+                //             tendencia={82}
+                //             subtitulo="acima da meta"
+                //             icon={faBullseye}
+                //             cor="#8b5cf6"
+                //         />
+                //     </Fluid>
 
+                //     {/* Recebimentos + Meta + Contas */}
+                //     <Fluid className='mt-4'
+                //         xs={[100, 100, 100]}
+                //         sm={[100, 50, 50]}
+                //         lg={[100, 50, 50]}
+                //     >
+                //         <VendasPorHoraCard data={vendasPorHora} cor={primaryColor} />
+                //         <FormasPagamentoCard dados={vendasPorFormaPagto} primaryColor={primaryColor} />
+                //         <Fluid xs={[100]}>
+                //             <MetaVsReceitaCard
+                //                 data={{
+                //                     goal: 50000,
+                //                     revenue: 91200,
+                //                     period: "mai/2026"
+                //                 }}
+                //                 primaryColor={primaryColor}
+                //             />
 
-                    {/* KPIs */}
-                    <Fluid
-                        xs={[100, 100, 100, 100]}
-                        sm={[50, 50, 50, 50]}
-                        lg={[25, 25, 25, 25]}
+                //             <ContasPagarReceber data={{
+                //                 toPay: 12400,
+                //                 toReceive: 23800,
+                //                 period: "mai/2026"
+                //             }} primaryColor={primaryColor} />
+                //         </Fluid>
+                //     </Fluid>
 
+                //     {/* Vendas por hora */}
+                //     <Fluid className='mt-4'
+                //         xs={[100, 100, 100, 100, 100, 100, 100, 100, 100]}
+                //         sm={[100, 50, 50, 50, 50, 50, 50, 50, 50]}
+                //         lg={[50, 50, 100, 50, 50, 50, 50, 50, 50]}
+                //     >
+                //         <VendasPorHoraCard
+                //             data={ganhoClientes}
+                //             titulo="Ganho de Clientes"
+                //             cor={primaryColor}
+                //             labelFormatter={(l) => l}
+                //             valueFormatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
+                //             yAxisFormatter={(v) => String(v)}
+                //         />
+                //         <ComparacaoMesAMesCard
+                //             items={comparacaoMes?.items}
+                //             period={comparacaoMes?.period}
+                //             titulo="Comparativo: Mês x Mês Anterior"
+                //             label1="Mês Atual"
+                //             label2="Mês Anterior"
+                //             cor1={primaryColor}
+                //             cor2="#FE8B43"
+                //         />
 
-                    >
-                        <InfoCards
-                            titulo="Total de Vendas"
-                            valor={resumo?.vendas.atual}
-                            tendencia={resumo?.vendas.crescimento}
-                            subtitulo="vs. período anterior"
-                            icon={faChartLine}
-                            cor={primaryColor}
-                        />
-                        <InfoCards
-                            titulo="Nº de Pedidos"
-                            valor={resumo?.pedidos.atual}
-                            tendencia={resumo?.pedidos.crescimento}
-                            subtitulo="vs. período anterior"
-                            icon={faShoppingCart}
-                            cor="#10b981"
-                        />
-                        <InfoCards
-                            titulo="Ticket Médio"
-                            valor={resumo?.ticketMedio.atual}
-                            tendencia={resumo?.ticketMedio.crescimento}
-                            subtitulo="vs. período anterior"
-                            icon={faReceipt}
-                            cor="#f59e0b"
-                        />
-                        <InfoCards
-                            titulo="Meta Mensal"
-                            valor="182%"
-                            tendencia={82}
-                            subtitulo="acima da meta"
-                            icon={faBullseye}
-                            cor="#8b5cf6"
-                        />
-                    </Fluid>
-
-                    {/* Recebimentos + Meta + Contas */}
-                    <Fluid className='mt-4'
-                        xs={[100, 100, 100]}
-                        sm={[100, 50, 50]}
-                        lg={[100, 50, 50]}
-                    >
-                        <VendasPorHoraCard data={vendasPorHora} cor={primaryColor} />
-                        <FormasPagamentoCard dados={vendasPorFormaPagto} primaryColor={primaryColor} />
-                        <Fluid xs={[100]}>
-                            <MetaVsReceitaCard
-                                data={{
-                                    goal: 50000,
-                                    revenue: 91200,
-                                    period: "mai/2026"
-                                }}
-                                primaryColor={primaryColor}
-                            />
-
-                            <ContasPagarReceber data={{
-                                toPay: 12400,
-                                toReceive: 23800,
-                                period: "mai/2026"
-                            }} primaryColor={primaryColor} />
-                        </Fluid>
-                    </Fluid>
-
-                    {/* Vendas por hora */}
-                    <Fluid className='mt-4'
-                        xs={[100, 100, 100, 100, 100, 100, 100, 100, 100]}
-                        sm={[100, 50, 50, 50, 50, 50, 50, 50, 50]}
-                        lg={[50, 50, 100, 50, 50, 50, 50, 50, 50]}
-                    >
-
-                        <VendasPorHoraCard
-                            data={ganhoClientes}
-                            titulo="Ganho de Clientes"
-                            cor={primaryColor}
-                            labelFormatter={(l) => l}
-                            valueFormatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
-                            yAxisFormatter={(v) => String(v)}
-                        />
-                        <ComparacaoMesAMesCard
-                            items={comparacaoMes?.items}
-                            period={comparacaoMes?.period}
-                            titulo="Comparativo: Mês x Mês Anterior"
-                            label1="Mês Atual"
-                            label2="Mês Anterior"
-                            cor1={primaryColor}
-                            cor2="#FE8B43"
-                        />
-
-                        <ProdutosCanceladosCard data={produtosCancelados.itens ?? []} period={produtosCancelados.period} primaryColor={primaryColor} />
-                        <TopProdutosCard data={topProdutos.itens ?? []} period={topProdutos.period} cor={primaryColor} />
-                        <TopProdutosCard data={topClientes.itens ?? []} period="Hoje" cor={primaryColor} titulo='Top Clientes' />
-                        <TopProdutosCard data={vendasPorVendedor.itens ?? []} period="Hoje" titulo='Top Vendedores' cor={primaryColor} />
-                        <TopProdutosCard data={vendasPorEntregador.itens ?? []} titulo="Top Entregadores" period="Hoje" cor={primaryColor} />
-                        <MultiSeriesBarCard
-                            data={vendasPorCanal}
-                            titulo="Vendas por Canal"
-                            cor={primaryColor}
-                        />
-                        <MetaVsReceitaCard
-                            data={{
-                                goal: 0,
-                                revenue: 9,
-                                period: "mai de 2026"
-                            }}
-                            titulo="Meta de Clientes"
-                            metaLabel="Meta"
-                            receitaLabel="Conquistados"
-                            formatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
-                            primaryColor={primaryColor}
-                        />
-
-                    </Fluid>
-
-
-                </div>
+                //         <ProdutosCanceladosCard data={produtosCancelados.itens ?? []} period={produtosCancelados.period} primaryColor={primaryColor} />
+                //         <TopProdutosCard data={topProdutos.itens ?? []} period={topProdutos.period} cor={primaryColor} />
+                //         <TopProdutosCard data={topClientes.itens ?? []} period="Hoje" cor={primaryColor} titulo='Top Clientes' />
+                //         <TopProdutosCard data={vendasPorVendedor.itens ?? []} period="Hoje" titulo='Top Vendedores' cor={primaryColor} />
+                //         <TopProdutosCard data={vendasPorEntregador.itens ?? []} titulo="Top Entregadores" period="Hoje" cor={primaryColor} />
+                //         <MultiSeriesBarCard
+                //             data={vendasPorCanal}
+                //             titulo="Vendas por Canal"
+                //             cor={primaryColor}
+                //         />
+                //         <MetaVsReceitaCard
+                //             data={{
+                //                 goal: 0,
+                //                 revenue: 9,
+                //                 period: "mai de 2026"
+                //             }}
+                //             titulo="Meta de Clientes"
+                //             metaLabel="Meta"
+                //             receitaLabel="Conquistados"
+                //             formatter={(v) => `${v} cliente${v !== 1 ? 's' : ''}`}
+                //             primaryColor={primaryColor}
+                //         />
+                //     </Fluid>
+                // </div>
             )}
         </>
-
     );
 };
+
 export default Dashboard;

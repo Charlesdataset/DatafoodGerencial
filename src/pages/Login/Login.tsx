@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Checkbox } from "../../components/CheckBox/CheckBox";
-
 import { useApp } from "../../contexts/AppContext";
 import { useRememberMe } from "../../hooks/userRememberMe";
 import AuthSimpleLayout from "../../layouts/Auth/AuthSimpleLayout";
@@ -21,46 +20,28 @@ const Login = () => {
   const senhaRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { setIsAuthenticated, setUser } = useApp();
-  const cnpjRef = useRef<HTMLInputElement>(null)
-
-
+  const cnpjRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const cnpj = new URLSearchParams(window.location.search).get('cnpj');
-    if (cnpjRef.current && cnpj == undefined || cnpj == '') {
+    
+    if (cnpj && cnpj !== '') {
+      setcurrUser(prev => ({ ...prev, cnpj: cnpj }));
+    }
+    
+    if (cnpjRef.current && (!cnpj || cnpj === '')) {
       cnpjRef.current.focus();
-
     }
 
-    if (lembrar == true) {
-      if (credentials) {
-        setcurrUser(credentials);
-        if (credentials.codigo == "") {
-          nomeRef.current.focus();
-        }
-        else senhaRef.current.focus();
-
-      }
-
-
-    } else {
-      if (cnpj && cnpj != "") {
-        nomeRef.current.focus();
+    if (lembrar && credentials) {
+      setcurrUser(credentials);
+      if (credentials.codigo === "") {
+        nomeRef.current?.focus();
+      } else {
+        senhaRef.current?.focus();
       }
     }
-
-
-  }, [credentials]);
-
-  useEffect(() => {
-
-    const cnpj = new URLSearchParams(window.location.search).get("cnpj");
-    setcurrUser({ ...currUser, cnpj: cnpj })
-
-  }, [])
-
-
-
+  }, []);
 
   const fazerLogin = async () => {
     try {
@@ -73,26 +54,25 @@ const Login = () => {
         return;
       }
 
+      // Envia apenas codigo e senha, o cnpj vai no header
+      const loginData = {
+        codigo: currUser.codigo,
+        senha: currUser.senha
+      };
 
-
-      const res = await api.post("/auth/login", currUser, {
+      const res = await api.post("/auth/login", loginData, {
         headers: { 'cnpj': cnpj }
       });
 
       if (res?.status === 200 || res?.status === 201) {
-        // Salva token e CNPJ
         localStorage.setItem("tokenDataFood", res.data.access_token);
         localStorage.setItem("cnpj", cnpj);
 
-        // Salva credenciais se "Lembrar-me" estiver ativo
         saveCredentials(currUser.codigo, currUser.senha, unMask(currUser.cnpj));
-        setUser(res.data.user)
+        setUser(res.data.user);
         toast.success("Login realizado com sucesso!");
         setIsAuthenticated(true);
-
-
         navigate(`/dashboard`);
-
       }
     } catch (error: any) {
       console.error(error);
@@ -106,44 +86,37 @@ const Login = () => {
   return (
     <AuthSimpleLayout>
       <div className="form-group">
-
         <div className="field mb-4">
-          <label htmlFor="cnpj" className="form-label ">
-            Cnpj/Cpf
+          <label htmlFor="cnpj" className="form-label">
+            CNPJ
           </label>
           <input
-            type='cnpj'
+            type="text"
             id="cnpj"
             ref={cnpjRef}
             value={maskCnpj(currUser.cnpj ?? '')}
-            placeholder="00.000/0000-00000"
+            placeholder="00.000.000/0000-00"
             onKeyDown={(e) => {
-
               if (e.key === 'Enter') {
-                nomeRef.current.focus();
-
+                nomeRef.current?.focus();
               }
-
-
             }}
             onKeyUp={(e) => {
-              console.log(e.key)
-              if (e.key != 'Backspace' && e.key != 'Tab' && e.key != 'Shift' && unMask(cnpjRef.current.value).length == 14)
-                nomeRef.current.focus();
-
-
+              if (e.key !== 'Backspace' && e.key !== 'Tab' && e.key !== 'Shift' && 
+                  unMask(cnpjRef.current?.value || '').length === 14) {
+                nomeRef.current?.focus();
+              }
             }}
             onChange={(e) => {
-              e.preventDefault()
               const newCnpj = unMask(e.target.value);
-              navigate(`?cnpj=${newCnpj}`, { replace: true })
-              setcurrUser({ ...currUser, cnpj: newCnpj })
+              navigate(`?cnpj=${newCnpj}`, { replace: true });
+              setcurrUser({ ...currUser, cnpj: newCnpj });
             }}
           />
         </div>
 
         <div className="field">
-          <label htmlFor="nome" className="form-label ">
+          <label htmlFor="nome" className="form-label">
             Código
           </label>
           <input
@@ -158,7 +131,7 @@ const Login = () => {
         </div>
 
         <div className="field mt-4">
-          <label htmlFor="senha" className="form-label ">
+          <label htmlFor="senha" className="form-label">
             Senha
           </label>
           <input
@@ -184,7 +157,6 @@ const Login = () => {
         onClick={fazerLogin}
         className="btn btn--primary btn--full"
         disabled={isLoading || !currUser.codigo || !currUser.senha}
-
       >
         {isLoading ? "Entrando..." : "Entrar"}
       </button>

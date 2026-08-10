@@ -260,7 +260,7 @@ const ListViewNfce: React.FC = () => {
                 const { original } = info.row;
 
                 return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
                         <span>{original.cliente}</span>
 
                         {/* Botão aparece só se tiver XML autorizado */}

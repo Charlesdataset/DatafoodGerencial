@@ -13,6 +13,7 @@ interface DateRangePickerProps {
   disabled?: boolean;
   time?: boolean;
   timeFormat?: "12" | "24";
+  isForm?: boolean;
 }
 
 // ── Drum Picker (igual ao DatePicker) ────────────────────────────────────────
@@ -118,6 +119,7 @@ export const DateRangePicker = ({
   disabled = false,
   time = false,
   timeFormat = "24",
+  isForm = true
 }: DateRangePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(new Date());
@@ -244,6 +246,7 @@ export const DateRangePicker = ({
           placeholder={`${placeholderStart} - ${placeholderEnd}`}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           readOnly
+          style={{ height: isForm ? 40 : 35, fontSize: isForm ? 16 : 12 }}
 
           disabled={disabled}
         />

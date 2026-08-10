@@ -1,0 +1,38 @@
+.actionsWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #fff;
+  font-size: 12px;
+
+  &.edit {
+    background: #22c55e; // VERDE
+
+    &:hover {
+      background: #16a34a;
+      transform: scale(1.05);
+    }
+  }
+
+  &.danger {
+    background: #ef4444; // VERMELHO
+
+    &:hover {
+      background: #dc2626;
+      transform: scale(1.05);
+    }
+  }
+}

@@ -1,41 +1,41 @@
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 export const formatValue = (value: number): string => {
-  return new Intl.NumberFormat('pt-BR', {
+  return new Intl.NumberFormat("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 };
 
 export const formatDateToString = (date: Date | null): string => {
-  if (!date) return '';
+  if (!date) return "";
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
 export const parseDate = (dateStr: string | null): Date | null => {
   if (!dateStr) return null;
-  const [date, time] = dateStr.split(' ');
-  const [year, month, day] = date.split('-');
-  const [hour, minute] = time?.split(':') || ['00', '00'];
+  const [date, time] = dateStr.split(" ");
+  const [year, month, day] = date.split("-");
+  const [hour, minute] = time?.split(":") || ["00", "00"];
   return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute));
 };
 
 export const formatDateTimes = (date) => {
-  return date && dayjs(date).isValid() ? dayjs(date).format('YYYY-MM-DDTHH:mm:ssZ') : '';
+  return date && dayjs(date).isValid() ? dayjs(date).format("YYYY-MM-DDTHH:mm:ssZ") : "";
 };
 
 export const maskCpf = (value: string): string => {
   const clean = unMask(value);
   if (clean.length <= 11) {
     return clean
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})/, "$1-$2")
       .slice(0, 14);
   }
   return maskCnpj(value);
@@ -44,14 +44,42 @@ export const maskCpf = (value: string): string => {
 export const maskCnpj = (value: string): string => {
   const clean = unMask(value);
   return clean
-    .replace(/(\d{2})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1/$2')
-    .replace(/(\d{4})(\d)/, '$1-$2')
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2")
     .slice(0, 18);
 };
+
+// ========== NOVAS FUNÇÕES ADICIONADAS ==========
+
+export const maskPhone = (value: string): string => {
+  const clean = unMask(value);
+  if (clean.length <= 10) {
+    return clean
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{4})(\d)/, "$1-$2")
+      .slice(0, 14);
+  }
+  return clean
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2")
+    .slice(0, 15);
+};
+
+export const maskWhats = (value: string): string => {
+  return maskPhone(value);
+};
+
+export const maskCep = (value: string): string => {
+  const clean = unMask(value);
+  return clean.replace(/(\d{5})(\d)/, "$1-$2").slice(0, 9);
+};
+
+// ========== FIM DAS NOVAS FUNÇÕES ==========
+
 export function unMask(v: string) {
-  v = v.replace(/\D/g, ''); //Remove tudo o que não é dígito
+  v = v.replace(/\D/g, "");
   return v;
 }
 

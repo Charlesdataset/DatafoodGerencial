@@ -1,3 +1,4 @@
+// src/components/Modal/Modal.tsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./Modal.module.scss";
@@ -7,7 +8,7 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  size?: "xs"|"sm" | "md" | "lg" | "xl" | "fullscreen";
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "fullscreen";
   centered?: boolean;
   backdrop?: boolean | "static";
   scrollable?: boolean;
@@ -32,9 +33,7 @@ const Modal: React.FC<ModalProps> = ({
   ariaLabelledby,
   ariaDescribedby,
 }) => {
-  const [phase, setPhase] = useState<
-    "hidden" | "entering" | "visible" | "leaving"
-  >("hidden");
+  const [phase, setPhase] = useState<"hidden" | "entering" | "visible" | "leaving">("hidden");
   const [zOffset, setZOffset] = useState(0);
   const dialogRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -106,7 +105,6 @@ const Modal: React.FC<ModalProps> = ({
       onClick={handleOverlayClick}
       aria-hidden={!isOpen}
     >
-      {/* Noise overlay */}
       <div className={styles.overlayNoise} />
 
       <div
@@ -130,7 +128,6 @@ const Modal: React.FC<ModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         style={{ zIndex: 1050 + zOffset * 10 }}
       >
-        {/* Borda decorativa superior */}
         <div className={styles.dialogAccent} />
         <div className={styles.dialogContent}>{children}</div>
       </div>
@@ -163,19 +160,8 @@ const ModalHeader: React.FC<ModalHeaderProps> = ({
         onClick={onClose}
         aria-label="Fechar"
       >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M1 1L13 13M13 1L1 13"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-          />
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
       </button>
     )}

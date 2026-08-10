@@ -267,18 +267,23 @@ const ListViewProduto: React.FC = () => {
                         offsets={12}
                     />
                     {
-                        url && <PdfiumViewer
-                            pdfUrl={url}
-                            filename="relatorio_produtos"
-                            onClose={() => {
-                                URL.revokeObjectURL(url);
-                                setUrl(null);
-                            }}
-                            hasExcel
-                            onExcelClick={() => {
-                                handlePrintPdf()
-                            }}
-                        />
+                        url && (
+                            <>
+                                <PdfiumViewer
+                                    pdfUrl={url}
+                                    filename="relatorio_produtos"
+                                    onClose={() => {
+                                        URL.revokeObjectURL(url);
+                                        setUrl(null);
+                                    }}
+                                    hasExcel
+                                    onExcelClick={() => {
+                                        handlePrintPdf()
+                                    }}
+                                />
+                            </>
+
+                        )
 
                     }
                 </Card.Body>

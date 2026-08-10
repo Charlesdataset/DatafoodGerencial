@@ -6,26 +6,23 @@ import { NavigationProvider } from "./contexts/NavigationContext";
 import { AdminLayout } from "./layouts/Admin/AdminLayout";
 import Dashboard from "./pages/Dashboard/dashboard";
 import Login from "./pages/Login/Login";
-import Relatorios from "./pages/Relatorios/Relatorios";
-
+import Clientes from "./pages/Clientes/clientes";
+import Cidades from "./pages/Cidades/cidades"; 
 
 function App() {
   return (
-
     <AppProvider>
       <MessageBoxProvider>
         <NavigationProvider>
           <Routes>
-            {/* Rota de login - sem wrapper, pois o Login já tem seu próprio layout */}
             <Route path="/Login" element={<Login />} />
 
-            {/* Rotas protegidas */}
             <Route element={<ProtectedRoute />}>
               <Route element={<AdminLayout />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/reports" element={<Relatorios />} />
-              
+                <Route path="/clientes" element={<Clientes />} />
+                <Route path="/cidades" element={<Cidades />} /> 
               </Route>
             </Route>
 

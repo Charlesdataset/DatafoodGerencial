@@ -1,18 +1,15 @@
 import type { PdfEngine } from "@embedpdf/engines/pdfium";
 import type { ImageDataLike, PdfDocumentObject, PdfPageObject } from "@embedpdf/models";
 import { Rotation } from "@embedpdf/models";
-import { faClose, faDownload, faFileExcel, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faDownload, faFileAlt, faMinus, faPlus, faTableCells } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useApp } from "../contexts/AppContext";
-
-
+import { createPortal } from "react-dom";
 import { getPdfiumEngine } from "../wasm/pdfiumEngine";
-import { FormButton } from "./Inputs/Button/FormButton";
+import { Flex } from "./Layout";
 import Fluid from "./Layout/Fluid";
 import styles from "./PdfiumViewer.module.scss";
-
 
 interface PdfiumViewerProps {
   pdfUrl: string;
@@ -24,14 +21,14 @@ interface PdfiumViewerProps {
   /** Se informado, exibe botão de download Excel na toolbar */
   hasExcel?: boolean;
   onExcelClick?: () => void;
-
+  /** Container para o portal (opcional) */
+  portalContainer?: HTMLElement | null;
+  /** Usar portal para renderizar o viewer */
+  usePortal?: boolean;
 }
 
 /**
  * Força o download de uma URL (blob: ou http) em qualquer browser/OS.
- * - Cria um <a download> invisível e clica programaticamente.
- * - Funciona em Chrome, Firefox, Edge, Safari 13+, Android, iOS 13+.
- * - Fallback com window.open para iOS antigo (< 13) que ignora `download` em blob URLs.
  */
 function forceDownload(url: string, filename: string) {
   try {
@@ -42,10 +39,8 @@ function forceDownload(url: string, filename: string) {
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
-    // Remove depois de um tick para garantir que o clique foi processado
     setTimeout(() => document.body.removeChild(a), 200);
   } catch {
-    // Fallback universal: abre em nova aba (iOS Safari antigo, WebView restrito)
     window.open(url, "_blank", "noopener,noreferrer");
   }
 }
@@ -70,7 +65,15 @@ function getTouchDistance(touches: TouchList) {
   return Math.hypot(dx, dy);
 }
 
-export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onError, hasExcel, onExcelClick }: PdfiumViewerProps) {
+// Componente interno do visualizador (sem portal)
+function PdfiumViewerContent({
+  pdfUrl,
+  onClose,
+  filename = "documento.pdf",
+  onError,
+  hasExcel,
+  onExcelClick,
+}: Omit<PdfiumViewerProps, "portalContainer" | "usePortal">) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pageCanvasRefs = useRef<Record<number, HTMLCanvasElement | null>>({});
   const engineRef = useRef<PdfEngine<Blob> | null>(null);
@@ -87,10 +90,10 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isMobile, isCollapsed } = useApp();
 
   const pageIndexes = useMemo(() => Array.from({ length: pageCount }, (_, index) => index), [pageCount]);
 
+  // Carregar PDF
   useEffect(() => {
     let cancelled = false;
     setError(null);
@@ -121,6 +124,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     };
   }, [pdfUrl]);
 
+  // Abrir documento PDF
   useEffect(() => {
     if (!pdfBytes) return;
 
@@ -172,6 +176,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     };
   }, [pdfBytes]);
 
+  // Renderizar página no canvas
   const renderPageToCanvas = async (pageIndex: number) => {
     const canvas = pageCanvasRefs.current[pageIndex];
     const engine = engineRef.current;
@@ -208,6 +213,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     }
   };
 
+  // Observar resize do container
   useEffect(() => {
     if (!containerRef.current) return;
     const resizeObserver = new ResizeObserver(() => {
@@ -232,6 +238,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     }
   }, [pageWidth]);
 
+  // Intersection Observer para lazy loading
   useEffect(() => {
     if (!containerRef.current || pageCount === 0) return;
 
@@ -262,6 +269,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     return () => observerRef.current?.disconnect();
   }, [pageCount, pageIndexes, zoom, rotation]);
 
+  // Re-renderizar quando zoom ou rotação mudar
   useEffect(() => {
     if (!pdfBytes || pageCount === 0) return;
 
@@ -273,6 +281,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     });
   }, [zoom, rotation]);
 
+  // Eventos de toque para zoom pinch
   const handleTouchStart = (event: any) => {
     if (event.touches.length !== 2) return;
     touchStateRef.current = {
@@ -299,6 +308,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     }
   };
 
+  // Eventos de arrasto com mouse
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.pointerType !== 'mouse' || event.button !== 0 || zoom <= 1) return;
     const container = containerRef.current;
@@ -338,6 +348,7 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     setIsDragging(false);
   };
 
+  // Cleanup final
   useEffect(() => {
     return () => {
       if (engineRef.current && documentRef.current) {
@@ -349,53 +360,95 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
     };
   }, []);
 
+  // Tecla ESC para fechar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && onClose) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div
-      className={styles.overlay}
-      style={!isMobile ? { left: isCollapsed ? 50 : 250, right: 0 } : { left: 0, right: 0 }}
-    >
+    <div className={styles.overlay}>
       <div className={styles.floatingToolbar}>
-        <Fluid xs={hasExcel ? ["expand", "auto", "auto", "auto", "auto", "auto"] : ["expand", "auto", "auto", "auto", "auto"]}>
-          <div className="mx-0">
-            <FormButton variant="icon" onClick={onClose}>
-              <FontAwesomeIcon icon={faClose} size="xs" />
-            </FormButton>
-          </div>
+        <Fluid
+          xs={[
+            'expand', 'auto'
+          ]}
+        >
+          <Flex className="mt-1" align="center">
+            <FontAwesomeIcon icon={faFileAlt} />
+            <p>Fluxo de caixa</p>
 
+          </Flex>
           <div>
-            <FormButton variant="icon" onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))} disabled={isLoading} title="Diminuir zoom">
-              <FontAwesomeIcon icon={faMinus} size="xs" />
-            </FormButton>
-          </div>
-          <div className="mt-2">
-            <span className={`${styles.zoomLabel} `}>{Math.round(zoom * 100)}%</span>
-          </div>
-
-          <div>
-            <FormButton variant="icon" onClick={() => setZoom((z) => Math.min(4, z + 0.25))} disabled={isLoading} title="Aumentar zoom">
-              <FontAwesomeIcon icon={faPlus} size="xs" />
-            </FormButton>
-          </div>
-          <div>
-            <FormButton variant="icon" onClick={() => forceDownload(pdfUrl, filename)} title="Baixar PDF">
-              <FontAwesomeIcon icon={faDownload} size="xs" />
-            </FormButton>
-          </div>
-          {hasExcel && (
-            <div>
-              <FormButton
-                variant="icon"
-                title="Baixar Excel"
-                onClick={() => {
-                  //chamar função externa
-                  onExcelClick();
-                }
-                }
+            <Flex justify="center" align="center">
+              <span className={styles.zoomLabel}>1 registros</span>
+              <button
+                className={styles.btPlus}
+                onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
+                disabled={isLoading}
+                data-tooltip="Diminuir zoom"
               >
-                <FontAwesomeIcon icon={faFileExcel} size="xs" />
-              </FormButton>
-            </div>
-          )}
+                <FontAwesomeIcon icon={faMinus} size="xs" />
+              </button>
+              <div>
+                <span className={styles.zoomLabel}>{Math.round(zoom * 100)}%</span>
+              </div>
+              <button
+                className={styles.btPlus}
+                onClick={() => setZoom((z) => Math.min(4, z + 0.25))}
+                disabled={isLoading}
+                data-tooltip="Aumentar zoom"
+              >
+                <FontAwesomeIcon icon={faPlus} size="xs" />
+              </button>
+            </Flex>
+          </div>
+
+          <div>
+            <Flex>
+              <button
+                className={styles.excelBtn}
+                onClick={() => forceDownload(pdfUrl, filename)}
+                data-tooltip="Salvar PDF"
+              >
+                <FontAwesomeIcon icon={faDownload} />
+                Salvar PDF
+              </button>
+
+              <button
+                className={styles.excelBtn}
+                onClick={onExcelClick}
+                data-tooltip="Baixar Excel"
+              >
+                <FontAwesomeIcon icon={faTableCells} />
+                Excel
+              </button>
+
+            </Flex>
+          </div>
+
+
+
+
+
+          {/* Spacer */}
+          <div className={styles.toolbarSpacer} />
+
+          {/* Close Button */}
+          <div>
+            <button
+              className={styles.closeBtn}
+              onClick={onClose}
+              data-tooltip="Fechar (ESC)"
+            >
+              <FontAwesomeIcon icon={faClose} size="lg" />
+            </button>
+          </div>
         </Fluid>
       </div>
 
@@ -426,5 +479,24 @@ export function PdfiumViewer({ pdfUrl, onClose, filename = "documento.pdf", onEr
         ))}
       </div>
     </div>
+  );
+}
+
+// Componente principal com suporte a portal
+export function PdfiumViewer(props: PdfiumViewerProps) {
+  const { portalContainer, usePortal = true, ...restProps } = props;
+
+  // Se não usar portal, renderiza normalmente
+  if (!usePortal) {
+    return <PdfiumViewerContent {...restProps} />;
+  }
+
+  // Usar o body como container padrão se não for fornecido
+  const container = portalContainer || document.body;
+
+  // Renderiza via portal no body
+  return createPortal(
+    <PdfiumViewerContent {...restProps} />,
+    container
   );
 }

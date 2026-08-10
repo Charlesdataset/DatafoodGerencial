@@ -14,19 +14,25 @@ interface AuthSimpleLayoutProps {
 
 const THEMES = {
   verde: {
-    bg: "linear-gradient(150deg,#1a3a4a 0%,#1e6b52 55%,#42AB8A 100%)",
-    accent: "#42AB8A",
-    dark: "#21455F",
+    bg: "linear-gradient(135deg,#0f2b38 0%,#1a5c4a 55%,#3a9d80 100%)",
+    accent: "#3a9d80",
+    dark: "#0f2b38",
+    light: "#e8f5f0",
+    cardBg: "#ffffff",
   },
   laranja: {
-    bg: "#000",
-    accent: "#FF6B1A",
-    dark: "#000",
+    bg: "linear-gradient(135deg,#1a1a1a 0%,#4a2a1a 55%,#e86820 100%)",
+    accent: "#e86820",
+    dark: "#1a1a1a",
+    light: "#fdf0e8",
+    cardBg: "#ffffff",
   },
   marinho: {
-    bg: "linear-gradient(150deg,#55BACA 0%,#3F8AB6 55%,#3473AC 100%)",
-    accent: "rgb(23, 62, 107)",
+    bg: "linear-gradient(135deg,#0a1628 0%,#1a4a6a 55%,#3a8aaa 100%)",
+    accent: "#3a8aaa",
     dark: "#0a1628",
+    light: "#e8f2f8",
+    cardBg: "#ffffff",
   },
 };
 
@@ -88,7 +94,6 @@ function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>, rea
     const parent = canvas.parentElement;
     if (!parent) return;
 
-    // Evita reinicialização
     if (isInitializedRef.current) return;
     isInitializedRef.current = true;
 
@@ -102,7 +107,6 @@ function useCanvasDots(canvasRef: React.RefObject<HTMLCanvasElement | null>, rea
     window.addEventListener("resize", resize);
 
     const drawDots = () => {
-      // Verifica se o canvas ainda existe
       if (!canvas || !canvas.parentElement) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -173,16 +177,15 @@ const AuthSimpleLayout = ({
       document.removeEventListener('focusout', onFocusOut);
     };
   }, []);
+  
   useEffect(() => {
     if (!isAuthenticated) {
-
       const cnpj = new URLSearchParams(window.location.search).get("cnpj");
       if (cnpj) {
         handleValidateCompany(cnpj);
-
       }
     }
-  }, [])
+  }, []);
 
   const handleValidateCompany = async (cnpj: string) => {
     try {
@@ -196,26 +199,20 @@ const AuthSimpleLayout = ({
             "GIGABYTE": "laranja",
             "ARS": "marinho"
           };
-
-          handleThemeChange(franquiaTheme[franquia])
+          handleThemeChange(franquiaTheme[franquia]);
           setCompanyValidated(true);
-          setChanShow(true)
-
-        }
-        else {
+          setChanShow(true);
+        } else {
           setCompanyValidated(false);
-          setChanShow(false)
+          setChanShow(false);
         }
-      }
-      else {
+      } else {
         setCompanyValidated(false);
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error("Erro ao validar empresa:", error);
     }
-  }
-
+  };
 
   useCanvasDots(canvasRef, canShow);
 
@@ -227,104 +224,81 @@ const AuthSimpleLayout = ({
   };
 
   return (
-    <>
-      <div style={{ '--primary-color': THEMES[currentTheme].accent } as React.CSSProperties} >
+    <div className={styles.login_container} style={{ background: t.bg }}>
+      {/* Seletor de temas */}
+      {showThemeSelector && (
+        <div className={styles.themes}>
+          {(["verde", "laranja", "marinho"] as LoginTheme[]).map((name) => (
+            <button
+              key={name}
+              className={currentTheme === name ? styles.active : ""}
+              style={{
+                background: currentTheme === name ? THEMES[name].accent : "rgba(255,255,255,0.9)",
+                color: currentTheme === name ? "#fff" : "#555",
+              }}
+              onClick={() => handleThemeChange(name)}
+            >
+              {name === "verde" && "🌿 Verde"}
+              {name === "laranja" && "🔥 Laranja"}
+              {name === "marinho" && "🌊 Marinho"}
+            </button>
+          ))}
+        </div>
+      )}
 
-        <div className={styles.login_card}>
-          {showThemeSelector && (
-            <div className={styles.themes}>
-              {(["verde", "laranja", "marinho"] as LoginTheme[]).map((name) => (
-                <button
-                  key={name}
-                  className={currentTheme === name ? styles.active : ""}
-                  style={{
-                    background: currentTheme === name ? THEMES[name].accent : "rgba(255, 255, 255, 0.9)",
-                    color: currentTheme === name ? "#fff" : "#333",
-                  }}
-                  onClick={() => handleThemeChange(name)}
-                >
-                  {name === "verde" && "🟢 Verde"}
-                  {name === "laranja" && "🟠 Laranja"}
-                  {name === "marinho" && "🔵 Marinho"}
-                </button>
-              ))}
+      {/* Card centralizado */}
+      <div className={styles.login_card} style={{ background: t.cardBg }}>
+        {/* Canvas de fundo do card */}
+        <canvas ref={canvasRef} className={styles.canvas} />
+
+        {/* Logo no topo - DATA GERENCIAL */}
+        <div className={styles.logo_container}>
+          <div className={styles.logo_icon}>
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+              <rect width="56" height="56" rx="14" fill={t.accent} opacity="0.15" />
+              <path d="M28 16L33 23L28 30L23 23L28 16Z" fill={t.accent} />
+              <path d="M28 25L37 39L19 39L28 25Z" fill={t.accent} opacity="0.7" />
+              <path d="M28 39L33 46L23 46L28 39Z" fill={t.accent} opacity="0.4" />
+            </svg>
+          </div>
+          <div className={styles.logo_text}>
+            <div className={styles.logo_brand} style={{ color: t.dark }}>
+              DATA <span style={{ color: t.accent }}>GERENCIAL</span>
             </div>
-          )}
-
-          <div className={styles.wrap}>
-            {/* LADO ESQUERDO - APRESENTAÇÃO */}
-            <div className={styles.left} style={{ background: t.bg }}>
-              <canvas ref={canvasRef} className={styles.canvas} />
-
-              {/* Logo + Nome */}
-              <div className={styles.logo_container}>
-                {/* <img src={logo} alt="DataFood" className={styles.logo_img} /> */}
-                <div className={styles.logo_divider} />
-                <div className={styles.logo_text}>
-                  <div className={styles.logo_brand}>
-                    {currentTheme === "verde" ? (
-                      <>
-                        DATA<span style={{ color: t.accent }}>FOOD</span>
-                      </>
-
-                    ) : currentTheme === "laranja" ? (
-                      <>
-                        GIGA<span style={{ color: t.accent }}>BYTE</span>
-                      </>
-                    ) : currentTheme === "marinho" ? (
-                      <>
-                        ARS<span style={{ color: t.accent }}>AUTOMAÇÃO</span>
-                      </>
-                    ) : null}
-                  </div>
-                  <div className={styles.logo_subtitle}>Delivery Inteligente</div>
-                </div>
-              </div>
-
-              {/* Texto de apresentação */}
-              <div className={styles.left_bottom}>
-                <div className={styles.sep} style={{ background: t.accent }} />
-                <div className={styles.tagline}>
-                  Da visão geral do salão
-                  <br />
-                  ao <em style={{ color: t.accent }}>controle absoluto</em> do caixa.
-                </div>
-                <div className={styles.desc}>
-                  Tome decisões estratégicas baseadas em dados reais e veja o seu
-                  faturamento crescer de verdade.
-                </div>
-                <div className={styles.version}>v1.0.0</div>
-              </div>
-            </div>
-
-            {/* LADO DIREITO - FORMULÁRIO */}
-            <div className={styles.right}>
-              <div className={styles.form_wrap}>
-                <div className={styles.form_title} style={{ color: t.dark }}>
-                  Entrar
-                </div>
-                <div className={styles.form_sub}>
-                  Acesse sua conta para continuar
-                </div>
-                <div
-                  className={styles.grad_bar}
-                  style={{
-                    background: `linear-gradient(90deg,${t.dark},${t.accent})`,
-                  }}
-                />
-                <div
-                  className={styles.content}
-                  style={{ "--accent": t.accent } as React.CSSProperties}
-                >
-                  {children}
-                </div>
-              </div>
-            </div>
+            <div className={styles.logo_subtitle}>Sistema de Gestão</div>
           </div>
         </div>
-      </div>
 
-    </>
+        {/* Formulário */}
+        <div className={styles.form_container}>
+          <div className={styles.form_header}>
+            <div className={styles.form_title} style={{ color: t.dark }}>
+              Acesse sua conta
+            </div>
+            <div className={styles.form_sub}>
+              Informe suas credenciais para continuar
+            </div>
+            <div
+              className={styles.grad_bar}
+              style={{
+                background: `linear-gradient(90deg, ${t.dark}, ${t.accent})`,
+              }}
+            />
+          </div>
+          <div
+            className={styles.content}
+            style={{ "--accent": t.accent } as React.CSSProperties}
+          >
+            {children}
+          </div>
+        </div>
+
+        {/* Rodapé do card */}
+        <div className={styles.card_footer}>
+          <span>© 2024 DATA GERENCIAL - Todos os direitos reservados</span>
+        </div>
+      </div>
+    </div>
   );
 };
 
