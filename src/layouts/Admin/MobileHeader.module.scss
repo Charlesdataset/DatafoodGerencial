@@ -5,14 +5,13 @@
   display: flex;
   padding: 12px 16px;
   text-align: center;
-  justify-content: spa;
   align-items: center;
   background-color: #EDF2F9;
   border-bottom: 1px solid $border-color;
+  transition: background-color 0.3s ease;
 
   @media (max-width: 992px) {
     display: block;
-    
   }
 }
 
@@ -22,7 +21,6 @@
   justify-content: center;
   text-align: center;
   gap: 8px;
-  
 }
 
 .pageIcon {
@@ -32,8 +30,5 @@
 .pageTitle h2 {
   font-size: 18px;
   font-weight: 600;
-  color: $dark;
   margin: 0;
 }
-
-

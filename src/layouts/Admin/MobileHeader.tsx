@@ -38,7 +38,6 @@ export const pageIcons: Record<string, any> = {
   "/reports?listing=produto": faBox,
   "/reports?listing=auditoria": faMagnifyingGlass,
   "/reports?listing=saida-por-produto": faBox,
-
 };
 
 export const pageTitles: Record<string, string> = {
@@ -55,24 +54,23 @@ export const pageTitles: Record<string, string> = {
   "/reports?listing=auditoria": 'Auditoria',
   "/reports?listing=saida-por-produto": 'Saida por produto',
 };
+
 const MobileHeader = () => {
   const location = useLocation();
-  const { dataInicial, setDataInicial, setDataFinal, dataFinal, turnosSelecionados, setTurnosSelecionados, canShowTurnoTipo } = useApp();
+  const { dataInicial, setDataInicial, setDataFinal, dataFinal, turnosSelecionados, setTurnosSelecionados, canShowTurnoTipo, primaryColor } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [oldDataIni, setOldDataIni] = useState(null);
   const [oldDataFim, setOldDataFim] = useState(null);
-  const [oldTurnos, setOldTurnos] = useState([])
-  const [searchTurnoOpen, setSearchTurnoOpen] = useState(false)
+  const [oldTurnos, setOldTurnos] = useState([]);
+  const [searchTurnoOpen, setSearchTurnoOpen] = useState(false);
   const currentIcon = pageIcons[`${location.pathname}${location.search}`] || "📌";
   const currentTitle = pageTitles[`${location.pathname}${location.search}`] || "TicketFlow";
 
-
   useEffect(() => {
-
     setOldDataFim(dataInicial);
     setOldDataFim(dataFinal);
-    setOldTurnos(turnosSelecionados)
-  }, [isModalOpen])
+    setOldTurnos(turnosSelecionados);
+  }, [isModalOpen]);
 
   return (
     <>
@@ -92,9 +90,8 @@ const MobileHeader = () => {
               padChar: "0",
               padStart: 6,
             },
-
           ],
-          secondary: [{ key: "label", prefix: "Descrição : ", marginStart: 5 },]
+          secondary: [{ key: "label", prefix: "Descrição : ", marginStart: 5 }],
         }}
         mode="multi"
         selectedData={oldTurnos}
@@ -107,67 +104,49 @@ const MobileHeader = () => {
         }}
       />
 
-      <Modal isOpen={isModalOpen} onClose={() => { }} >
-        <Modal.Header onClose={() => {
-          setIsModalOpen(false)
-        }}>
+      <Modal isOpen={isModalOpen} onClose={() => {}}>
+        <Modal.Header onClose={() => setIsModalOpen(false)}>
           <Flex>
             <FontAwesomeIcon icon={faFilter} />
             Filtros
-
           </Flex>
         </Modal.Header>
         <Modal.Body>
-          <Fluid
-            xs={[100, 100]}
-            gap={0}
-            rowGap={0}
-            columnGap={0}
-          >
-            <DatePicker value={oldDataIni} label="Período Inicial" onChange={(e) => {
-              setOldDataIni(e)
-
-            }} />
-            <DatePicker value={oldDataFim} label="Período Final" onChange={(e) => {
-              setOldDataFim(e)
-            }} />
+          <Fluid xs={[100, 100]} gap={0} rowGap={0} columnGap={0}>
+            <DatePicker value={oldDataIni} label="Período Inicial" onChange={(e) => setOldDataIni(e)} />
+            <DatePicker value={oldDataFim} label="Período Final" onChange={(e) => setOldDataFim(e)} />
             {canShowTurnoTipo && (
-
-
               <MultiTextBox
                 label="Selecione o turno"
                 colorMode="multicolor"
-
                 onChange={(labels) => {
-                  setOldTurnos((prev) =>
-                    prev.filter((t) => labels.includes(`${t.label}`))
-                  )
+                  setOldTurnos((prev) => prev.filter((t) => labels.includes(`${t.label}`)));
                 }}
-                values={oldTurnos.map((t) => `${t.label}`)} boxHeight={200} className="mb-0" placeholder="Tipos de turnos"
-                onInputClick={() => {
-                  setSearchTurnoOpen(true);
-                }} />
+                values={oldTurnos.map((t) => `${t.label}`)}
+                boxHeight={200}
+                className="mb-0"
+                placeholder="Tipos de turnos"
+                onInputClick={() => setSearchTurnoOpen(true)}
+              />
             )}
-
-
           </Fluid>
         </Modal.Body>
         <Modal.Footer>
-          <Fluid
-            xs={[50, 50]}
-          >
-
-            <FormButton variant="outline-secondary" className="justify-content-center" onClick={() => { setIsModalOpen(false) }}>
+          <Fluid xs={[50, 50]}>
+            <FormButton variant="outline-secondary" className="justify-content-center" onClick={() => setIsModalOpen(false)}>
               <FontAwesomeIcon icon={faCancel} />
               Fechar
             </FormButton>
-
-            <FormButton variant="secondary" className="justify-content-center" onClick={() => {
-              setDataInicial(oldDataIni);
-              setDataFinal(oldDataFim)
-              setTurnosSelecionados(oldTurnos)
-              setIsModalOpen(false)
-            }}>
+            <FormButton
+              variant="secondary"
+              className="justify-content-center"
+              onClick={() => {
+                setDataInicial(oldDataIni);
+                setDataFinal(oldDataFim);
+                setTurnosSelecionados(oldTurnos);
+                setIsModalOpen(false);
+              }}
+            >
               <FontAwesomeIcon icon={faFilter} />
               Filtrar
             </FormButton>
@@ -175,22 +154,19 @@ const MobileHeader = () => {
         </Modal.Footer>
       </Modal>
 
-      <div className={styles.mobileHeader}>
-        <Flex justify="between" align="center" >
-
+      <div className={styles.mobileHeader} style={{ backgroundColor: primaryColor || '#EDF2F9' }}>
+        <Flex justify="between" align="center">
           <div className={styles.pageTitle}>
-            <span className={styles.pageIcon}>
+            <span className={styles.pageIcon} style={{ color: '#fff' }}>
               <FontAwesomeIcon icon={currentIcon} />
             </span>
-            <h2>{currentTitle}</h2>
+            <h2 style={{ color: '#fff' }}>{currentTitle}</h2>
           </div>
-          <FormButton variant="secondary" onClick={() => { setIsModalOpen(true) }}>
+          <FormButton variant="secondary" onClick={() => setIsModalOpen(true)} style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' }}>
             <FontAwesomeIcon icon={faFilter} />
             Filtros
           </FormButton>
         </Flex>
-
-
       </div>
     </>
   );

@@ -36,7 +36,6 @@ export const SidebarMenu = ({ isCollapsed, onLinkClick, isMobile = false }: Side
   const { user } = useApp();
   const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
 
-  
   const deliveryItems: MenuItem[] = [
     {
       name: "Início",
@@ -45,24 +44,24 @@ export const SidebarMenu = ({ isCollapsed, onLinkClick, isMobile = false }: Side
     }
   ];
 
-const suporteItems: MenuItem[] = [
-  {
-    name: "Cadastros",
-    icon: faIdCard,
-    children: [
-      {
-        name: "Clientes",
-        icon: faUser,
-        to: "/clientes"
-      },
-      {
-        name: "Cidades",
-        icon: faLocationDot,
-        to: "/cidades"
-      },
-    ]
-  },
-];
+  const suporteItems: MenuItem[] = [
+    {
+      name: "Cadastros",
+      icon: faIdCard,
+      children: [
+        {
+          name: "Clientes",
+          icon: faUser,
+          to: "/clientes"
+        },
+        {
+          name: "Cidades",
+          icon: faLocationDot,
+          to: "/cidades"
+        },
+      ]
+    },
+  ];
 
   const toggleMenu = (menuName: string) => {
     if (!isCollapsed) {
@@ -141,9 +140,7 @@ const suporteItems: MenuItem[] = [
 
   return (
     <>
-     
       {renderSection("DELIVERY", deliveryItems)}
-    
       {renderSection("SUPORTE", suporteItems)}
     </>
   );

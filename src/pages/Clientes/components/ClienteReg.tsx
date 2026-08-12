@@ -243,7 +243,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loadingPlanos, setLoadingPlanos] = useState(false);
 
-  // 🔥 STATE PARA CIDADES E MODAL
   const [isCidadeModalOpen, setIsCidadeModalOpen] = useState(false);
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [cidadeSearch, setCidadeSearch] = useState("");
@@ -291,6 +290,25 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const telefoneField = textFieldProps("telefone");
   const emailField = textFieldProps("email");
   const codigoPlanoField = textFieldProps("codigo_plano");
+
+  // 🔥 LÊ AS PERMISSÕES DIRETO DO LOCALSTORAGE (IGUAL DATAFOOD)
+  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  const podeIncluir = dataRoute.incluir || false;
+  const podeEditar = dataRoute.editar || false;
+
+  // 🔥 BLOQUEIA ACESSO À TELA
+  useEffect(() => {
+    if (!isEditing && !podeIncluir) {
+      toast.error("Você não tem permissão para incluir clientes");
+      onBack();
+      return;
+    }
+    if (isEditing && !podeEditar) {
+      toast.error("Você não tem permissão para editar clientes");
+      onBack();
+      return;
+    }
+  }, [isEditing, podeIncluir, podeEditar, onBack]);
 
   useEffect(() => {
     fetchPlanos();
@@ -407,6 +425,18 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const handleSubmit = async (event?: React.FormEvent) => {
     if (event) {
       event.preventDefault();
+    }
+
+    // 🔥 VERIFICA PERMISSÃO ANTES DE SALVAR
+    if (!isEditing && !podeIncluir) {
+      toast.error("Você não tem permissão para incluir clientes");
+      emit("isCommited", false);
+      return;
+    }
+    if (isEditing && !podeEditar) {
+      toast.error("Você não tem permissão para editar clientes");
+      emit("isCommited", false);
+      return;
     }
 
     const isValid = validateAll();
@@ -1127,5 +1157,5 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     </>
   );
 };
-
 export default ClienteReg;
+

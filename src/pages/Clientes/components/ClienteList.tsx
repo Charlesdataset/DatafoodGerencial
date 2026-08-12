@@ -41,6 +41,12 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
   const isMounted = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // 🔥 LÊ AS PERMISSÕES DIRETO DO LOCALSTORAGE (IGUAL DATAFOOD)
+  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  const podeIncluir = dataRoute.incluir || false;
+  const podeEditar = dataRoute.editar || false;
+  const podeExcluir = dataRoute.excluir || false;
+
   const buscarClientes = useCallback(
     async (busca: string, franquiaSelecionada: string, orderSelecionado: string, deveCarregar = true) => {
       if (abortControllerRef.current) {
@@ -133,6 +139,15 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
     }
   };
 
+  // 🔥 HANDLER PARA EDIÇÃO COM VERIFICAÇÃO DE PERMISSÃO
+  const handleEditClick = (row: Cliente) => {
+    if (!podeEditar) {
+      toast.error("Você não tem permissão para editar clientes");
+      return;
+    }
+    onEdit(row);
+  };
+
   const columns: ExtendedColumnDef<Cliente>[] = [
     {
       header: "Código",
@@ -192,44 +207,50 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
       textAlign: "center",
       cell: (info) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-          <FontAwesomeIcon
-            icon={faEdit}
-            onClick={() => onEdit(info.row.original)}
-            title="Editar"
-            style={{
-              color: "#22c55e",
-              fontSize: "16px",
-              cursor: "pointer",
-              transition: "all 0.15s"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#16a34a";
-              e.currentTarget.style.transform = "scale(1.1)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#22c55e";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          />
-          <FontAwesomeIcon
-            icon={faTrash}
-            onClick={() => handleDelete(info.row.original.id_cliente, info.row.original.razao_social)}
-            title="Excluir"
-            style={{
-              color: "#ef4444",
-              fontSize: "16px",
-              cursor: "pointer",
-              transition: "all 0.15s"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#dc2626";
-              e.currentTarget.style.transform = "scale(1.1)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#ef4444";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          />
+          {/* 🔥 SÓ MOSTRA EDITAR SE TIVER PERMISSÃO */}
+          {podeEditar && (
+            <FontAwesomeIcon
+              icon={faEdit}
+              onClick={() => handleEditClick(info.row.original)}
+              title="Editar"
+              style={{
+                color: "#22c55e",
+                fontSize: "16px",
+                cursor: "pointer",
+                transition: "all 0.15s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#16a34a";
+                e.currentTarget.style.transform = "scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#22c55e";
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+            />
+          )}
+          {/* 🔥 SÓ MOSTRA EXCLUIR SE TIVER PERMISSÃO */}
+          {podeExcluir && (
+            <FontAwesomeIcon
+              icon={faTrash}
+              onClick={() => handleDelete(info.row.original.id_cliente, info.row.original.razao_social)}
+              title="Excluir"
+              style={{
+                color: "#ef4444",
+                fontSize: "16px",
+                cursor: "pointer",
+                transition: "all 0.15s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#dc2626";
+                e.currentTarget.style.transform = "scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#ef4444";
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+            />
+          )}
         </div>
       ),
     },
@@ -285,13 +306,16 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
             />
           </div>
 
-          <FormButton
-            className="justify-content-center"
-            onClick={onRegister}
-          >
-            <FontAwesomeIcon icon={faPlus} color="#fff" />
-            Novo Cliente
-          </FormButton>
+          {/* 🔥 SÓ MOSTRA O BOTÃO "NOVO CLIENTE" SE TIVER PERMISSÃO DE INCLUIR */}
+          {podeIncluir && (
+            <FormButton
+              className="justify-content-center"
+              onClick={onRegister}
+            >
+              <FontAwesomeIcon icon={faPlus} color="#fff" />
+              Novo Cliente
+            </FormButton>
+          )}
         </div>
 
         <DataGrid

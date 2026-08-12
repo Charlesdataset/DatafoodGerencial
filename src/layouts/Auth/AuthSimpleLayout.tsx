@@ -162,10 +162,8 @@ const AuthSimpleLayout = ({
 }: AuthSimpleLayoutProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [currentTheme, setCurrentTheme] = useState<LoginTheme>(theme);
-  const [canShow, setChanShow] = useState(false);
-  const [companyValidated, setCompanyValidated] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
-  const { isAuthenticated, setCompanyInfo } = useApp();
+  const { isAuthenticated } = useApp();
 
   useEffect(() => {
     const onFocusIn = (e: FocusEvent) => { if ((e.target as HTMLInputElement)?.type === 'password') setPasswordFocused(true); };
@@ -178,43 +176,13 @@ const AuthSimpleLayout = ({
     };
   }, []);
   
-  useEffect(() => {
-    if (!isAuthenticated) {
-      const cnpj = new URLSearchParams(window.location.search).get("cnpj");
-      if (cnpj) {
-        handleValidateCompany(cnpj);
-      }
-    }
-  }, []);
+  // 🔥 REMOVIDO: useEffect que chamava handleValidateCompany
+  // 🔥 REMOVIDO: handleValidateCompany
+  // 🔥 REMOVIDO: setCompanyInfo
+  // 🔥 REMOVIDO: canShow
+  // 🔥 REMOVIDO: companyValidated
 
-  const handleValidateCompany = async (cnpj: string) => {
-    try {
-      const res = await api.get("/company/validate", { headers: { "cnpj": cnpj } });
-      if (res?.status == 200) {
-        if (res.data.validated == true) {
-          setCompanyInfo(res.data.data);
-          const franquia = res.data.data.franquia;
-          const franquiaTheme: Record<string, LoginTheme> = {
-            "DATASET": "verde",
-            "GIGABYTE": "laranja",
-            "ARS": "marinho"
-          };
-          handleThemeChange(franquiaTheme[franquia]);
-          setCompanyValidated(true);
-          setChanShow(true);
-        } else {
-          setCompanyValidated(false);
-          setChanShow(false);
-        }
-      } else {
-        setCompanyValidated(false);
-      }
-    } catch (error: any) {
-      console.error("Erro ao validar empresa:", error);
-    }
-  };
-
-  useCanvasDots(canvasRef, canShow);
+  useCanvasDots(canvasRef, false);
 
   const t = THEMES[currentTheme];
 
