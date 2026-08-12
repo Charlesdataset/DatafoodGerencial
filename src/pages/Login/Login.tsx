@@ -21,12 +21,19 @@ const Login = () => {
   const senhaRef = useRef<HTMLInputElement>(null);
   const cnpjRef = useRef<HTMLInputElement>(null);
   const verifyTimeoutRef = useRef<number | null>(null);
+  const hasShownToast = useRef(false);
   const navigate = useNavigate();
   const { setIsAuthenticated, setUser, setCompanyInfo, companyInfo } = useApp();
 
+  useEffect(() => {
+    return () => {
+      hasShownToast.current = false;
+    };
+  }, []);
+
   const handleVerifyFranchise = async (cnpj: string) => {
     const cnpjTrimed = cnpj.replace(/\D/g, '');
-    if (cnpjTrimed.length === 11 || cnpjTrimed.length === 14) {
+    if (cnpjTrimed.length === 14) {
       setIsVerifying(true);
       try {
         const res = await api.get(`franquias?cnpj=${cnpjTrimed}`);
@@ -47,13 +54,10 @@ const Login = () => {
       verifyTimeoutRef.current = null;
     }
 
-    const cnpjTrimed = value.replace(/\D/g, '');
-    if (cnpjTrimed.length === 11 || cnpjTrimed.length === 14) {
-      verifyTimeoutRef.current = setTimeout(() => {
-        handleVerifyFranchise(value);
-        verifyTimeoutRef.current = null;
-      }, 800);
-    }
+    verifyTimeoutRef.current = setTimeout(() => {
+      handleVerifyFranchise(value);
+      verifyTimeoutRef.current = null;
+    }, 800);
   };
 
   useEffect(() => {
@@ -75,8 +79,9 @@ const Login = () => {
   }, [credentials, lembrar]);
 
   useEffect(() => {
-    if (cnpjRef.current) {
-      debouncedVerify(cnpjRef.current.value);
+    const cnpjLimpo = currUser.cnpj.replace(/\D/g, '');
+    if (cnpjLimpo.length === 14) {
+      debouncedVerify(currUser.cnpj);
     }
     return () => {
       if (verifyTimeoutRef.current) {
@@ -94,6 +99,9 @@ const Login = () => {
   }, []);
 
   const fazerLogin = async () => {
+    // 🔥 RESETA O FLAG ANTES DE TENTAR LOGAR
+    hasShownToast.current = false;
+
     try {
       setIsLoading(true);
       const cnpj = new URLSearchParams(window.location.search).get("cnpj");
@@ -125,7 +133,6 @@ const Login = () => {
         saveCredentials(currUser.codigo, currUser.senha, unMask(currUser.cnpj));
         setUser(res.data.user);
 
-        // 🔥 ADICIONADO: SALVA AS PERMISSÕES NO LOCALSTORAGE!
         if (res.data.user?.permissoes) {
           const dataRoute = {
             entrar: res.data.user.permissoes.entrar || false,
@@ -142,8 +149,15 @@ const Login = () => {
         navigate(`/dashboard`);
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || "Erro ao realizar login!";
-      toast.error(message);
+      if (!hasShownToast.current) {
+        if (error.response?.status === 401) {
+          toast.error("Usuário ou senha inválidos");
+        } else {
+          const message = error.response?.data?.message || "Erro ao realizar login!";
+          toast.error(message);
+        }
+        hasShownToast.current = true;
+      }
     } finally {
       setIsLoading(false);
     }

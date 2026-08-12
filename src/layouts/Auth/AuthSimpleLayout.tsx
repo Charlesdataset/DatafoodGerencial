@@ -202,7 +202,7 @@ const AuthSimpleLayout = ({
 
   const {
     themeColor,
-    setThemeColor, // 🔥 ADICIONEI!
+    setThemeColor,
     previousTheme,
     transitionOrigin,
     changeTheme,
@@ -224,42 +224,47 @@ const AuthSimpleLayout = ({
       } else {
         setCanShow(true);
         setShowLogo(false);
-        setThemeColor("aguasProfundas"); 
+        setThemeColor("aguasProfundas");
       }
     }
   }, [cnpj]);
 
- const handleValidateCompany = async (cnpj: string) => {
-  try {
-    const res = await api.get(`franquias?cnpj=${cnpj}`);
+  const handleValidateCompany = async (cnpj: string) => {
+    // 🔥 ADICIONA A VERIFICAÇÃO DE TAMANHO AQUI!
+    const cnpjTrimed = cnpj.replace(/\D/g, '');
+    if (cnpjTrimed.length !== 14) {
+      return; // 🔥 SAI DA FUNÇÃO SE NÃO TIVER 14 DÍGITOS
+    }
 
-    if (res?.status === 200) {
-      const franquia = res.data.franquia;
-      setCompanyInfo((prev) => ({ ...prev, franquia }));
-      setCanShow(true);
+    try {
+      const res = await api.get(`franquias?cnpj=${cnpj}`);
 
-      // 🔥 ADICIONA ISSO!
-      const franquiaTheme: Record<string, LoginTheme> = {
-        "DATASET": "verde",
-        "GIGABYTE": "laranja",
-        "ARS": "marinho",
-      };
+      if (res?.status === 200) {
+        const franquia = res.data.franquia;
+        setCompanyInfo((prev) => ({ ...prev, franquia }));
+        setCanShow(true);
 
-      const newTheme = franquiaTheme[franquia] || "marinho";
-      setThemeColor(newTheme); // 🔥 MUDA O TEMA DIRETO!
-      setShowLogo(true);
-    } else {
+        const franquiaTheme: Record<string, LoginTheme> = {
+          "DATASET": "verde",
+          "GIGABYTE": "laranja",
+          "ARS": "marinho",
+        };
+
+        const newTheme = franquiaTheme[franquia] || "marinho";
+        setThemeColor(newTheme);
+        setShowLogo(true);
+      } else {
+        setCanShow(true);
+        setShowLogo(false);
+        setThemeColor("aguasProfundas");
+      }
+    } catch (error: any) {
+      console.error("Erro ao validar empresa:", error);
       setCanShow(true);
       setShowLogo(false);
       setThemeColor("aguasProfundas");
     }
-  } catch (error: any) {
-    console.error("Erro ao validar empresa:", error);
-    setCanShow(true);
-    setShowLogo(false);
-    setThemeColor("aguasProfundas");
-  }
-};
+  };
 
   const t = THEMES[themeColor] || THEMES.aguasProfundas;
   const prevT = THEMES[previousTheme] || THEMES.aguasProfundas;

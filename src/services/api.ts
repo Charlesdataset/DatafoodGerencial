@@ -14,16 +14,13 @@ export const api = axios.create({
 
 // Interceptor para adicionar o token e o CNPJ
 api.interceptors.request.use((config) => {
-  // Verifica se a URL NÃO é de login
   const isLoginRoute = config.url?.includes("/auth/login") || config.url?.includes("/users/register");
 
-  // Se for rota de login/registro, NÃO adiciona headers
   if (isLoginRoute) {
     console.log("🔓 Rota de autenticação - pulando headers");
     return config;
   }
 
-  // Para todas as outras rotas, adiciona os headers
   const token = localStorage.getItem("tokenDataFood");
   const cnpj = localStorage.getItem("cnpj");
 
@@ -38,7 +35,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Função para verificar se o erro é de cancelamento
 const isCancelError = (error: any): boolean => {
   return (
     axios.isCancel(error) ||
@@ -47,6 +43,11 @@ const isCancelError = (error: any): boolean => {
     error.message?.includes("canceled") ||
     error?.__CANCEL__ === true
   );
+};
+
+// 🔥 ADICIONA ESTA FUNÇÃO
+const isLoginRoute = (url: string | undefined): boolean => {
+  return url?.includes("/auth/login") || url?.includes("/users/register") || false;
 };
 
 api.interceptors.response.use(
@@ -67,6 +68,10 @@ api.interceptors.response.use(
       localStorage.removeItem("tokenDataFood");
       localStorage.removeItem("cnpj");
       window.location.href = "/login";
+      return Promise.reject(error);
+    }
+
+    if (isLoginRoute(error.config?.url)) {
       return Promise.reject(error);
     }
 
@@ -106,14 +111,12 @@ api.interceptors.response.use(
 
     if (error.response?.status === 403) {
       const errorMessage = error.response?.data?.message || "Você não tem permissão para realizar esta ação.";
-
       toast.error(errorMessage);
       return Promise.reject(error);
     }
 
     if (error.response?.status === 404) {
       const errorMessage = error.response?.data?.message || "Recurso não encontrado.";
-
       toast.error(errorMessage);
       return Promise.reject(error);
     }

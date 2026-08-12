@@ -855,9 +855,17 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     );
   };
 
+
+  const renderFranquias = () => (
+    <div style={{ padding: "20px", textAlign: "center", color: "#6c757d" }}>
+     
+    </div>
+  );
+
   const mainTabs = [
     { key: "principal", label: "Informações Básicas" },
     { key: "extras", label: "Extras" },
+    { key: "franquias", label: "Franquias" }, // 🔥 NOVA ABA
     { key: "financeiro", label: "Financeiro" },
     { key: "observacoes", label: "Observações" },
   ];
@@ -1077,15 +1085,21 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
               </Fluid>
             )}
 
+            {activeTab === "franquias" && (
+              <Fluid xs={[100]} rowGap={16} className="mt-3">
+                {renderFranquias()}
+              </Fluid>
+            )}
+
             {activeTab === "extras" && (
               <Fluid xs={[100]} rowGap={16} className="mt-3">
-                <p className="text-muted">Campos extras em desenvolvimento</p>
+                <p className="text-muted"></p>
               </Fluid>
             )}
 
             {activeTab === "financeiro" && (
               <Fluid xs={[100]} rowGap={16} className="mt-3">
-                <p className="text-muted">Campos financeiros em desenvolvimento</p>
+               <p className="text-muted"></p>
               </Fluid>
             )}
 
