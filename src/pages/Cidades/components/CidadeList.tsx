@@ -65,6 +65,12 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
   const isMounted = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // 🔥 LÊ AS PERMISSÕES
+  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  const podeIncluir = dataRoute.incluir || false;
+  const podeEntrar = dataRoute.entrar || false;
+  const podeExcluir = dataRoute.excluir || false;
+
   const buscarCidades = useCallback(
     async (busca: string, uf: string, orderSelecionado: string, deveCarregar = true) => {
       if (abortControllerRef.current) {
@@ -137,6 +143,12 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
   }, []);
 
   const handleDelete = async (id: number, nome: string) => {
+    // 🔥 VERIFICA PERMISSÃO DE EXCLUIR
+    if (!podeExcluir) {
+      toast.error("Você não tem permissão para excluir cidades");
+      return;
+    }
+
     const confirmado = await messageBox.confirm({
       message: `Excluir cidade ${nome}?`,
       title: "Atenção",
@@ -153,6 +165,15 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
       console.error("Erro ao excluir cidade:", error);
       toast.error("Erro ao excluir cidade");
     }
+  };
+
+  // 🔥 HANDLER PARA EDIÇÃO
+  const handleEditClick = (row: Cidade) => {
+    if (!podeEntrar) {
+      toast.error("Você não tem permissão para acessar a edição");
+      return;
+    }
+    onEdit(row);
   };
 
   const columns: ExtendedColumnDef<Cidade>[] = [
@@ -209,44 +230,50 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
       textAlign: "center",
       cell: (info) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-          <FontAwesomeIcon
-            icon={faEdit}
-            onClick={() => onEdit(info.row.original)}
-            title="Editar"
-            style={{
-              color: "#22c55e",
-              fontSize: "16px",
-              cursor: "pointer",
-              transition: "all 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#16a34a";
-              e.currentTarget.style.transform = "scale(1.1)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#22c55e";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          />
-          <FontAwesomeIcon
-            icon={faTrash}
-            onClick={() => handleDelete(info.row.original.id_cidade, info.row.original.nome)}
-            title="Excluir"
-            style={{
-              color: "#ef4444",
-              fontSize: "16px",
-              cursor: "pointer",
-              transition: "all 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#dc2626";
-              e.currentTarget.style.transform = "scale(1.1)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#ef4444";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          />
+          {/* 🔥 BOTÃO EDITAR USA "entrar" */}
+          {podeEntrar && (
+            <FontAwesomeIcon
+              icon={faEdit}
+              onClick={() => handleEditClick(info.row.original)}
+              title="Editar"
+              style={{
+                color: "#22c55e",
+                fontSize: "16px",
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#16a34a";
+                e.currentTarget.style.transform = "scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#22c55e";
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+            />
+          )}
+          {/* 🔥 BOTÃO EXCLUIR USA "excluir" */}
+          {podeExcluir && (
+            <FontAwesomeIcon
+              icon={faTrash}
+              onClick={() => handleDelete(info.row.original.id_cidade, info.row.original.nome)}
+              title="Excluir"
+              style={{
+                color: "#ef4444",
+                fontSize: "16px",
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#dc2626";
+                e.currentTarget.style.transform = "scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#ef4444";
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+            />
+          )}
         </div>
       ),
     },
@@ -298,10 +325,13 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
             />
           </div>
 
-          <FormButton className="justify-content-center" onClick={onRegister}>
-            <FontAwesomeIcon icon={faPlus} color="#fff" />
-            Nova Cidade
-          </FormButton>
+          {/* 🔥 BOTÃO NOVO CLIENTE USA "incluir" */}
+          {podeIncluir && (
+            <FormButton className="justify-content-center" onClick={onRegister}>
+              <FontAwesomeIcon icon={faPlus} color="#fff" />
+              Nova Cidade
+            </FormButton>
+          )}
         </div>
 
         <DataGrid

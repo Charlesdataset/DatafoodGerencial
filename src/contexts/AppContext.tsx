@@ -2,25 +2,107 @@ import React, {
   createContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
+import { useNavigate } from "react-router-dom";
 import logoArsRelatorio from '../assets/icones/ars/logo-a-fundo-branco.jpg';
 import logoArs from "../assets/icones/ars/logo-a-fundo-branco.png";
 import logoDataSetRelatorio from '../assets/icones/dataset/logo-d-fundo-branco.jpg';
 import logoDataSet from "../assets/icones/dataset/logo-d-fundo-branco.png";
 import logoGigaByte from "../assets/icones/gigabyte/logo-g-fundo-branco.png";
 import logoGigaByteRelatorio from '../assets/icones/gigabyte/logo-g-relatorio.jpg';
-import { api } from "../services/api";
 import { initialUser } from "../types/user.types";
 
+export type LoginTheme = "verde" | "laranja" | "marinho" | "aguasProfundas";
+
+export const THEMES = {
+  aguasProfundas: {
+    bg: "radial-gradient(ellipse at center, #0a1628 0%, #0b2b3f 40%, #0f3a4a 100%)",
+    accent: "#4FC3F7",
+    dark: "#0a1628",
+    dotColor: "rgba(100, 200, 255, 0.3)",
+    logoColor: "rgba(255,255,255,0.1)",
+  },
+  verde: {
+    bg: "linear-gradient(150deg,#1a3a4a 0%,#1e6b52 55%,#42AB8A 100%)",
+    accent: "#42AB8A",
+    dark: "#21455F",
+    dotColor: "rgba(255,255,255,0.2)",
+    logoColor: "#fff",
+  },
+  laranja: {
+    bg: "#000",
+    accent: "#FF6B1A",
+    dark: "#000",
+    dotColor: "rgba(255, 107, 26, 0.2)",
+    logoColor: "#fff",
+  },
+  marinho: {
+    bg: "linear-gradient(150deg,#55BACA 0%,#3F8AB6 55%,#3473AC 100%)",
+    accent: "rgb(23, 62, 107)",
+    dark: "#0a1628",
+    dotColor: "rgba(255,255,255,0.2)",
+    logoColor: "#fff",
+  },
+};
+
+export const THEME_TRANSITION_MS = 1650;
+
 export interface CompanyInfo {
-  idCli: number,
-  nomeCli: string,
-  cnpj: string,
-  franquia: string
-  site?: string
+  idCli: number;
+  nomeCli: string;
+  cnpj: string;
+  franquia: string;
+  site?: string;
 }
+
+export interface TransitionOrigin {
+  x: number;
+  y: number;
+}
+
+export const DEFAULT_THEME_ORIGIN: TransitionOrigin = { x: 100, y: 40 };
+
+interface FranquiaThemeConfig {
+  theme: LoginTheme;
+  primaryColor: string;
+  secondaryColor: string;
+  logo: string;
+  logoRelatorio?: string;
+}
+
+const FRANQUIA_THEME_MAP: Record<string, FranquiaThemeConfig> = {
+  DATASET: {
+    theme: "verde",
+    primaryColor: "#42A588",
+    secondaryColor: "#21455f",
+    logo: logoDataSet,
+    logoRelatorio: logoDataSetRelatorio,
+  },
+  GIGABYTE: {
+    theme: "laranja",
+    primaryColor: "#000000",
+    secondaryColor: "#000000",
+    logo: logoGigaByte,
+    logoRelatorio: logoGigaByteRelatorio,
+  },
+  ARS: {
+    theme: "marinho",
+    primaryColor: "#55BACA",
+    secondaryColor: "#55BACA",
+    logo: logoArs,
+    logoRelatorio: logoArsRelatorio,
+  },
+};
+
+const DEFAULT_FRANQUIA_CONFIG: FranquiaThemeConfig = {
+  theme: "aguasProfundas",
+  primaryColor: "#55BACA",
+  secondaryColor: "#55BACA",
+  logo: logoDataSet,
+};
 
 interface AppContextType {
   user: any;
@@ -30,7 +112,7 @@ interface AppContextType {
   secondaryColor: string;
   setUser: (user: any) => void;
   companyInfo: CompanyInfo;
-  setCompanyInfo: (info: CompanyInfo) => void;
+  setCompanyInfo: (info: CompanyInfo | ((prev: CompanyInfo) => CompanyInfo)) => void;
   isAuthenticated: boolean;
   setIsAuthenticated: (auth: boolean) => void;
   isLoading: boolean;
@@ -51,14 +133,16 @@ interface AppContextType {
   setTurnosSelecionados: (turno: any) => void;
   canShowTurnoTipo: boolean;
   setCanShowTurnoTipo: (canShow: boolean) => void;
-  version: string
-}
-
-export interface CompanyInfo {
-  cnpj: string,
-  franquia: string,
-  idCli: number,
-  nomeCli: string
+  version: string;
+  themeColor: LoginTheme;
+  setThemeColor: (e: LoginTheme) => void;
+  previousTheme: LoginTheme;
+  transitionOrigin: TransitionOrigin;
+  changeTheme: (theme: LoginTheme, origin?: TransitionOrigin) => void;
+  showLogo: boolean;
+  setShowLogo: (e: boolean) => void;
+  isThemeTransitioning: boolean;
+  setIsThemeTransitioning: (e: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -78,12 +162,103 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [secondaryColor, setSecondaryColor] = useState("#21455f");
   const [currLogo, setCurrLogo] = useState<string>(logoDataSet);
   const [currLogoRelatorio, setCurrLogoRelatorio] = useState<string>(logoArsRelatorio);
-  const [dataInicial, setDataInicial] = useState<Date>(null);
-  const [dataFinal, setDataFinal] = useState<Date>(null);
+  
+  // DATAS PADRÃO - SISTEMA GERENCIAL NÃO TEM TURNOS
+  const [dataInicial, setDataInicial] = useState<Date>(() => {
+    const hoje = new Date();
+    const semanaPassada = new Date();
+    semanaPassada.setDate(hoje.getDate() - 7);
+    return semanaPassada;
+  });
+  const [dataFinal, setDataFinal] = useState<Date>(() => new Date());
+  
   const [tipoTurnos, setTipoTurnos] = useState([]);
   const [turnosSelecionados, setTurnosSelecionados] = useState([]);
   const [canShowTurnoTipo, setCanShowTurnoTipo] = useState(false);
+  
+  const [themeColor, setThemeColor] = useState<LoginTheme>('aguasProfundas');
+  const [previousTheme, setPreviousTheme] = useState<LoginTheme>('aguasProfundas');
+  const [transitionOrigin, setTransitionOrigin] = useState<TransitionOrigin>(DEFAULT_THEME_ORIGIN);
+  const [showLogo, setShowLogo] = useState(false);
+  const [isThemeTransitioning, setIsThemeTransitioning] = useState(false);
   const version = 'v1.0.5';
+  const navigate = useNavigate();
+
+  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasAppliedInitialThemeRef = useRef(false);
+
+  const changeTheme = (newTheme: LoginTheme, origin: TransitionOrigin = DEFAULT_THEME_ORIGIN) => {
+    if (newTheme === themeColor) return;
+
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+
+    setPreviousTheme(themeColor);
+    setTransitionOrigin(origin);
+    setIsThemeTransitioning(true);
+    setThemeColor(newTheme);
+
+    transitionTimeoutRef.current = setTimeout(() => {
+      setIsThemeTransitioning(false);
+    }, THEME_TRANSITION_MS);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+    };
+  }, []);
+
+  const applyFranquiaTheme = (
+    franquia: string,
+    animate: boolean,
+    origin: TransitionOrigin = DEFAULT_THEME_ORIGIN,
+  ) => {
+    const config = FRANQUIA_THEME_MAP[franquia] ?? DEFAULT_FRANQUIA_CONFIG;
+
+    setPrimaryColor(config.primaryColor);
+    setSecondaryColor(config.secondaryColor);
+    setCurrLogo(config.logo);
+    if (config.logoRelatorio) {
+      setCurrLogoRelatorio(config.logoRelatorio);
+    }
+
+    if (animate) {
+      changeTheme(config.theme, origin);
+    } else {
+      setPreviousTheme(config.theme);
+      setThemeColor(config.theme);
+    }
+  };
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 992;
+      setIsMobile(mobile);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    const companyInfoStored = localStorage.getItem("companyInfo");
+    if (companyInfoStored) {
+      const parsed = JSON.parse(companyInfoStored);
+      setCompanyInfo(parsed);
+      setShowLogo(true);
+    } else {
+      navigate('/login', { replace: true });
+    }
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (companyInfo?.franquia) {
+      applyFranquiaTheme(companyInfo.franquia, hasAppliedInitialThemeRef.current);
+      hasAppliedInitialThemeRef.current = true;
+      setShowLogo(true);
+    }
+  }, [companyInfo?.franquia]);
 
   useEffect(() => {
     if (companyInfo) {
@@ -92,77 +267,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('companyInfo');
     }
   }, [companyInfo]);
-  // Carregar eventos iniciais
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth <= 992;
-      setIsMobile(mobile);
-      // if (!mobile) {
-      //   setIsSidebarOpen(false);
-      // }
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-
-
-
-
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-  useEffect(() => {
-
-    let franquia = companyInfo?.franquia || "";
-    // franquia = 'DATASET';
-    //franquia = 'GIGABYTE';
-    //franquia = 'ARS';
-
-    switch (franquia) {
-      case "DATASET":
-        setPrimaryColor("#21455f");
-        setSecondaryColor("#21455f");
-        setCurrLogo(logoDataSet);
-        setCurrLogoRelatorio(logoDataSetRelatorio)
-        setCompanyInfo(prev => ({ ...prev, site: 'wwww.datasetsistemas.com.br' }))
-        break;
-      case "GIGABYTE":
-        setPrimaryColor("#000000");
-        setSecondaryColor("#000000");
-        setCurrLogo(logoGigaByte);
-        setCurrLogoRelatorio(logoGigaByteRelatorio)
-        setCompanyInfo(prev => ({ ...prev, site: 'wwww.gigabyteautomacao.com.br' }))
-        break;
-      case "ARS":
-        setPrimaryColor("#55BACA");
-        setSecondaryColor("#55BACA");
-        setCurrLogo(logoArs);
-        setCurrLogoRelatorio(logoArsRelatorio)
-        setCompanyInfo(prev => ({ ...prev, site: 'wwww.arsautomacao.com.br' }))
-        break;
-      default:
-        setPrimaryColor("#55BACA");
-        setSecondaryColor("#55BACA");
-        setCompanyInfo(prev => ({ ...prev, site: 'wwww.datasetsistemas.com.br' }))
-        setCurrLogo(logoDataSet);
-        break;
-    }
-    buscarDataUltimoTurno();
-
-
-
-  }, [companyInfo?.franquia]);
-
-  const buscarDataUltimoTurno = async () => {
-    const data = await api.get("turnos/ultima-data");
-    if (data.status == 200) {
-      const ultimaData = data.data;
-      if (ultimaData) {
-        setDataInicial(new Date(ultimaData));
-        setDataFinal(new Date())
-      }
-    }
-  }
-
-
 
   const value = useMemo(
     () => ({
@@ -194,7 +298,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setTurnosSelecionados,
       canShowTurnoTipo,
       setCanShowTurnoTipo,
-      version
+      version,
+      themeColor,
+      setThemeColor,
+      previousTheme,
+      transitionOrigin,
+      changeTheme,
+      showLogo,
+      setShowLogo,
+      isThemeTransitioning,
+      setIsThemeTransitioning,
     }),
     [
       currLogo,
@@ -212,8 +325,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       dataFinal,
       tipoTurnos,
       turnosSelecionados,
-      canShowTurnoTipo
-
+      canShowTurnoTipo,
+      themeColor,
+      previousTheme,
+      transitionOrigin,
+      showLogo,
+      isThemeTransitioning,
     ],
   );
 

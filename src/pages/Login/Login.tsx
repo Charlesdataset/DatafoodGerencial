@@ -11,166 +11,121 @@ import "../../styles/components/_checkbox.scss";
 import "../../styles/components/_input.scss";
 import "../../styles/components/_select.scss";
 import { maskCnpj, unMask } from "../../utils/format";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-
-interface Usuario {
-  idUsuario: number;
-  nome: string;
-  franquiaId: number;
-  franquia: string;
-  cnpj: string;
-  empresa: string;
-}
 
 const Login = () => {
   const [currUser, setcurrUser] = useState({ codigo: "", senha: "", cnpj: "" });
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
-  const [cnpjValido, setCnpjValido] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const { lembrar, credentials, saveCredentials, toggleLembrar } = useRememberMe();
   const nomeRef = useRef<HTMLInputElement>(null);
   const senhaRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
-  const { setIsAuthenticated, setUser, setCompanyInfo } = useApp();
   const cnpjRef = useRef<HTMLInputElement>(null);
+  const verifyTimeoutRef = useRef<number | null>(null);
+  const navigate = useNavigate();
+  const { setIsAuthenticated, setUser, setCompanyInfo, companyInfo } = useApp();
 
-  // 🔥 FUNÇÃO PARA VOLTAR PARA A PRIMEIRA ETAPA
-  const voltarPrimeiraEtapa = () => {
-    setcurrUser({ codigo: "", senha: "", cnpj: "" });
-    setUsuarios([]);
-    setCnpjValido(false);
-    navigate("/login", { replace: true });
-    setTimeout(() => cnpjRef.current?.focus(), 100);
+  const handleVerifyFranchise = async (cnpj: string) => {
+    const cnpjTrimed = cnpj.replace(/\D/g, '');
+    if (cnpjTrimed.length === 11 || cnpjTrimed.length === 14) {
+      setIsVerifying(true);
+      try {
+        const res = await api.get(`franquias?cnpj=${cnpjTrimed}`);
+        if (res?.status == 200) {
+          setCompanyInfo(prev => ({ ...prev, franquia: res.data.franquia }));
+        }
+      } catch (error) {
+        toast.error("Erro ao verificar franquia");
+      } finally {
+        setIsVerifying(false);
+      }
+    }
   };
 
-  const carregarUsuarios = async (cnpj: string) => {
-    if (!cnpj || cnpj.length < 14) {
-      setUsuarios([]);
-      setCnpjValido(false);
-      return;
+  const debouncedVerify = (value: string) => {
+    if (verifyTimeoutRef.current) {
+      clearTimeout(verifyTimeoutRef.current);
+      verifyTimeoutRef.current = null;
     }
 
-    setCarregandoUsuarios(true);
-    try {
-      const response = await api.get("/gerencial/usuarios", {
-        headers: { cnpj: cnpj }
-      });
-
-      if (response.status === 200) {
-        const usuariosData = response.data;
-        if (usuariosData && usuariosData.length > 0) {
-          setUsuarios(usuariosData);
-          setCnpjValido(true);
-          
-          const primeiroUsuario = usuariosData[0];
-          setCompanyInfo({
-            idCli: primeiroUsuario.idUsuario,
-            nomeCli: primeiroUsuario.empresa,
-            cnpj: cnpj,
-            franquia: primeiroUsuario.franquia,
-          });
-
-          const codigoSalvo = localStorage.getItem('remember_codigo');
-          const senhaSalva = localStorage.getItem('remember_senha');
-          
-          if (codigoSalvo) {
-            const usuarioSalvo = usuariosData.find(
-              (u) => String(u.idUsuario) === String(codigoSalvo)
-            );
-            if (usuarioSalvo) {
-              setcurrUser({
-                codigo: String(usuarioSalvo.idUsuario),
-                senha: senhaSalva || "",
-                cnpj: cnpj,
-              });
-              if (senhaSalva) {
-                setTimeout(() => senhaRef.current?.focus(), 200);
-              }
-            }
-          }
-        } else {
-          setUsuarios([]);
-          setCnpjValido(false);
-          toast.error("Nenhum usuário encontrado para este CNPJ");
-        }
-      }
-    } catch (error) {
-      console.error("Erro ao carregar usuários:", error);
-      setUsuarios([]);
-      setCnpjValido(false);
-      toast.error("CNPJ inválido ou empresa não encontrada");
-    } finally {
-      setCarregandoUsuarios(false);
+    const cnpjTrimed = value.replace(/\D/g, '');
+    if (cnpjTrimed.length === 11 || cnpjTrimed.length === 14) {
+      verifyTimeoutRef.current = setTimeout(() => {
+        handleVerifyFranchise(value);
+        verifyTimeoutRef.current = null;
+      }, 800);
     }
   };
 
   useEffect(() => {
-    const cnpjSalvo = localStorage.getItem('remember_cnpj');
-    const codigoSalvo = localStorage.getItem('remember_codigo');
-    const senhaSalva = localStorage.getItem('remember_senha');
-    
-    if (lembrar && cnpjSalvo) {
-      setcurrUser({
-        cnpj: cnpjSalvo,
-        codigo: codigoSalvo || "",
-        senha: senhaSalva || "",
-      });
-      carregarUsuarios(cnpjSalvo);
-      navigate(`?cnpj=${cnpjSalvo}`, { replace: true });
-      return;
-    }
-
-    const cnpj = new URLSearchParams(window.location.search).get("cnpj");
-    if (cnpj && cnpj !== "") {
-      setcurrUser((prev) => ({ ...prev, cnpj: cnpj }));
-      carregarUsuarios(cnpj);
-    }
-
-    if (cnpjRef.current && !currUser.cnpj) {
+    const cnpj = new URLSearchParams(window.location.search).get('cnpj');
+    if (cnpjRef.current && (!cnpj || cnpj === '')) {
       cnpjRef.current.focus();
+    }
+
+    if (lembrar && credentials) {
+      setcurrUser(credentials);
+      if (credentials.codigo === "") {
+        nomeRef.current?.focus();
+      } else {
+        senhaRef.current?.focus();
+      }
+    } else if (cnpj && cnpj !== "") {
+      nomeRef.current?.focus();
+    }
+  }, [credentials, lembrar]);
+
+  useEffect(() => {
+    if (cnpjRef.current) {
+      debouncedVerify(cnpjRef.current.value);
+    }
+    return () => {
+      if (verifyTimeoutRef.current) {
+        clearTimeout(verifyTimeoutRef.current);
+        verifyTimeoutRef.current = null;
+      }
+    };
+  }, [currUser.cnpj]);
+
+  useEffect(() => {
+    const cnpj = new URLSearchParams(window.location.search).get("cnpj");
+    if (cnpj) {
+      setcurrUser((prev) => ({ ...prev, cnpj }));
     }
   }, []);
 
   const fazerLogin = async () => {
     try {
       setIsLoading(true);
-
-      const cnpj = currUser.cnpj;
+      const cnpj = new URLSearchParams(window.location.search).get("cnpj");
 
       if (!cnpj) {
-        toast.error("CNPJ é obrigatório!");
-        setIsLoading(false);
+        toast.error("CNPJ não encontrado!");
         return;
       }
 
-      if (!currUser.codigo) {
-        toast.error("Selecione um usuário!");
-        setIsLoading(false);
-        return;
-      }
-
-      const cnpjLimpo = unMask(cnpj);
-
-      const loginData = {
-        codigo: currUser.codigo,
-        senha: currUser.senha,
-      };
-
-      const res = await api.post("/auth/login", loginData, {
-        headers: { cnpj: cnpjLimpo },
+      const res = await api.post("/auth/login", currUser, {
+        headers: { 'cnpj': cnpj }
       });
 
       if (res?.status === 200 || res?.status === 201) {
         localStorage.setItem("tokenDataFood", res.data.access_token);
-        localStorage.setItem("cnpj", cnpjLimpo);
+        localStorage.setItem("cnpj", cnpj);
+        let site = "www.datasetsistemas.com.br";
+        switch (companyInfo?.franquia) {
+          case "GIGABYTE":
+            site = "www.gigabyteautomacao.com.br";
+            break;
+          case "ARS":
+            site = "www.arsautomacao.com.br";
+            break;
+        }
 
-        localStorage.setItem('remember_cnpj', cnpjLimpo);
-        localStorage.setItem('remember_codigo', currUser.codigo);
-        localStorage.setItem('remember_senha', currUser.senha);
-        saveCredentials(currUser.codigo, currUser.senha, cnpjLimpo);
+        setCompanyInfo(prev => ({ ...prev, cnpj: cnpj, idCli: Number(currUser.codigo), nomeCli: res.data.user.nome, site: site }));
+        localStorage.setItem("companyInfo", JSON.stringify(companyInfo));
+        saveCredentials(currUser.codigo, currUser.senha, unMask(currUser.cnpj));
+        setUser(res.data.user);
 
+        // 🔥 ADICIONADO: SALVA AS PERMISSÕES NO LOCALSTORAGE!
         if (res.data.user?.permissoes) {
           const dataRoute = {
             entrar: res.data.user.permissoes.entrar || false,
@@ -182,26 +137,11 @@ const Login = () => {
           localStorage.setItem('dataRoute', JSON.stringify(dataRoute));
         }
 
-        setUser(res.data.user);
-
-        const usuarioSelecionado = usuarios.find(
-          (u) => u.idUsuario === parseInt(currUser.codigo)
-        );
-        if (usuarioSelecionado) {
-          setCompanyInfo({
-            idCli: usuarioSelecionado.idUsuario,
-            nomeCli: usuarioSelecionado.empresa,
-            cnpj: cnpjLimpo,
-            franquia: usuarioSelecionado.franquia,
-          });
-        }
-
         toast.success("Login realizado com sucesso!");
         setIsAuthenticated(true);
-        navigate("/dashboard");
+        navigate(`/dashboard`);
       }
     } catch (error: any) {
-      console.error(error);
       const message = error.response?.data?.message || "Erro ao realizar login!";
       toast.error(message);
     } finally {
@@ -209,146 +149,85 @@ const Login = () => {
     }
   };
 
-  const usuarioOptions = usuarios.map((usuario) => ({
-    value: String(usuario.idUsuario),
-    label: usuario.nome,
-  }));
+  const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    const newCnpj = unMask(rawValue);
+    navigate(`?cnpj=${newCnpj}`, { replace: true });
+    setcurrUser((prev) => ({ ...prev, cnpj: newCnpj }));
+  };
+
+  const handleCnpjKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      nomeRef.current?.focus();
+    }
+  };
+
+  const handleCnpjKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const value = cnpjRef.current?.value || '';
+    const unMasked = unMask(value);
+    const navigationKeys = ['Backspace', 'Tab', 'Shift', 'Control', 'Alt', 'Meta'];
+    if (!navigationKeys.includes(e.key) && unMasked.length === 14) {
+      nomeRef.current?.focus();
+    }
+  };
 
   return (
     <AuthSimpleLayout>
       <div className="form-group">
-        {/* 🔥 BOTÃO VOLTAR NO TOPO */}
-        {cnpjValido && (
-          <div style={{ 
-            display: "flex", 
-            justifyContent: "flex-start", 
-            marginBottom: "16px" 
-          }}>
-            <button
-              type="button"
-              onClick={voltarPrimeiraEtapa}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#6c757d",
-                cursor: "pointer",
-                padding: "4px 8px",
-                fontSize: "14px",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                fontFamily: "'Outfit', sans-serif",
-              }}
-            >
-              <FontAwesomeIcon icon={faArrowLeft} />
-              Voltar
-            </button>
-          </div>
-        )}
-
-        <div className="field" style={{ marginBottom: "16px" }}>
+        <div className="field mb-4">
           <label htmlFor="cnpj" className="form-label">
-            CNPJ
+            CNPJ/CPF
           </label>
           <input
             type="text"
             id="cnpj"
             ref={cnpjRef}
-            value={maskCnpj(currUser.cnpj ?? "")}
+            autoComplete="off"
+            value={maskCnpj(currUser.cnpj ?? '')}
             placeholder="00.000.000/0000-00"
-            onChange={(e) => {
-              const newCnpj = unMask(e.target.value);
-              navigate(`?cnpj=${newCnpj}`, { replace: true });
-              setcurrUser({ ...currUser, cnpj: newCnpj });
-
-              if (newCnpj.length === 14) {
-                carregarUsuarios(newCnpj);
-              } else {
-                setUsuarios([]);
-                setCnpjValido(false);
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const cnpjLimpo = unMask(currUser.cnpj);
-                if (cnpjLimpo.length === 14) {
-                  carregarUsuarios(cnpjLimpo);
-                }
-              }
-            }}
-            onKeyUp={(e) => {
-              const value = cnpjRef.current?.value || '';
-              const unMasked = unMask(value);
-              const navigationKeys = ['Backspace', 'Tab', 'Shift', 'Control', 'Alt', 'Meta'];
-              if (!navigationKeys.includes(e.key) && unMasked.length === 14) {
-                nomeRef.current?.focus();
-              }
-            }}
+            onChange={handleCnpjChange}
+            onKeyDown={handleCnpjKeyDown}
+            onKeyUp={handleCnpjKeyUp}
+            disabled={isVerifying}
+            inputMode="numeric"
             className="form-input"
           />
-          {carregandoUsuarios && (
-            <small style={{ color: "#6c757d" }}>Carregando usuários...</small>
-          )}
+          {isVerifying && <small className="text-muted">Verificando...</small>}
         </div>
 
-        {cnpjValido && usuarios.length > 0 && (
-          <div className="field" style={{ marginBottom: "16px" }}>
-            <label htmlFor="usuario" className="form-label">
-              Usuário
-            </label>
-            <select
-              id="usuario"
-              value={currUser.codigo}
-              onChange={(e) => {
-                setcurrUser({ ...currUser, codigo: e.target.value });
-                if (e.target.value) {
-                  setTimeout(() => senhaRef.current?.focus(), 100);
-                }
-              }}
-              className="form-input"
-              style={{
-                width: "100%",
-                height: "48px",
-                border: "2px solid #e8ecf1",
-                borderRadius: "12px",
-                padding: "0 16px",
-                fontSize: "14px",
-                outline: "none",
-                fontFamily: "'Outfit', sans-serif",
-                color: "#1a2a3a",
-                background: "transparent",
-                transition: "all 0.2s ease",
-                appearance: "auto",
-                cursor: "pointer",
-              }}
-            >
-              <option value="">Selecione um usuário</option>
-              {usuarioOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div className="field">
+          <label htmlFor="nome" className="form-label">
+            Código
+          </label>
+          <input
+            type="text"
+            className="form-input"
+            autoComplete="off"
+            id="nome"
+            ref={nomeRef}
+            inputMode="numeric"
+            value={currUser.codigo}
+            onChange={(e) => setcurrUser((prev) => ({ ...prev, codigo: e.target.value }))}
+            onKeyDown={(e) => e.key === 'Enter' && senhaRef.current?.focus()}
+          />
+        </div>
 
-        {currUser.codigo && (
-          <div className="field" style={{ marginBottom: "16px" }}>
-            <label htmlFor="senha" className="form-label">
-              Senha
-            </label>
-            <input
-              type="password"
-              className="form-input"
-              ref={senhaRef}
-              id="senha"
-              value={currUser.senha}
-              onChange={(e) => setcurrUser({ ...currUser, senha: e.target.value })}
-              onKeyDown={(e) => e.key === "Enter" && fazerLogin()}
-              placeholder="Digite sua senha"
-            />
-          </div>
-        )}
+        <div className="field mt-4">
+          <label htmlFor="senha" className="form-label">
+            Senha
+          </label>
+          <input
+            type="password"
+            autoComplete="off"
+            className="form-input"
+            ref={senhaRef}
+            id="senha"
+            value={currUser.senha}
+            onChange={(e) => setcurrUser((prev) => ({ ...prev, senha: e.target.value }))}
+            onKeyDown={(e) => e.key === 'Enter' && fazerLogin()}
+          />
+        </div>
 
         <Checkbox
           label="Lembrar-me"
@@ -361,7 +240,7 @@ const Login = () => {
       <button
         onClick={fazerLogin}
         className="btn btn--primary btn--full"
-        disabled={isLoading || !currUser.cnpj || !currUser.codigo || !currUser.senha}
+        disabled={isLoading || !currUser.codigo || !currUser.senha}
       >
         {isLoading ? "Entrando..." : "Entrar"}
       </button>

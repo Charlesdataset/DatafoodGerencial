@@ -74,6 +74,20 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
   const nomeField = textFieldProps("nome");
   const ufField = textFieldProps("uf");
 
+  // 🔥 LÊ AS PERMISSÕES
+  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  const podeEditar = dataRoute.editar || false;
+  const podeEntrar = dataRoute.entrar || false;
+
+  // 🔥 BLOQUEIA ACESSO À TELA DE EDIÇÃO
+  useEffect(() => {
+    if (isEditing && !podeEntrar) {
+      toast.error("Você não tem permissão para acessar a tela de edição");
+      onBack();
+      return;
+    }
+  }, [isEditing, podeEntrar]);
+
   useEffect(() => {
     if (location.state?.row) {
       const row = location.state.row as Cidade;
@@ -97,6 +111,13 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
   const handleSubmit = async (event?: React.FormEvent) => {
     if (event) {
       event.preventDefault();
+    }
+
+    // 🔥 VERIFICA PERMISSÃO ANTES DE SALVAR
+    if (isEditing && !podeEditar) {
+      toast.error("Você não tem permissão para editar cidades");
+      emit("isCommited", false);
+      return;
     }
 
     const isValid = validateAll();
@@ -153,6 +174,7 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
                 className="mb-0"
                 isFormField={false}
                 maxLength={100}
+                disabled={isEditing && !podeEditar}
                 {...nomeField}
               />
 
@@ -162,6 +184,7 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
                 className="mb-0"
                 value={formData.uf}
                 options={ufOptions}
+                disabled={isEditing && !podeEditar}
                 onChange={(value: string) => {
                   setFormData({ ...formData, uf: value });
                 }}
@@ -175,6 +198,7 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
                 className="mb-0"
                 isFormField={false}
                 type="number"
+                disabled={isEditing && !podeEditar}
                 value={formData.codigo_ibge || ""}
                 onChange={(e) =>
                   setFormData({
@@ -193,6 +217,7 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
                   { value: "true", label: "Ativo" },
                   { value: "false", label: "Inativo" },
                 ]}
+                disabled={isEditing && !podeEditar}
                 onChange={(value: string) => {
                   setFormData({ ...formData, ativo: value === "true" });
                 }}

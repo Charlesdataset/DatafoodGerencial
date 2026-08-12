@@ -41,10 +41,10 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
   const isMounted = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // 🔥 LÊ AS PERMISSÕES DIRETO DO LOCALSTORAGE (IGUAL DATAFOOD)
+  // 🔥 LÊ AS PERMISSÕES DO LOCALSTORAGE
   const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
   const podeIncluir = dataRoute.incluir || false;
-  const podeEditar = dataRoute.editar || false;
+  const podeEntrar = dataRoute.entrar || false;  // 🔥 USA "entrar" PARA O BOTÃO EDITAR
   const podeExcluir = dataRoute.excluir || false;
 
   const buscarClientes = useCallback(
@@ -122,6 +122,12 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
   }, []);
 
   const handleDelete = async (id: number, nome: string) => {
+    // 🔥 VERIFICA PERMISSÃO DE EXCLUIR
+    if (!podeExcluir) {
+      toast.error("Você não tem permissão para excluir clientes");
+      return;
+    }
+
     const confirmado = await messageBox.confirm({
       message: `Excluir cliente ${nome}?`,
       title: "Atenção",
@@ -139,10 +145,10 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
     }
   };
 
-  // 🔥 HANDLER PARA EDIÇÃO COM VERIFICAÇÃO DE PERMISSÃO
+  // 🔥 HANDLER PARA EDIÇÃO - USA "entrar" PARA PERMITIR
   const handleEditClick = (row: Cliente) => {
-    if (!podeEditar) {
-      toast.error("Você não tem permissão para editar clientes");
+    if (!podeEntrar) {
+      toast.error("Você não tem permissão para acessar a edição");
       return;
     }
     onEdit(row);
@@ -207,8 +213,8 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
       textAlign: "center",
       cell: (info) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-          {/* 🔥 SÓ MOSTRA EDITAR SE TIVER PERMISSÃO */}
-          {podeEditar && (
+          {/* 🔥 BOTÃO EDITAR USA "entrar" */}
+          {podeEntrar && (
             <FontAwesomeIcon
               icon={faEdit}
               onClick={() => handleEditClick(info.row.original)}
@@ -229,7 +235,7 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
               }}
             />
           )}
-          {/* 🔥 SÓ MOSTRA EXCLUIR SE TIVER PERMISSÃO */}
+          {/* 🔥 BOTÃO EXCLUIR USA "excluir" */}
           {podeExcluir && (
             <FontAwesomeIcon
               icon={faTrash}
@@ -306,7 +312,7 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
             />
           </div>
 
-          {/* 🔥 SÓ MOSTRA O BOTÃO "NOVO CLIENTE" SE TIVER PERMISSÃO DE INCLUIR */}
+          {/* 🔥 BOTÃO NOVO CLIENTE USA "incluir" */}
           {podeIncluir && (
             <FormButton
               className="justify-content-center"

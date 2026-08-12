@@ -151,36 +151,6 @@ const franquiaOptions = [
   { value: "GIGABYTE", label: "GIGABYTE" },
 ];
 
-const ufOptions = [
-  { value: "AC", label: "AC" },
-  { value: "AL", label: "AL" },
-  { value: "AP", label: "AP" },
-  { value: "AM", label: "AM" },
-  { value: "BA", label: "BA" },
-  { value: "CE", label: "CE" },
-  { value: "DF", label: "DF" },
-  { value: "ES", label: "ES" },
-  { value: "GO", label: "GO" },
-  { value: "MA", label: "MA" },
-  { value: "MT", label: "MT" },
-  { value: "MS", label: "MS" },
-  { value: "MG", label: "MG" },
-  { value: "PA", label: "PA" },
-  { value: "PB", label: "PB" },
-  { value: "PR", label: "PR" },
-  { value: "PE", label: "PE" },
-  { value: "PI", label: "PI" },
-  { value: "RJ", label: "RJ" },
-  { value: "RN", label: "RN" },
-  { value: "RS", label: "RS" },
-  { value: "RO", label: "RO" },
-  { value: "RR", label: "RR" },
-  { value: "SC", label: "SC" },
-  { value: "SP", label: "SP" },
-  { value: "SE", label: "SE" },
-  { value: "TO", label: "TO" },
-];
-
 const validators = {
   razao_social: formValidators.compose(
     formValidators.required("Razão Social é obrigatória"),
@@ -291,24 +261,20 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const emailField = textFieldProps("email");
   const codigoPlanoField = textFieldProps("codigo_plano");
 
-  // 🔥 LÊ AS PERMISSÕES DIRETO DO LOCALSTORAGE (IGUAL DATAFOOD)
+  // 🔥 PERMISSÕES
   const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEditar = dataRoute.editar || false;
+  const podeEntrar = dataRoute.entrar || false;
 
   // 🔥 BLOQUEIA ACESSO À TELA
   useEffect(() => {
-    if (!isEditing && !podeIncluir) {
-      toast.error("Você não tem permissão para incluir clientes");
+    if (isEditing && !podeEntrar) {
+      toast.error("Você não tem permissão para acessar a tela de edição");
       onBack();
       return;
     }
-    if (isEditing && !podeEditar) {
-      toast.error("Você não tem permissão para editar clientes");
-      onBack();
-      return;
-    }
-  }, [isEditing, podeIncluir, podeEditar, onBack]);
+  }, [isEditing, podeEntrar]);
 
   useEffect(() => {
     fetchPlanos();
@@ -350,7 +316,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         cep: maskCep(row.cep || ""),
         telefone: maskPhone(row.telefone || ""),
         whatsapp: maskPhone(row.whatsapp || ""),
-        codigo_plano: "",
+        codigo_plano: row.codigo_plano || "",
       } as ClienteFormData);
     }
   }, [location.state]);
@@ -507,208 +473,215 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     );
   });
 
+  // 🔥 RENDER EMPRESA
   const renderEmpresa = () => (
-    <Fluid xs={[100]} rowGap={16}>
-      <Fluid xs={[33, 33, 34]} rowGap={16}>
-        <TextBox
-          label="Razão Social"
-          required
-          className="mb-0"
-          isFormField={false}
-          maxLength={100}
-          {...razaoSocialField}
-        />
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <TextBox
+        label="Razão Social"
+        required
+        className="mb-0"
+        isFormField={false}
+        maxLength={100}
+        disabled={isEditing && !podeEditar}
+        {...razaoSocialField}
+      />
 
-        <TextBox
-          label="Fantasia"
-          required
-          className="mb-0"
-          isFormField={false}
-          maxLength={100}
-          {...fantasiaField}
-        />
+      <TextBox
+        label="Fantasia"
+        required
+        className="mb-0"
+        isFormField={false}
+        maxLength={100}
+        disabled={isEditing && !podeEditar}
+        {...fantasiaField}
+      />
 
-        <TextBox
-          label="CNPJ"
-          required
-          className="mb-0"
-          isFormField={false}
-          mask="cnpj"
-          maxLength={18}
-          {...cnpjField}
-        />
-      </Fluid>
+      <TextBox
+        label="CNPJ"
+        required
+        className="mb-0"
+        isFormField={false}
+        mask="cnpj"
+        maxLength={18}
+        disabled={isEditing && !podeEditar}
+        {...cnpjField}
+      />
 
-      <Fluid xs={[33, 33, 34]} rowGap={16}>
-        <TextBox
-          label="Inscrição Estadual"
-          className="mb-0"
-          isFormField={false}
-          maxLength={20}
-          value={formData.inscricao_estadual}
-          onChange={(e) => setFormData({ ...formData, inscricao_estadual: e.target.value })}
-        />
+      <TextBox
+        label="Inscrição Estadual"
+        className="mb-0"
+        isFormField={false}
+        maxLength={20}
+        disabled={isEditing && !podeEditar}
+        value={formData.inscricao_estadual}
+        onChange={(e) => setFormData({ ...formData, inscricao_estadual: e.target.value })}
+      />
 
-        <TextBox
-          label="CNAE"
-          className="mb-0"
-          isFormField={false}
-          maxLength={20}
-          value={formData.cnae}
-          onChange={(e) => setFormData({ ...formData, cnae: e.target.value })}
-        />
+      <TextBox
+        label="CNAE"
+        className="mb-0"
+        isFormField={false}
+        maxLength={20}
+        disabled={isEditing && !podeEditar}
+        value={formData.cnae}
+        onChange={(e) => setFormData({ ...formData, cnae: e.target.value })}
+      />
 
-        <Select
-          label="Franquia"
-          className="mb-0"
-          value={formData.franquia}
-          options={franquiaOptions}
-          onChange={(value: string) => setFormData({ ...formData, franquia: value })}
-        />
-      </Fluid>
-    </Fluid>
+      <Select
+        label="Franquia"
+        className="mb-0"
+        value={formData.franquia}
+        options={franquiaOptions}
+        disabled={isEditing && !podeEditar}
+        onChange={(value: string) => setFormData({ ...formData, franquia: value })}
+      />
+    </div>
   );
 
+  // 🔥 RENDER LOCALIZAÇÃO
   const renderLocalizacao = () => (
-    <Fluid xs={[100]} rowGap={16}>
-      <Fluid xs={[30, 45, 25]} rowGap={16}>
-        <TextBox
-          label="CEP"
-          required
-          className="mb-0"
-          isFormField={false}
-          mask="cep"
-          maxLength={9}
-          {...cepField}
-        />
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <TextBox
+        label="CEP"
+        required
+        className="mb-0"
+        isFormField={false}
+        mask="cep"
+        maxLength={9}
+        disabled={isEditing && !podeEditar}
+        {...cepField}
+      />
 
-        <TextBox
-          label="Endereço"
-          required
-          className="mb-0"
-          isFormField={false}
-          maxLength={150}
-          {...enderecoField}
-        />
+      <TextBox
+        label="Endereço"
+        required
+        className="mb-0"
+        isFormField={false}
+        maxLength={150}
+        disabled={isEditing && !podeEditar}
+        {...enderecoField}
+      />
 
-        <TextBox
-          label="Número"
-          required
-          className="mb-0"
-          isFormField={false}
-          maxLength={10}
-          {...numeroField}
-        />
-      </Fluid>
+      <TextBox
+        label="Número"
+        required
+        className="mb-0"
+        isFormField={false}
+        maxLength={10}
+        disabled={isEditing && !podeEditar}
+        {...numeroField}
+      />
 
-      <Fluid xs={[35, 40, 25]} rowGap={16}>
-        <TextBox
-          label="Bairro"
-          required
-          className="mb-0"
-          isFormField={false}
-          maxLength={80}
-          {...bairroField}
-        />
+      <TextBox
+        label="Bairro"
+        required
+        className="mb-0"
+        isFormField={false}
+        maxLength={80}
+        disabled={isEditing && !podeEditar}
+        {...bairroField}
+      />
 
-        <TextBox
-          label="Cidade"
-          required
-          className="mb-0"
-          isFormField={false}
-          value={formData.cidade}
-          readOnly
-          onClick={() => setIsCidadeModalOpen(true)}
-          placeholder="Selecione uma cidade"
-          rightIcon={
-            formData.cidade ? (
-              <FontAwesomeIcon
-                icon={faTimes}
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  setFormData({ ...formData, cidade: "", uf: "" });
-                }}
-                style={{ cursor: "pointer", color: "#6c757d" }}
-              />
-            ) : (
-              <FontAwesomeIcon icon={faSearch} />
-            )
-          }
-          error={cidadeField.error}
-        />
+      <TextBox
+        label="Cidade"
+        required
+        className="mb-0"
+        isFormField={false}
+        value={formData.cidade}
+        readOnly
+        disabled={isEditing && !podeEditar}
+        onClick={() => setIsCidadeModalOpen(true)}
+        placeholder="Selecione uma cidade"
+        rightIcon={
+          formData.cidade ? (
+            <FontAwesomeIcon
+              icon={faTimes}
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                setFormData({ ...formData, cidade: "", uf: "" });
+              }}
+              style={{ cursor: "pointer", color: "#6c757d" }}
+            />
+          ) : (
+            <FontAwesomeIcon icon={faSearch} />
+          )
+        }
+        error={cidadeField.error}
+      />
 
-        <TextBox
-          label="UF"
-          required
-          className="mb-0"
-          isFormField={false}
-          value={formData.uf}
-          readOnly
-          placeholder="Preenchido automaticamente"
-          {...ufField}
-        />
-      </Fluid>
+      <TextBox
+        label="UF"
+        required
+        className="mb-0"
+        isFormField={false}
+        value={formData.uf}
+        readOnly
+        disabled={isEditing && !podeEditar}
+        placeholder="Preenchido automaticamente"
+        {...ufField}
+      />
 
-      <Fluid xs={[100]} rowGap={16}>
-        <TextBox
-          label="Complemento"
-          className="mb-0"
-          isFormField={false}
-          maxLength={50}
-          value={formData.complemento}
-          onChange={(e) => setFormData({ ...formData, complemento: e.target.value })}
-        />
-      </Fluid>
-    </Fluid>
+      <TextBox
+        label="Complemento"
+        className="mb-0"
+        isFormField={false}
+        maxLength={50}
+        disabled={isEditing && !podeEditar}
+        value={formData.complemento}
+        onChange={(e) => setFormData({ ...formData, complemento: e.target.value })}
+      />
+    </div>
   );
 
+  // 🔥 RENDER CONTATO
   const renderContato = () => (
-    <Fluid xs={[100]} rowGap={16}>
-      <Fluid xs={[50, 50]} rowGap={16}>
-        <TextBox
-          label="Responsável"
-          required
-          className="mb-0"
-          isFormField={false}
-          maxLength={100}
-          {...responsavelField}
-        />
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <TextBox
+        label="Responsável"
+        required
+        className="mb-0"
+        isFormField={false}
+        maxLength={100}
+        disabled={isEditing && !podeEditar}
+        {...responsavelField}
+      />
 
-        <TextBox
-          label="WhatsApp"
-          className="mb-0"
-          isFormField={false}
-          mask="phone"
-          maxLength={15}
-          value={formData.whatsapp}
-          onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-        />
-      </Fluid>
+      <TextBox
+        label="WhatsApp"
+        className="mb-0"
+        isFormField={false}
+        mask="phone"
+        maxLength={15}
+        disabled={isEditing && !podeEditar}
+        value={formData.whatsapp}
+        onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+      />
 
-      <Fluid xs={[50, 50]} rowGap={16}>
-        <TextBox
-          label="Telefone"
-          required
-          className="mb-0"
-          isFormField={false}
-          mask="phone"
-          maxLength={15}
-          {...telefoneField}
-        />
+      <TextBox
+        label="Telefone"
+        required
+        className="mb-0"
+        isFormField={false}
+        mask="phone"
+        maxLength={15}
+        disabled={isEditing && !podeEditar}
+        {...telefoneField}
+      />
 
-        <TextBox
-          label="Email"
-          required
-          className="mb-0"
-          isFormField={false}
-          type="email"
-          maxLength={150}
-          {...emailField}
-        />
-      </Fluid>
-    </Fluid>
+      <TextBox
+        label="Email"
+        required
+        className="mb-0"
+        isFormField={false}
+        type="email"
+        maxLength={150}
+        disabled={isEditing && !podeEditar}
+        {...emailField}
+      />
+    </div>
   );
 
+  // 🔥 RENDER INSTALAÇÃO
   const renderInstalacao = () => {
     const recursoIconeMap: Record<string, any> = {
       'fin_dre': faChartPie,
@@ -756,132 +729,129 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     };
 
     return (
-      <Fluid xs={[100]} rowGap={16}>
-        <Fluid xs={[50, 50]} rowGap={16}>
-          <TextBox
-            label="Ramo de Atividade"
-            className="mb-0"
-            isFormField={false}
-            value={formData.codigo_ramo}
-            readOnly
-            onClick={() => setIsRamoModalOpen(true)}
-            placeholder="Selecione um ramo de atividade"
-            rightIcon={
-              formData.codigo_ramo ? (
-                <FontAwesomeIcon
-                  icon={faTimes}
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    setFormData({ ...formData, codigo_ramo: "" });
-                  }}
-                  style={{ cursor: "pointer", color: "#6c757d" }}
-                />
-              ) : (
-                <FontAwesomeIcon icon={faSearch} />
-              )
-            }
-          />
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <TextBox
+          label="Ramo de Atividade"
+          className="mb-0"
+          isFormField={false}
+          value={formData.codigo_ramo}
+          readOnly
+          disabled={isEditing && !podeEditar}
+          onClick={() => setIsRamoModalOpen(true)}
+          placeholder="Selecione um ramo de atividade"
+          rightIcon={
+            formData.codigo_ramo ? (
+              <FontAwesomeIcon
+                icon={faTimes}
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  setFormData({ ...formData, codigo_ramo: "" });
+                }}
+                style={{ cursor: "pointer", color: "#6c757d" }}
+              />
+            ) : (
+              <FontAwesomeIcon icon={faSearch} />
+            )
+          }
+        />
 
-          <TextBox
-            label="Origem"
-            className="mb-0"
-            isFormField={false}
-            maxLength={20}
-            value={formData.origem}
-            onChange={(e) => setFormData({ ...formData, origem: e.target.value })}
-          />
-        </Fluid>
+        <TextBox
+          label="Origem"
+          className="mb-0"
+          isFormField={false}
+          maxLength={20}
+          disabled={isEditing && !podeEditar}
+          value={formData.origem}
+          onChange={(e) => setFormData({ ...formData, origem: e.target.value })}
+        />
 
-        <Fluid xs={[100]} rowGap={16}>
-          <Select
-            label="Plano"
-            required
-            className="mb-0"
-            value={formData.codigo_plano}
-            options={planos.map((p) => ({ value: p.codigo, label: p.descricao }))}
-            onChange={(value: string) => {
-              setFormData({ ...formData, codigo_plano: value });
-              fetchRecursos(value);
-            }}
-            placeholder={loadingPlanos ? "Carregando planos..." : "Selecione um plano"}
-            error={codigoPlanoField.error}
-          />
-        </Fluid>
+        <Select
+          label="Plano"
+          required
+          className="mb-0"
+          value={formData.codigo_plano}
+          options={planos.map((p) => ({ value: p.codigo, label: p.descricao }))}
+          disabled={isEditing && !podeEditar}
+          onChange={(value: string) => {
+            setFormData({ ...formData, codigo_plano: value });
+            fetchRecursos(value);
+          }}
+          placeholder={loadingPlanos ? "Carregando planos..." : "Selecione um plano"}
+          error={codigoPlanoField.error}
+        />
 
         {recursos.length > 0 && (
-          <Fluid xs={[100]} rowGap={16}>
-            <div>
-              <label style={{ fontWeight: 600, fontSize: "14px", display: "block", marginBottom: "8px" }}>
-                Recursos do plano:
-              </label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
-                {recursos.map((recurso) => {
-                  const nomeFormatado = recurso.codigoFormulario
-                    .split('_')
-                    .map((palavra, index) => {
-                      if (index === 0) {
-                        const map: Record<string, string> = {
-                          'fin': 'Financeiro',
-                          'com': 'Comunicação',
-                          'fis': 'Físico',
-                          'cad': 'Cadastro',
-                          'ger': 'Gerencial',
-                          'ven': 'Vendas',
-                          'est': 'Estoque'
-                        };
-                        return map[palavra] || palavra.charAt(0).toUpperCase() + palavra.slice(1);
-                      }
-                      return palavra.toUpperCase();
-                    })
-                    .join(' ');
+          <div>
+            <label style={{ fontWeight: 600, fontSize: "13px", display: "block", marginBottom: "6px" }}>
+              Recursos do plano:
+            </label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "4px" }}>
+              {recursos.map((recurso) => {
+                const nomeFormatado = recurso.codigoFormulario
+                  .split('_')
+                  .map((palavra, index) => {
+                    if (index === 0) {
+                      const map: Record<string, string> = {
+                        'fin': 'Financeiro',
+                        'com': 'Comunicação',
+                        'fis': 'Físico',
+                        'cad': 'Cadastro',
+                        'ger': 'Gerencial',
+                        'ven': 'Vendas',
+                        'est': 'Estoque'
+                      };
+                      return map[palavra] || palavra.charAt(0).toUpperCase() + palavra.slice(1);
+                    }
+                    return palavra.toUpperCase();
+                  })
+                  .join(' ');
 
-                  const icone = recursoIconeMap[recurso.codigoFormulario] || faCubes;
+                const icone = recursoIconeMap[recurso.codigoFormulario] || faCubes;
 
-                  return (
-                    <div
-                      key={recurso.codigoFormulario}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        padding: "6px 12px",
-                        borderRadius: "4px",
-                        backgroundColor: recurso.liberado ? "#e8f5e9" : "#f5f5f5",
-                        border: recurso.liberado ? "1px solid #c8e6c9" : "1px solid #e0e0e0",
-                        opacity: recurso.liberado ? 1 : 0.7,
+                return (
+                  <div
+                    key={recurso.codigoFormulario}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "4px 10px",
+                      borderRadius: "4px",
+                      backgroundColor: recurso.liberado ? "#e8f5e9" : "#f5f5f5",
+                      border: recurso.liberado ? "1px solid #c8e6c9" : "1px solid #e0e0e0",
+                      opacity: recurso.liberado ? 1 : 0.7,
+                    }}
+                  >
+                    <FontAwesomeIcon 
+                      icon={recurso.liberado ? faCheck : faBan}
+                      style={{ 
+                        color: recurso.liberado ? "#2e7d32" : "#d32f2f",
+                        fontSize: "14px",
+                        width: "14px"
                       }}
-                    >
-                      <FontAwesomeIcon 
-                        icon={recurso.liberado ? faCheck : faBan}
-                        style={{ 
-                          color: recurso.liberado ? "#2e7d32" : "#d32f2f",
-                          fontSize: "18px",
-                          width: "18px"
-                        }}
-                      />
-                      <FontAwesomeIcon 
-                        icon={icone}
-                        style={{ 
-                          color: recurso.liberado ? "#1b5e20" : "#999999",
-                          fontSize: "20px",
-                          width: "20px"
-                        }}
-                      />
-                      <span style={{ 
-                        fontSize: "13px", 
-                        fontWeight: recurso.liberado ? "500" : "400",
-                        color: recurso.liberado ? "#1b5e20" : "#999999"
-                      }}>
-                        {nomeFormatado}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+                    />
+                    <FontAwesomeIcon 
+                      icon={icone}
+                      style={{ 
+                        color: recurso.liberado ? "#1b5e20" : "#999999",
+                        fontSize: "16px",
+                        width: "16px"
+                      }}
+                    />
+                    <span style={{ 
+                      fontSize: "12px", 
+                      fontWeight: recurso.liberado ? "500" : "400",
+                      color: recurso.liberado ? "#1b5e20" : "#999999"
+                    }}>
+                      {nomeFormatado}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-          </Fluid>
+          </div>
         )}
-      </Fluid>
+      </div>
     );
   };
 
@@ -1045,18 +1015,14 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
 
       <form ref={formRef} onSubmit={handleSubmit}>
         <Card>
-          <Card.Header>
-            <span>{title}</span>
-          </Card.Header>
-
-          <Card.Body>
+          <Card.Body style={{ height: 'calc(100vh - 65px)' }}>
             <div
               style={{
                 display: "flex",
                 gap: "8px",
                 borderBottom: "1px solid #dee2e6",
-                marginBottom: "16px",
                 flexWrap: "wrap",
+                marginTop: -15
               }}
             >
               {mainTabs.map((tab) => (
@@ -1085,42 +1051,29 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
             </div>
 
             {activeTab === "principal" && (
-              <Fluid xs={[100]} rowGap={24} className="mt-3">
-                <Card className="h-100">
-                  <Card.Header>
-                    <span style={{ fontWeight: 600, fontSize: "15px" }}>
-                      Empresa
-                    </span>
-                  </Card.Header>
-                  <Card.Body>{renderEmpresa()}</Card.Body>
-                </Card>
+              <Fluid xs={[100]} rowGap={10} className="mt-3">
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gap: "10px",
+                  height: 'calc(100vh - 130px)'
+                }}>
+                  <Card style={{ height: '100%' }}>
+                    <Card.Body>{renderEmpresa()}</Card.Body>
+                  </Card>
 
-                <Card className="h-100">
-                  <Card.Header>
-                    <span style={{ fontWeight: 600, fontSize: "15px" }}>
-                      Localização
-                    </span>
-                  </Card.Header>
-                  <Card.Body>{renderLocalizacao()}</Card.Body>
-                </Card>
+                  <Card className="h-100">
+                    <Card.Body>{renderLocalizacao()}</Card.Body>
+                  </Card>
 
-                <Card className="h-100">
-                  <Card.Header>
-                    <span style={{ fontWeight: 600, fontSize: "15px" }}>
-                      Contato
-                    </span>
-                  </Card.Header>
-                  <Card.Body>{renderContato()}</Card.Body>
-                </Card>
+                  <Card className="h-100">
+                    <Card.Body>{renderContato()}</Card.Body>
+                  </Card>
 
-                <Card className="h-100">
-                  <Card.Header>
-                    <span style={{ fontWeight: 600, fontSize: "15px" }}>
-                      Instalação
-                    </span>
-                  </Card.Header>
-                  <Card.Body>{renderInstalacao()}</Card.Body>
-                </Card>
+                  <Card className="h-100">
+                    <Card.Body>{renderInstalacao()}</Card.Body>
+                  </Card>
+                </div>
               </Fluid>
             )}
 
@@ -1157,5 +1110,5 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     </>
   );
 };
-export default ClienteReg;
 
+export default ClienteReg;
