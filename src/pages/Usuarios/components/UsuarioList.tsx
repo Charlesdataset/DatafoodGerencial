@@ -222,7 +222,7 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
     {
       header: "Status",
       accessorKey: "ativo",
-      width: 120,
+      width: 80,
       headerAlign: "center",
       textAlign: "center",
       cell: (info) => {
@@ -234,8 +234,6 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
               onChange={() => handleToggleAtivo(row)}
               disabled={!podeEditar}
               size="sm"
-              label={row.ativo ? "Ativo" : "Inativo"}
-              labelPosition="right"
               style={{
                 '--switch-color': '#42ab8a',
                 '--switch-checked-color': '#42ab8a'

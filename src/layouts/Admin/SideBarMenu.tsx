@@ -11,6 +11,7 @@ import {
   faMoneyCheckDollar,
   faCalculator,
   faUsers,
+  faTags,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
@@ -64,6 +65,11 @@ export const SidebarMenu = ({ isCollapsed, onLinkClick, isMobile = false }: Side
           name: "Usuários",
           icon: faUsers,
           to: "/usuarios"
+        },
+        {
+          name: "Planos",
+          icon: faTags,
+          to: "/planos"
         },
       ]
     },

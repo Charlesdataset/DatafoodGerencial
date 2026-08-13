@@ -8,7 +8,8 @@ import Dashboard from "./pages/Dashboard/dashboard";
 import Login from "./pages/Login/Login";
 import Clientes from "./pages/Clientes/clientes";
 import Cidades from "./pages/Cidades/cidades";
-import Usuarios from "./pages/Usuarios/usuarios.tsx";
+import Usuarios from "./pages/Usuarios/usuarios";
+import Planos from "./pages/Planos/planos";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
                 <Route path="/clientes" element={<Clientes />} />
                 <Route path="/cidades" element={<Cidades />} />
                 <Route path="/usuarios" element={<Usuarios />} />
+                <Route path="/planos" element={<Planos />} />
               </Route>
             </Route>
 

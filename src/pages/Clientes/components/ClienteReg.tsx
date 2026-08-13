@@ -100,6 +100,7 @@ interface RamoAtividade {
 }
 
 interface Plano {
+  id_plano: number;
   codigo: string;
   descricao: string;
   resumo: string;
@@ -294,13 +295,23 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     }
   };
 
+  // 🔥 FUNÇÃO CORRIGIDA - BUSCA RECURSOS POR ID
   const fetchRecursos = async (codigo: string) => {
     if (!codigo) {
       setRecursos([]);
       return;
     }
     try {
-      const response = await api.get(`/gerencial/planos/${codigo}/recursos`);
+      const planosResponse = await api.get("/gerencial/planos");
+      const planosList = planosResponse.data || [];
+      const plano = planosList.find((p: any) => p.codigo === codigo);
+      
+      if (!plano) {
+        setRecursos([]);
+        return;
+      }
+      
+      const response = await api.get(`/gerencial/planos/${plano.id_plano}/recursos`);
       setRecursos(response.data || []);
     } catch (error) {
       setRecursos([]);

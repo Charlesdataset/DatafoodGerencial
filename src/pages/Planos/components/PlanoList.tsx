@@ -1,4 +1,4 @@
-import { faEdit, faPlus, faRedo, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faPlus, faRedo, faTrash, faTags } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
@@ -7,59 +7,27 @@ import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import { TextSearch } from "../../../components/Inputs/TextSearch/TextSearch";
 import { useMessageBox } from "../../../contexts/MessageBoxContext";
 import { api } from "../../../services/api";
-import type { Cidade } from "../types/Cidade";
+import type { Plano } from "../types/Plano";
 import Select from "../../../components/Inputs/Select/Select";
 import DataGrid from "../../../components/DataGrid/DataGrid";
 import type { ExtendedColumnDef } from "../../../components/DataGrid/DataGrid";
 import { Switch } from "../../../components/Switch/Switch";
 
-interface CidadeListProps {
+interface PlanoListProps {
   onRegister: () => void;
-  onEdit: (row: Cidade) => void;
+  onEdit: (row: Plano) => void;
 }
-
-const ufOptions = [
-  { value: "", label: "Todos" },
-  { value: "AC", label: "AC" },
-  { value: "AL", label: "AL" },
-  { value: "AP", label: "AP" },
-  { value: "AM", label: "AM" },
-  { value: "BA", label: "BA" },
-  { value: "CE", label: "CE" },
-  { value: "DF", label: "DF" },
-  { value: "ES", label: "ES" },
-  { value: "GO", label: "GO" },
-  { value: "MA", label: "MA" },
-  { value: "MT", label: "MT" },
-  { value: "MS", label: "MS" },
-  { value: "MG", label: "MG" },
-  { value: "PA", label: "PA" },
-  { value: "PB", label: "PB" },
-  { value: "PR", label: "PR" },
-  { value: "PE", label: "PE" },
-  { value: "PI", label: "PI" },
-  { value: "RJ", label: "RJ" },
-  { value: "RN", label: "RN" },
-  { value: "RS", label: "RS" },
-  { value: "RO", label: "RO" },
-  { value: "RR", label: "RR" },
-  { value: "SC", label: "SC" },
-  { value: "SP", label: "SP" },
-  { value: "SE", label: "SE" },
-  { value: "TO", label: "TO" },
-];
 
 const orderOptions = [
   { value: "code", label: "Código" },
   { value: "description", label: "Descrição" },
 ];
 
-const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
+const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
   const [textoBusca, setTextoBusca] = useState("");
-  const [cidades, setCidades] = useState<Cidade[]>([]);
+  const [planos, setPlanos] = useState<Plano[]>([]);
   const [carregandoBusca, setCarregandoBusca] = useState(false);
   const [carregou, setCarregou] = useState(false);
-  const [ufFiltro, setUfFiltro] = useState("");
   const [order, setOrder] = useState("code");
   const [refreshKey, setRefreshKey] = useState(0);
   const messageBox = useMessageBox();
@@ -72,8 +40,8 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
   const podeExcluir = dataRoute.excluir || false;
   const podeEditar = dataRoute.editar || false;
 
-  const buscarCidades = useCallback(
-    async (busca: string, uf: string, orderSelecionado: string, deveCarregar = true) => {
+  const buscarPlanos = useCallback(
+    async (busca: string, orderSelecionado: string, deveCarregar = true) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -85,10 +53,9 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
       setRefreshKey((prev) => prev + 1);
 
       try {
-        const response = await api.get("/gerencial/cidade", {
+        const response = await api.get("/gerencial/planos", {
           params: {
             search: busca || undefined,
-            uf: uf || undefined,
             order: orderSelecionado || undefined,
           },
           signal: controller.signal,
@@ -96,11 +63,11 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
 
         if (isMounted.current && response) {
           if (response.status === 200) {
-            setCidades(response.data.result || []);
+            setPlanos(response.data || []);
             setCarregou(true);
           } else {
-            setCidades([]);
-            toast.error("Erro ao carregar cidades");
+            setPlanos([]);
+            toast.error("Erro ao carregar planos");
           }
         }
       } catch (error: any) {
@@ -108,9 +75,9 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
           return;
         }
         if (isMounted.current) {
-          console.error("Erro ao buscar cidades:", error);
-          toast.error("Erro ao carregar cidades");
-          setCidades([]);
+          console.error("Erro ao buscar planos:", error);
+          toast.error("Erro ao carregar planos");
+          setPlanos([]);
         }
       } finally {
         if (isMounted.current && deveCarregar) setCarregandoBusca(false);
@@ -121,17 +88,17 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
 
   useEffect(() => {
     if (!carregou) {
-      buscarCidades("", ufFiltro, order, true);
+      buscarPlanos("", order, true);
     }
-  }, [carregou, buscarCidades, ufFiltro, order]);
+  }, [carregou, buscarPlanos, order]);
 
   useEffect(() => {
     if (!carregou) return;
     const timer = setTimeout(() => {
-      buscarCidades(textoBusca, ufFiltro, order, true);
+      buscarPlanos(textoBusca, order, true);
     }, 300);
     return () => clearTimeout(timer);
-  }, [textoBusca, carregou, buscarCidades, ufFiltro, order]);
+  }, [textoBusca, carregou, buscarPlanos, order]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -143,14 +110,14 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
     };
   }, []);
 
-  const handleDelete = async (id: number, nome: string) => {
+  const handleDelete = async (id: number, descricao: string) => {
     if (!podeExcluir) {
-      toast.error("Você não tem permissão para excluir cidades");
+      toast.error("Você não tem permissão para excluir planos");
       return;
     }
 
     const confirmado = await messageBox.confirm({
-      message: `Excluir cidade ${nome}?`,
+      message: `Excluir plano ${descricao}?`,
       title: "Atenção",
       type: "warning",
     });
@@ -158,16 +125,16 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
     if (!confirmado) return;
 
     try {
-      await api.delete(`/gerencial/cidade/${id}`);
-      toast.success("Cidade excluída com sucesso");
-      buscarCidades(textoBusca, ufFiltro, order, true);
+      await api.delete(`/gerencial/planos/${id}`);
+      toast.success("Plano excluído com sucesso");
+      buscarPlanos(textoBusca, order, true);
     } catch (error: any) {
-      console.error("Erro ao excluir cidade:", error);
-      toast.error("Erro ao excluir cidade");
+      console.error("Erro ao excluir plano:", error);
+      toast.error("Erro ao excluir plano");
     }
   };
 
-  const handleEditClick = (row: Cidade) => {
+  const handleEditClick = (row: Plano) => {
     if (!podeEntrar) {
       toast.error("Você não tem permissão para acessar a edição");
       return;
@@ -175,57 +142,74 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
     onEdit(row);
   };
 
-  const handleToggleAtivo = async (cidade: Cidade) => {
+  const handleToggleAtivo = async (plano: Plano) => {
     if (!podeEditar) {
-      toast.error("Você não tem permissão para editar cidades");
+      toast.error("Você não tem permissão para editar planos");
       return;
     }
 
     try {
-      const novoStatus = !cidade.ativo;
+      const novoStatus = !plano.ativo;
       
-      await api.put("/gerencial/cidade", {
-        id_cidade: cidade.id_cidade,
+      await api.put("/gerencial/planos", {
+        id_plano: plano.id_plano,
         ativo: novoStatus,
       });
       
-      toast.success(`Cidade ${novoStatus ? "ativada" : "desativada"} com sucesso`);
-      buscarCidades(textoBusca, ufFiltro, order, true);
+      toast.success(`Plano ${novoStatus ? "ativado" : "desativado"} com sucesso`);
+      buscarPlanos(textoBusca, order, true);
     } catch (error: any) {
       console.error("Erro ao alterar status:", error);
-      toast.error(error.response?.data?.message || "Erro ao alterar status da cidade");
+      toast.error(error.response?.data?.message || "Erro ao alterar status do plano");
     }
   };
 
-  const columns: ExtendedColumnDef<Cidade>[] = [
+  const columns: ExtendedColumnDef<Plano>[] = [
     {
-      header: "Código",
-      accessorKey: "id_cidade",
+      header: "ID",
+      accessorKey: "id_plano",
       width: 80,
       headerAlign: "center",
       textAlign: "center",
     },
     {
-      header: "Nome",
-      accessorKey: "nome",
-      width: 200,
+      header: "Descrição",
+      accessorKey: "descricao",
+      width: 180,
       headerAlign: "left",
       textAlign: "left",
     },
     {
-      header: "UF",
-      accessorKey: "uf",
-      width: 60,
+      header: "Resumo",
+      accessorKey: "resumo",
+      width: 150,
+      headerAlign: "left",
+      textAlign: "left",
+    },
+    {
+      header: "Caixas",
+      accessorKey: "caixasMax",
+      width: 70,
       headerAlign: "center",
       textAlign: "center",
     },
     {
-      header: "Código IBGE",
-      accessorKey: "codigo_ibge",
+      header: "Usuários",
+      accessorKey: "usuariosMax",
+      width: 80,
+      headerAlign: "center",
+      textAlign: "center",
+    },
+    {
+      header: "Valor Mensal",
+      accessorKey: "valorMensal",
       width: 120,
       headerAlign: "center",
       textAlign: "center",
-      cell: (info) => info.getValue() || "-",
+      cell: (info) => {
+        const valor = info.getValue() as number;
+        return `R$ ${valor.toFixed(2)}`;
+      },
     },
     {
       header: "Status",
@@ -269,36 +253,18 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
                 color: "#42ab8a",
                 fontSize: "16px",
                 cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#3a9a7a";
-                e.currentTarget.style.transform = "scale(1.1)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "#42ab8a";
-                e.currentTarget.style.transform = "scale(1)";
               }}
             />
           )}
           {podeExcluir && (
             <FontAwesomeIcon
               icon={faTrash}
-              onClick={() => handleDelete(info.row.original.id_cidade, info.row.original.nome)}
+              onClick={() => handleDelete(info.row.original.id_plano, info.row.original.descricao)}
               title="Excluir"
               style={{
                 color: "#ef4444",
                 fontSize: "16px",
                 cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#dc2626";
-                e.currentTarget.style.transform = "scale(1.1)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "#ef4444";
-                e.currentTarget.style.transform = "scale(1)";
               }}
             />
           )}
@@ -324,22 +290,10 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
             isLoading={carregandoBusca}
             loadAlone
             variant="text"
-            onClick={() => buscarCidades(textoBusca, ufFiltro, order, true)}
+            onClick={() => buscarPlanos(textoBusca, order, true)}
           >
             <FontAwesomeIcon icon={faRedo} />
           </FormButton>
-
-          <div style={{ minWidth: "130px" }}>
-            <Select
-              label="UF"
-              value={ufFiltro}
-              options={ufOptions}
-              onChange={(value: string) => {
-                setUfFiltro(value);
-                buscarCidades(textoBusca, value, order, true);
-              }}
-            />
-          </div>
 
           <div style={{ minWidth: "130px" }}>
             <Select
@@ -348,30 +302,38 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
               options={orderOptions}
               onChange={(value: string) => {
                 setOrder(value);
-                buscarCidades(textoBusca, ufFiltro, value, true);
+                buscarPlanos(textoBusca, value, true);
               }}
             />
           </div>
 
           {podeIncluir && (
-            <FormButton className="justify-content-center" onClick={onRegister}>
+            <FormButton 
+              className="justify-content-center" 
+              onClick={onRegister}
+              style={{
+                background: "#42ab8a",
+                border: "1px solid #42ab8a",
+                color: "#ffffff",
+              }}
+            >
               <FontAwesomeIcon icon={faPlus} color="#fff" />
-              Nova Cidade
+              Novo Plano
             </FormButton>
           )}
         </div>
 
         <DataGrid
           columns={columns}
-          data={cidades}
+          data={planos}
           refreshKey={refreshKey}
           autoPageSizeOnDesktop
           offsets={12}
-          emptyMessage="Nenhuma cidade encontrada"
+          emptyMessage="Nenhum plano encontrado"
         />
       </Card.Body>
     </Card>
   );
 };
 
-export default CidadeList;
+export default PlanoList;
