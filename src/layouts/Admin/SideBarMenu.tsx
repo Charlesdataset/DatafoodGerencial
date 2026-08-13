@@ -9,7 +9,8 @@ import {
   faLocationDot,
   faPrint,
   faMoneyCheckDollar,
-  faCalculator
+  faCalculator,
+  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
@@ -58,6 +59,11 @@ export const SidebarMenu = ({ isCollapsed, onLinkClick, isMobile = false }: Side
           name: "Cidades",
           icon: faLocationDot,
           to: "/cidades"
+        },
+        {
+          name: "Usuários",
+          icon: faUsers,
+          to: "/usuarios"
         },
       ]
     },

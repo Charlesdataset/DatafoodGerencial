@@ -22,6 +22,7 @@ const Login = () => {
   const cnpjRef = useRef<HTMLInputElement>(null);
   const verifyTimeoutRef = useRef<number | null>(null);
   const hasShownToast = useRef(false);
+  const isFirstRender = useRef(true);
   const navigate = useNavigate();
   const { setIsAuthenticated, setUser, setCompanyInfo, companyInfo } = useApp();
 
@@ -34,14 +35,22 @@ const Login = () => {
   const handleVerifyFranchise = async (cnpj: string) => {
     const cnpjTrimed = cnpj.replace(/\D/g, '');
     if (cnpjTrimed.length === 14) {
+      
+      // 👇 SE JÁ FALHOU NO AUTHLAYOUT, NÃO FAZ A CHAMADA
+      if (localStorage.getItem("franchiseValidationFailed") === "true") {
+        return;
+      }
+
       setIsVerifying(true);
       try {
         const res = await api.get(`franquias?cnpj=${cnpjTrimed}`);
         if (res?.status == 200) {
           setCompanyInfo(prev => ({ ...prev, franquia: res.data.franquia }));
+          // SE DEU CERTO, REMOVE O FLAG
+          localStorage.removeItem("franchiseValidationFailed");
         }
       } catch (error) {
-        toast.error("Erro ao verificar franquia");
+        // O AXIOS JÁ VAI MOSTRAR O TOAST
       } finally {
         setIsVerifying(false);
       }
@@ -79,6 +88,11 @@ const Login = () => {
   }, [credentials, lembrar]);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     const cnpjLimpo = currUser.cnpj.replace(/\D/g, '');
     if (cnpjLimpo.length === 14) {
       debouncedVerify(currUser.cnpj);
@@ -95,11 +109,11 @@ const Login = () => {
     const cnpj = new URLSearchParams(window.location.search).get("cnpj");
     if (cnpj) {
       setcurrUser((prev) => ({ ...prev, cnpj }));
+      isFirstRender.current = false;
     }
   }, []);
 
   const fazerLogin = async () => {
-    // 🔥 RESETA O FLAG ANTES DE TENTAR LOGAR
     hasShownToast.current = false;
 
     try {
@@ -168,6 +182,9 @@ const Login = () => {
     const newCnpj = unMask(rawValue);
     navigate(`?cnpj=${newCnpj}`, { replace: true });
     setcurrUser((prev) => ({ ...prev, cnpj: newCnpj }));
+    
+    // 👇 RESETA O FLAG QUANDO O CNPJ MUDA
+    localStorage.removeItem("franchiseValidationFailed");
   };
 
   const handleCnpjKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -250,7 +267,6 @@ const Login = () => {
           onChange={(e) => toggleLembrar(e.target.checked)}
         />
       </div>
-
       <button
         onClick={fazerLogin}
         className="btn btn--primary btn--full"

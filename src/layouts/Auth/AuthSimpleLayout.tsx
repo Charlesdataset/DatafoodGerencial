@@ -230,10 +230,9 @@ const AuthSimpleLayout = ({
   }, [cnpj]);
 
   const handleValidateCompany = async (cnpj: string) => {
-    // 🔥 ADICIONA A VERIFICAÇÃO DE TAMANHO AQUI!
     const cnpjTrimed = cnpj.replace(/\D/g, '');
     if (cnpjTrimed.length !== 14) {
-      return; // 🔥 SAI DA FUNÇÃO SE NÃO TIVER 14 DÍGITOS
+      return;
     }
 
     try {
@@ -253,6 +252,9 @@ const AuthSimpleLayout = ({
         const newTheme = franquiaTheme[franquia] || "marinho";
         setThemeColor(newTheme);
         setShowLogo(true);
+        
+        // SE DEU CERTO, REMOVE O FLAG
+        localStorage.removeItem("franchiseValidationFailed");
       } else {
         setCanShow(true);
         setShowLogo(false);
@@ -263,6 +265,9 @@ const AuthSimpleLayout = ({
       setCanShow(true);
       setShowLogo(false);
       setThemeColor("aguasProfundas");
+      
+      // MARCA QUE FALHOU
+      localStorage.setItem("franchiseValidationFailed", "true");
     }
   };
 

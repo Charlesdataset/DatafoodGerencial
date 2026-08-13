@@ -1,8 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-console.log("env", import.meta.env.VITE_API_BASE_URL);
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3018/food-gerencial";
 
 export const api = axios.create({
@@ -12,12 +10,10 @@ export const api = axios.create({
   },
 });
 
-// Interceptor para adicionar o token e o CNPJ
 api.interceptors.request.use((config) => {
   const isLoginRoute = config.url?.includes("/auth/login") || config.url?.includes("/users/register");
 
   if (isLoginRoute) {
-    console.log("🔓 Rota de autenticação - pulando headers");
     return config;
   }
 
@@ -45,7 +41,6 @@ const isCancelError = (error: any): boolean => {
   );
 };
 
-// 🔥 ADICIONA ESTA FUNÇÃO
 const isLoginRoute = (url: string | undefined): boolean => {
   return url?.includes("/auth/login") || url?.includes("/users/register") || false;
 };
@@ -54,7 +49,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (isCancelError(error)) {
-      console.log("Requisição cancelada - ignorando");
       return Promise.reject(error);
     }
 
@@ -75,26 +69,9 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 500) {
-      if (error.response.data != "canceled") {
-        console.log(error.response);
-        let errorMessage = "Erro interno do servidor. Tente novamente mais tarde.";
+    const errorStatus = error.response?.status;
 
-        if (typeof error.response.data === "string") {
-          errorMessage = error.response.data;
-        } else if (error.response.data?.message) {
-          errorMessage = error.response.data.message;
-        } else if (error.response.data?.error) {
-          errorMessage = error.response.data.error;
-        }
-
-        toast.error(errorMessage);
-        console.error("Erro 500:", error.response?.data);
-      }
-      return Promise.reject(error);
-    }
-
-    if (error.response?.status === 400) {
+    if (errorStatus === 400) {
       let errorMessage = "Erro na requisição. Verifique os dados enviados.";
 
       if (typeof error.response.data === "string") {
@@ -109,14 +86,46 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 403) {
+    if (errorStatus === 403) {
       const errorMessage = error.response?.data?.message || "Você não tem permissão para realizar esta ação.";
       toast.error(errorMessage);
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 404) {
+    if (errorStatus === 404) {
       const errorMessage = error.response?.data?.message || "Recurso não encontrado.";
+      toast.error(errorMessage);
+      return Promise.reject(error);
+    }
+
+    if (errorStatus === 500) {
+      if (error.response.data != "canceled") {
+        let errorMessage = "Erro interno do servidor. Tente novamente mais tarde.";
+
+        if (typeof error.response.data === "string") {
+          errorMessage = error.response.data;
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.data?.error) {
+          errorMessage = error.response.data.error;
+        }
+
+        toast.error(errorMessage);
+      }
+      return Promise.reject(error);
+    }
+
+    if (errorStatus === 503) {
+      let errorMessage = "Cliente não encontrado";
+
+      if (typeof error.response.data === "string") {
+        errorMessage = error.response.data;
+      } else if (error.response.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+
       toast.error(errorMessage);
       return Promise.reject(error);
     }
@@ -127,7 +136,7 @@ api.interceptors.response.use(
       error.message ||
       "Ocorreu um erro inesperado. Tente novamente.";
 
-    if (![400, 403, 404, 500].includes(error.response?.status)) {
+    if (errorStatus && ![400, 403, 404, 500, 503].includes(errorStatus)) {
       toast.error(errorMessage);
     }
 

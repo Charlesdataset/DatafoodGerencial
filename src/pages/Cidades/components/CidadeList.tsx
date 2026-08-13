@@ -11,6 +11,7 @@ import type { Cidade } from "../types/Cidade";
 import Select from "../../../components/Inputs/Select/Select";
 import DataGrid from "../../../components/DataGrid/DataGrid";
 import type { ExtendedColumnDef } from "../../../components/DataGrid/DataGrid";
+import { Switch } from "../../../components/Switch/Switch";
 
 interface CidadeListProps {
   onRegister: () => void;
@@ -65,11 +66,11 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
   const isMounted = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // 🔥 LÊ AS PERMISSÕES
   const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEntrar = dataRoute.entrar || false;
   const podeExcluir = dataRoute.excluir || false;
+  const podeEditar = dataRoute.editar || false;
 
   const buscarCidades = useCallback(
     async (busca: string, uf: string, orderSelecionado: string, deveCarregar = true) => {
@@ -143,7 +144,6 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
   }, []);
 
   const handleDelete = async (id: number, nome: string) => {
-    // 🔥 VERIFICA PERMISSÃO DE EXCLUIR
     if (!podeExcluir) {
       toast.error("Você não tem permissão para excluir cidades");
       return;
@@ -167,13 +167,34 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
     }
   };
 
-  // 🔥 HANDLER PARA EDIÇÃO
   const handleEditClick = (row: Cidade) => {
     if (!podeEntrar) {
       toast.error("Você não tem permissão para acessar a edição");
       return;
     }
     onEdit(row);
+  };
+
+  const handleToggleAtivo = async (cidade: Cidade) => {
+    if (!podeEditar) {
+      toast.error("Você não tem permissão para editar cidades");
+      return;
+    }
+
+    try {
+      const novoStatus = !cidade.ativo;
+      
+      await api.put("/gerencial/cidade", {
+        id_cidade: cidade.id_cidade,
+        ativo: novoStatus,
+      });
+      
+      toast.success(`Cidade ${novoStatus ? "ativada" : "desativada"} com sucesso`);
+      buscarCidades(textoBusca, ufFiltro, order, true);
+    } catch (error: any) {
+      console.error("Erro ao alterar status:", error);
+      toast.error(error.response?.data?.message || "Erro ao alterar status da cidade");
+    }
   };
 
   const columns: ExtendedColumnDef<Cidade>[] = [
@@ -209,15 +230,26 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
     {
       header: "Status",
       accessorKey: "ativo",
-      width: 100,
+      width: 120,
       headerAlign: "center",
       textAlign: "center",
       cell: (info) => {
-        const ativo = info.getValue() as boolean;
+        const row = info.row.original;
         return (
-          <span className={`badge ${ativo ? "bg-success" : "bg-secondary"}`}>
-            {ativo ? "Ativo" : "Inativo"}
-          </span>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Switch
+              checked={row.ativo}
+              onChange={() => handleToggleAtivo(row)}
+              disabled={!podeEditar}
+              size="sm"
+              label={row.ativo ? "Ativo" : "Inativo"}
+              labelPosition="right"
+              style={{
+                '--switch-color': '#42ab8a',
+                '--switch-checked-color': '#42ab8a'
+              } as React.CSSProperties}
+            />
+          </div>
         );
       },
     },
@@ -230,29 +262,27 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
       textAlign: "center",
       cell: (info) => (
         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-          {/* 🔥 BOTÃO EDITAR USA "entrar" */}
           {podeEntrar && (
             <FontAwesomeIcon
               icon={faEdit}
               onClick={() => handleEditClick(info.row.original)}
               title="Editar"
               style={{
-                color: "#22c55e",
+                color: "#42ab8a",
                 fontSize: "16px",
                 cursor: "pointer",
                 transition: "all 0.15s",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#16a34a";
+                e.currentTarget.style.color = "#3a9a7a";
                 e.currentTarget.style.transform = "scale(1.1)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = "#22c55e";
+                e.currentTarget.style.color = "#42ab8a";
                 e.currentTarget.style.transform = "scale(1)";
               }}
             />
           )}
-          {/* 🔥 BOTÃO EXCLUIR USA "excluir" */}
           {podeExcluir && (
             <FontAwesomeIcon
               icon={faTrash}
@@ -325,7 +355,6 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
             />
           </div>
 
-          {/* 🔥 BOTÃO NOVO CLIENTE USA "incluir" */}
           {podeIncluir && (
             <FormButton className="justify-content-center" onClick={onRegister}>
               <FontAwesomeIcon icon={faPlus} color="#fff" />

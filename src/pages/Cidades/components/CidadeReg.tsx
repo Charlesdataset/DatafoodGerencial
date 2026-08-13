@@ -58,7 +58,6 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
   const location = useLocation();
   const { emit, subscribe } = useNavigation();
   const isEditing = Boolean(location.state?.row);
-  const title = isEditing ? "Editar Cidade" : "Nova Cidade";
 
   const initialFormData: Cidade = {
     id_cidade: 0,
@@ -74,12 +73,10 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
   const nomeField = textFieldProps("nome");
   const ufField = textFieldProps("uf");
 
-  // 🔥 LÊ AS PERMISSÕES
   const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
   const podeEditar = dataRoute.editar || false;
   const podeEntrar = dataRoute.entrar || false;
 
-  // 🔥 BLOQUEIA ACESSO À TELA DE EDIÇÃO
   useEffect(() => {
     if (isEditing && !podeEntrar) {
       toast.error("Você não tem permissão para acessar a tela de edição");
@@ -113,7 +110,6 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
       event.preventDefault();
     }
 
-    // 🔥 VERIFICA PERMISSÃO ANTES DE SALVAR
     if (isEditing && !podeEditar) {
       toast.error("Você não tem permissão para editar cidades");
       emit("isCommited", false);
@@ -161,10 +157,6 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
       <Card>
-        <Card.Header>
-          <span>{title}</span>
-        </Card.Header>
-
         <Card.Body>
           <Fluid xs={[100]} rowGap={16}>
             <Fluid xs={[50, 50]} rowGap={16}>

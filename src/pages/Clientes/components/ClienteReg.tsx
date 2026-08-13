@@ -9,6 +9,7 @@ import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import { useNavigation } from "../../../contexts/NavigationContext";
 import { formValidators } from "../../../hooks/formValidators";
 import { useSimpleFormValidation } from "../../../hooks/useSimpleFormValidation";
+import { useCep } from "../../../hooks/useCep.ts";
 import { api } from "../../../services/api";
 import type { Cliente } from "../types/Cliente";
 import { maskCnpj, maskCep, maskPhone, unMask } from "../../../utils/format";
@@ -197,17 +198,20 @@ const validators = {
   codigo_plano: formValidators.required("Plano é obrigatório"),
 };
 
+const toUpperCase = (value: string) => value ? value.toUpperCase() : '';
+
 const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const location = useLocation();
   const { emit, subscribe } = useNavigation();
   const isEditing = Boolean(location.state?.row);
-  const title = isEditing ? "Editar Cliente" : "Novo Cliente";
   const [activeTab, setActiveTab] = useState("principal");
   const [isRamoModalOpen, setIsRamoModalOpen] = useState(false);
   const [ramos, setRamos] = useState<RamoAtividade[]>([]);
   const [ramoSearch, setRamoSearch] = useState("");
   const [loadingRamos, setLoadingRamos] = useState(false);
+
+  const { loadingCep, buscarCep } = useCep();
 
   const [planos, setPlanos] = useState<Plano[]>([]);
   const [recursos, setRecursos] = useState<Recurso[]>([]);
@@ -261,13 +265,11 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const emailField = textFieldProps("email");
   const codigoPlanoField = textFieldProps("codigo_plano");
 
-  // 🔥 PERMISSÕES
   const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEditar = dataRoute.editar || false;
   const podeEntrar = dataRoute.entrar || false;
 
-  // 🔥 BLOQUEIA ACESSO À TELA
   useEffect(() => {
     if (isEditing && !podeEntrar) {
       toast.error("Você não tem permissão para acessar a tela de edição");
@@ -286,7 +288,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       const response = await api.get("/gerencial/planos");
       setPlanos(response.data || []);
     } catch (error) {
-      console.error("Erro ao buscar planos:", error);
       toast.error("Erro ao carregar planos");
     } finally {
       setLoadingPlanos(false);
@@ -302,7 +303,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       const response = await api.get(`/gerencial/planos/${codigo}/recursos`);
       setRecursos(response.data || []);
     } catch (error) {
-      console.error("Erro ao buscar recursos:", error);
       setRecursos([]);
     }
   };
@@ -350,7 +350,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       const response = await api.get("/gerencial/ramos");
       setRamos(response.data || []);
     } catch (error) {
-      console.error("Erro ao buscar ramos:", error);
       toast.error("Erro ao carregar ramos de atividade");
     } finally {
       setLoadingRamos(false);
@@ -365,7 +364,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         setCidades(response.data.result || []);
       }
     } catch (error) {
-      console.error("Erro ao buscar cidades:", error);
       toast.error("Erro ao carregar cidades");
     } finally {
       setLoadingCidades(false);
@@ -393,7 +391,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       event.preventDefault();
     }
 
-    // 🔥 VERIFICA PERMISSÃO ANTES DE SALVAR
     if (!isEditing && !podeIncluir) {
       toast.error("Você não tem permissão para incluir clientes");
       emit("isCommited", false);
@@ -439,7 +436,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
               vigente: true,
             });
           } catch (licencaError) {
-            console.error("Erro ao salvar licença:", licencaError);
             toast.warning("Cliente salvo, mas houve erro ao vincular o plano");
           }
         }
@@ -473,7 +469,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     );
   });
 
-  // 🔥 RENDER EMPRESA
   const renderEmpresa = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
       <TextBox
@@ -483,7 +478,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         isFormField={false}
         maxLength={100}
         disabled={isEditing && !podeEditar}
-        {...razaoSocialField}
+        value={formData.razao_social}
+        onChange={(e) => setFormData({ ...formData, razao_social: toUpperCase(e.target.value) })}
       />
 
       <TextBox
@@ -493,7 +489,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         isFormField={false}
         maxLength={100}
         disabled={isEditing && !podeEditar}
-        {...fantasiaField}
+        value={formData.fantasia}
+        onChange={(e) => setFormData({ ...formData, fantasia: toUpperCase(e.target.value) })}
       />
 
       <TextBox
@@ -538,7 +535,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     </div>
   );
 
-  // 🔥 RENDER LOCALIZAÇÃO
   const renderLocalizacao = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
       <TextBox
@@ -549,8 +545,16 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         mask="cep"
         maxLength={9}
         disabled={isEditing && !podeEditar}
-        {...cepField}
+        value={formData.cep}
+        onChange={(e) => {
+          const value = e.target.value;
+          setFormData({ ...formData, cep: value });
+          if (value.replace(/\D/g, '').length === 8) {
+            buscarCep(value, setFormData);
+          }
+        }}
       />
+      {loadingCep && <small style={{ color: '#6c757d' }}>Buscando endereço...</small>}
 
       <TextBox
         label="Endereço"
@@ -558,8 +562,9 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         className="mb-0"
         isFormField={false}
         maxLength={150}
-        disabled={isEditing && !podeEditar}
-        {...enderecoField}
+        disabled={isEditing && !podeEditar || loadingCep}
+        value={formData.endereco}
+        onChange={(e) => setFormData({ ...formData, endereco: toUpperCase(e.target.value) })}
       />
 
       <TextBox
@@ -578,36 +583,37 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         className="mb-0"
         isFormField={false}
         maxLength={80}
-        disabled={isEditing && !podeEditar}
-        {...bairroField}
+        disabled={isEditing && !podeEditar || loadingCep}
+        value={formData.bairro}
+        onChange={(e) => setFormData({ ...formData, bairro: toUpperCase(e.target.value) })}
       />
 
-      <TextBox
-        label="Cidade"
-        required
-        className="mb-0"
-        isFormField={false}
-        value={formData.cidade}
-        readOnly
-        disabled={isEditing && !podeEditar}
-        onClick={() => setIsCidadeModalOpen(true)}
-        placeholder="Selecione uma cidade"
-        rightIcon={
-          formData.cidade ? (
-            <FontAwesomeIcon
-              icon={faTimes}
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                setFormData({ ...formData, cidade: "", uf: "" });
-              }}
-              style={{ cursor: "pointer", color: "#6c757d" }}
-            />
-          ) : (
-            <FontAwesomeIcon icon={faSearch} />
-          )
+     <TextBox
+  label="Cidade"
+  required
+  className="mb-0"
+  isFormField={false}
+  value={formData.cidade}
+  readOnly
+  disabled={isEditing && !podeEditar || loadingCep}
+  onClick={() => setIsCidadeModalOpen(true)}
+  placeholder="Selecione uma cidade"
+  rightIcon={
+    <FontAwesomeIcon
+      icon={formData.cidade ? faTimes : faSearch}
+      onClick={(e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (formData.cidade) {
+          setFormData({ ...formData, cidade: "", uf: "" });
+        } else {
+          setIsCidadeModalOpen(true);
         }
-        error={cidadeField.error}
-      />
+      }}
+      style={{ cursor: "pointer", color: "#6c757d" }}
+    />
+  }
+  error={cidadeField.error}
+/>
 
       <TextBox
         label="UF"
@@ -616,7 +622,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         isFormField={false}
         value={formData.uf}
         readOnly
-        disabled={isEditing && !podeEditar}
+        disabled={isEditing && !podeEditar || loadingCep}
         placeholder="Preenchido automaticamente"
         {...ufField}
       />
@@ -626,14 +632,13 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         className="mb-0"
         isFormField={false}
         maxLength={50}
-        disabled={isEditing && !podeEditar}
+        disabled={isEditing && !podeEditar || loadingCep}
         value={formData.complemento}
-        onChange={(e) => setFormData({ ...formData, complemento: e.target.value })}
+        onChange={(e) => setFormData({ ...formData, complemento: toUpperCase(e.target.value) })}
       />
     </div>
   );
 
-  // 🔥 RENDER CONTATO
   const renderContato = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
       <TextBox
@@ -643,7 +648,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         isFormField={false}
         maxLength={100}
         disabled={isEditing && !podeEditar}
-        {...responsavelField}
+        value={formData.responsavel_nome}
+        onChange={(e) => setFormData({ ...formData, responsavel_nome: toUpperCase(e.target.value) })}
       />
 
       <TextBox
@@ -681,7 +687,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     </div>
   );
 
-  // 🔥 RENDER INSTALAÇÃO
   const renderInstalacao = () => {
     const recursoIconeMap: Record<string, any> = {
       'fin_dre': faChartPie,
@@ -762,7 +767,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           maxLength={20}
           disabled={isEditing && !podeEditar}
           value={formData.origem}
-          onChange={(e) => setFormData({ ...formData, origem: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, origem: toUpperCase(e.target.value) })}
         />
 
         <Select
@@ -855,7 +860,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     );
   };
 
-
   const renderFranquias = () => (
     <div style={{ padding: "20px", textAlign: "center", color: "#6c757d" }}>
      
@@ -865,14 +869,13 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const mainTabs = [
     { key: "principal", label: "Informações Básicas" },
     { key: "extras", label: "Extras" },
-    { key: "franquias", label: "Franquias" }, // 🔥 NOVA ABA
+    { key: "franquias", label: "Franquias" },
     { key: "financeiro", label: "Financeiro" },
     { key: "observacoes", label: "Observações" },
   ];
 
   return (
     <>
-      {/* MODAL CIDADE */}
       <Modal isOpen={isCidadeModalOpen} onClose={() => setIsCidadeModalOpen(false)} size="md">
         <Modal.Header onClose={() => setIsCidadeModalOpen(false)}>
           <Flex>
@@ -946,7 +949,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         </Modal.Footer>
       </Modal>
 
-      {/* MODAL RAMO */}
       <Modal isOpen={isRamoModalOpen} onClose={() => setIsRamoModalOpen(false)} size="md">
         <Modal.Header onClose={() => setIsRamoModalOpen(false)}>
           <Flex>
@@ -1111,9 +1113,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
                   isFormField={false}
                   maxLength={500}
                   value={formData.observacoes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, observacoes: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, observacoes: toUpperCase(e.target.value) })}
                   placeholder="Observações sobre o cliente..."
                 />
               </Fluid>
