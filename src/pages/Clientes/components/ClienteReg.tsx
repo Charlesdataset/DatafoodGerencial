@@ -101,7 +101,6 @@ interface RamoAtividade {
 
 interface Plano {
   id_plano: number;
-  codigo: string;
   descricao: string;
   resumo: string;
   caixasMax: number;
@@ -295,23 +294,13 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     }
   };
 
-  // 🔥 FUNÇÃO CORRIGIDA - BUSCA RECURSOS POR ID
-  const fetchRecursos = async (codigo: string) => {
-    if (!codigo) {
+  const fetchRecursos = async (idPlano: number) => {
+    if (!idPlano) {
       setRecursos([]);
       return;
     }
     try {
-      const planosResponse = await api.get("/gerencial/planos");
-      const planosList = planosResponse.data || [];
-      const plano = planosList.find((p: any) => p.codigo === codigo);
-      
-      if (!plano) {
-        setRecursos([]);
-        return;
-      }
-      
-      const response = await api.get(`/gerencial/planos/${plano.id_plano}/recursos`);
+      const response = await api.get(`/gerencial/planos/${idPlano}/recursos`);
       setRecursos(response.data || []);
     } catch (error) {
       setRecursos([]);
@@ -442,7 +431,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           try {
             await api.post("/gerencial/licencas", {
               id_cliente: clienteId,
-              codigo_plano: formData.codigo_plano,
+              id_plano: parseInt(formData.codigo_plano),
               situacao: "ATIVO",
               vigente: true,
             });
@@ -786,11 +775,18 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           required
           className="mb-0"
           value={formData.codigo_plano}
-          options={planos.map((p) => ({ value: p.codigo, label: p.descricao }))}
+          options={planos.map((p) => ({ 
+            value: String(p.id_plano), 
+            label: p.descricao 
+          }))}
           disabled={isEditing && !podeEditar}
-          onChange={(value: string) => {
+          onChange={async (value: string) => {
             setFormData({ ...formData, codigo_plano: value });
-            fetchRecursos(value);
+            if (value) {
+              await fetchRecursos(parseInt(value));
+            } else {
+              setRecursos([]);
+            }
           }}
           placeholder={loadingPlanos ? "Carregando planos..." : "Selecione um plano"}
           error={codigoPlanoField.error}

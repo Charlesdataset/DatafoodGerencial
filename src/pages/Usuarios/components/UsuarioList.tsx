@@ -19,7 +19,6 @@ interface UsuarioListProps {
 }
 
 const orderOptions = [
-  { value: "code", label: "Código" },
   { value: "description", label: "Nome" },
 ];
 
@@ -34,7 +33,7 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [carregandoBusca, setCarregandoBusca] = useState(false);
   const [carregou, setCarregou] = useState(false);
-  const [order, setOrder] = useState("code");
+  const [order, setOrder] = useState("description");
   const [refreshKey, setRefreshKey] = useState(0);
   const [filtroFranquia, setFiltroFranquia] = useState<string>("1");
   const messageBox = useMessageBox();
@@ -355,4 +354,8 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
   );
 };
 
+
+
+
 export default UsuarioList;
+
