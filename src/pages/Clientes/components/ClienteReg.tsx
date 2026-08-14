@@ -252,6 +252,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const validation = useSimpleFormValidation(initialFormData, validators);
   const { validateAll, formData, textFieldProps, setFormData } = validation;
 
+  // PEGA OS FIELDS PROPS IGUAL AO PlanoReg
   const razaoSocialField = textFieldProps("razao_social");
   const cnpjField = textFieldProps("cnpj");
   const fantasiaField = textFieldProps("fantasia");
@@ -403,6 +404,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       return;
     }
 
+    // VALIDAÇÃO SÓ AQUI, IGUAL AO PlanoReg
     const isValid = validateAll();
     if (!isValid) {
       toast.error("Preencha todos os campos obrigatórios corretamente.");
@@ -481,6 +483,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         disabled={isEditing && !podeEditar}
         value={formData.razao_social}
         onChange={(e) => setFormData({ ...formData, razao_social: toUpperCase(e.target.value) })}
+        error={razaoSocialField.error}
+        onBlur={() => {}}
       />
 
       <TextBox
@@ -492,6 +496,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         disabled={isEditing && !podeEditar}
         value={formData.fantasia}
         onChange={(e) => setFormData({ ...formData, fantasia: toUpperCase(e.target.value) })}
+        error={fantasiaField.error}
+        onBlur={() => {}}
       />
 
       <TextBox
@@ -502,7 +508,10 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         mask="cnpj"
         maxLength={18}
         disabled={isEditing && !podeEditar}
-        {...cnpjField}
+        value={formData.cnpj}
+        onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+        error={cnpjField.error}
+        onBlur={() => {}}
       />
 
       <TextBox
@@ -554,6 +563,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
             buscarCep(value, setFormData);
           }
         }}
+        error={cepField.error}
+        onBlur={() => {}}
       />
       {loadingCep && <small style={{ color: '#6c757d' }}>Buscando endereço...</small>}
 
@@ -566,6 +577,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         disabled={isEditing && !podeEditar || loadingCep}
         value={formData.endereco}
         onChange={(e) => setFormData({ ...formData, endereco: toUpperCase(e.target.value) })}
+        error={enderecoField.error}
+        onBlur={() => {}}
       />
 
       <TextBox
@@ -575,10 +588,12 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         isFormField={false}
         maxLength={10}
         disabled={isEditing && !podeEditar}
-        {...numeroField}
+        value={formData.numero}
+        onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
+        error={numeroField.error}
+        onBlur={() => {}}
       />
 
-      {/* Bairro e UF lado a lado */}
       <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "12px" }}>
         <TextBox
           label="Bairro"
@@ -589,6 +604,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           disabled={isEditing && !podeEditar || loadingCep}
           value={formData.bairro}
           onChange={(e) => setFormData({ ...formData, bairro: toUpperCase(e.target.value) })}
+          error={bairroField.error}
+          onBlur={() => {}}
         />
 
         <TextBox
@@ -600,7 +617,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           readOnly
           disabled={isEditing && !podeEditar || loadingCep}
           placeholder="UF"
-          {...ufField}
+          error={ufField.error}
+          onBlur={() => {}}
           style={{ textTransform: "uppercase" }}
         />
       </div>
@@ -630,6 +648,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           />
         }
         error={cidadeField.error}
+        onBlur={() => {}}
       />
 
       <TextBox
@@ -655,6 +674,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         disabled={isEditing && !podeEditar}
         value={formData.responsavel_nome}
         onChange={(e) => setFormData({ ...formData, responsavel_nome: toUpperCase(e.target.value) })}
+        error={responsavelField.error}
+        onBlur={() => {}}
       />
 
       <TextBox
@@ -676,7 +697,10 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         mask="phone"
         maxLength={15}
         disabled={isEditing && !podeEditar}
-        {...telefoneField}
+        value={formData.telefone}
+        onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+        error={telefoneField.error}
+        onBlur={() => {}}
       />
 
       <TextBox
@@ -687,7 +711,10 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         type="email"
         maxLength={150}
         disabled={isEditing && !podeEditar}
-        {...emailField}
+        value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        error={emailField.error}
+        onBlur={() => {}}
       />
     </div>
   );
@@ -795,6 +822,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           }}
           placeholder={loadingPlanos ? "Carregando planos..." : "Selecione um plano"}
           error={codigoPlanoField.error}
+          onBlur={() => {}}
         />
 
         {recursos.length > 0 && (
