@@ -183,6 +183,7 @@ const validators = {
   ),
   cidade: formValidators.required("Cidade é obrigatória"),
   uf: formValidators.required("UF é obrigatória"),
+  inscricao_estadual: formValidators.inscricaoEstadual("Inscrição Estadual inválida"),
   responsavel_nome: formValidators.compose(
     formValidators.required("Responsável é obrigatório"),
     formValidators.maxLength(100, "Responsável deve ter no máximo 100 caracteres")
@@ -509,7 +510,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         className="mb-0"
         isFormField={false}
         maxLength={20}
-        disabled={isEditing && !podeEditar}
+        disabled={isEditing && !podeEditar || !formData.uf}
         value={formData.inscricao_estadual}
         onChange={(e) => setFormData({ ...formData, inscricao_estadual: e.target.value })}
       />
@@ -577,54 +578,58 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         {...numeroField}
       />
 
+      {/* Bairro e UF lado a lado */}
+      <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "12px" }}>
+        <TextBox
+          label="Bairro"
+          required
+          className="mb-0"
+          isFormField={false}
+          maxLength={80}
+          disabled={isEditing && !podeEditar || loadingCep}
+          value={formData.bairro}
+          onChange={(e) => setFormData({ ...formData, bairro: toUpperCase(e.target.value) })}
+        />
+
+        <TextBox
+          label="UF"
+          required
+          className="mb-0"
+          isFormField={false}
+          value={formData.uf}
+          readOnly
+          disabled={isEditing && !podeEditar || loadingCep}
+          placeholder="UF"
+          {...ufField}
+          style={{ textTransform: "uppercase" }}
+        />
+      </div>
+
       <TextBox
-        label="Bairro"
+        label="Cidade"
         required
         className="mb-0"
         isFormField={false}
-        maxLength={80}
-        disabled={isEditing && !podeEditar || loadingCep}
-        value={formData.bairro}
-        onChange={(e) => setFormData({ ...formData, bairro: toUpperCase(e.target.value) })}
-      />
-
-     <TextBox
-  label="Cidade"
-  required
-  className="mb-0"
-  isFormField={false}
-  value={formData.cidade}
-  readOnly
-  disabled={isEditing && !podeEditar || loadingCep}
-  onClick={() => setIsCidadeModalOpen(true)}
-  placeholder="Selecione uma cidade"
-  rightIcon={
-    <FontAwesomeIcon
-      icon={formData.cidade ? faTimes : faSearch}
-      onClick={(e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (formData.cidade) {
-          setFormData({ ...formData, cidade: "", uf: "" });
-        } else {
-          setIsCidadeModalOpen(true);
-        }
-      }}
-      style={{ cursor: "pointer", color: "#6c757d" }}
-    />
-  }
-  error={cidadeField.error}
-/>
-
-      <TextBox
-        label="UF"
-        required
-        className="mb-0"
-        isFormField={false}
-        value={formData.uf}
+        value={formData.cidade}
         readOnly
         disabled={isEditing && !podeEditar || loadingCep}
-        placeholder="Preenchido automaticamente"
-        {...ufField}
+        onClick={() => setIsCidadeModalOpen(true)}
+        placeholder="Selecione uma cidade"
+        rightIcon={
+          <FontAwesomeIcon
+            icon={formData.cidade ? faTimes : faSearch}
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              if (formData.cidade) {
+                setFormData({ ...formData, cidade: "", uf: "" });
+              } else {
+                setIsCidadeModalOpen(true);
+              }
+            }}
+            style={{ cursor: "pointer", color: "#6c757d" }}
+          />
+        }
+        error={cidadeField.error}
       />
 
       <TextBox

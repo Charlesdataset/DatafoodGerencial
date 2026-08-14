@@ -14,6 +14,7 @@
     "w-e": "cd excel-wasm && wasm-pack build --target web --release --out-dir ./pkg && xcopy pkg\\excel_wasm.js ..\\public\\wasm\\ /Y && xcopy pkg\\excel_wasm_bg.wasm ..\\public\\wasm\\ /Y && xcopy pkg\\excel_wasm.d.ts ..\\public\\wasm\\ /Y"
   },
   "dependencies": {
+    "@brazilian-utils/brazilian-utils": "^2.3.0",
     "@embedpdf/engines": "^2.14.1",
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/free-brands-svg-icons": "^7.3.1",
