@@ -30,9 +30,18 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
   const [carregou, setCarregou] = useState(false);
   const [order, setOrder] = useState("code");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const messageBox = useMessageBox();
   const isMounted = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
   const podeIncluir = dataRoute.incluir || false;
@@ -168,42 +177,42 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
     {
       header: "ID",
       accessorKey: "id_plano",
-      width: 80,
+      width: 90,
       headerAlign: "center",
       textAlign: "center",
     },
     {
       header: "Descrição",
       accessorKey: "descricao",
-      width: 180,
+      width: 260,
       headerAlign: "left",
       textAlign: "left",
     },
     {
       header: "Resumo",
       accessorKey: "resumo",
-      width: 150,
+      width: 230,
       headerAlign: "left",
       textAlign: "left",
     },
     {
       header: "Caixas",
       accessorKey: "caixasMax",
-      width: 70,
+      width: 100,
       headerAlign: "center",
       textAlign: "center",
     },
     {
       header: "Usuários",
       accessorKey: "usuariosMax",
-      width: 80,
+      width: 110,
       headerAlign: "center",
       textAlign: "center",
     },
     {
       header: "Valor Mensal",
       accessorKey: "valorMensal",
-      width: 120,
+      width: 160,
       headerAlign: "center",
       textAlign: "center",
       cell: (info) => {
@@ -214,7 +223,7 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
     {
       header: "Status",
       accessorKey: "ativo",
-      width: 80,
+      width: 110,
       headerAlign: "center",
       textAlign: "center",
       cell: (info) => {
@@ -237,9 +246,9 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
     },
     {
       header: "Ações",
-      width: 80,
-      maxWidth: 80,
-      minWidth: 80,
+      width: 100,
+      maxWidth: 100,
+      minWidth: 100,
       headerAlign: "center",
       textAlign: "center",
       cell: (info) => (
@@ -276,52 +285,106 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
   return (
     <Card>
       <Card.Body>
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "8px" }}>
-          <div style={{ flex: 1, minWidth: "150px" }}>
-            <TextSearch
+        {isMobile ? (
+          <>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", width: "100%" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <TextSearch
+                  isLoading={carregandoBusca}
+                  placeholder="Digite para buscar..."
+                  value={textoBusca}
+                  onChange={(e) => setTextoBusca(e.target.value)}
+                />
+              </div>
+
+              <FormButton
+                isLoading={carregandoBusca}
+                loadAlone
+                variant="text"
+                onClick={() => buscarPlanos(textoBusca, order, true)}
+              >
+                <FontAwesomeIcon icon={faRedo} />
+              </FormButton>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", width: "100%", marginTop: "8px" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Select
+                  label="Ordenar por"
+                  value={order}
+                  options={orderOptions}
+                  onChange={(value: string) => {
+                    setOrder(value);
+                    buscarPlanos(textoBusca, value, true);
+                  }}
+                />
+              </div>
+
+              {podeIncluir && (
+                <FormButton
+                  className="justify-content-center"
+                  onClick={onRegister}
+                  style={{
+                    flex: 1,
+                    background: "#42ab8a",
+                    border: "1px solid #42ab8a",
+                    color: "#ffffff",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPlus} color="#fff" />
+                  Novo Plano
+                </FormButton>
+              )}
+            </div>
+          </>
+        ) : (
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "8px" }}>
+            <div style={{ flex: 1, minWidth: "150px" }}>
+              <TextSearch
+                isLoading={carregandoBusca}
+                placeholder="Digite para buscar..."
+                value={textoBusca}
+                onChange={(e) => setTextoBusca(e.target.value)}
+              />
+            </div>
+
+            <FormButton
               isLoading={carregandoBusca}
-              placeholder="Digite para buscar..."
-              value={textoBusca}
-              onChange={(e) => setTextoBusca(e.target.value)}
-            />
-          </div>
-
-          <FormButton
-            isLoading={carregandoBusca}
-            loadAlone
-            variant="text"
-            onClick={() => buscarPlanos(textoBusca, order, true)}
-          >
-            <FontAwesomeIcon icon={faRedo} />
-          </FormButton>
-
-          <div style={{ minWidth: "130px" }}>
-            <Select
-              label="Ordenar por"
-              value={order}
-              options={orderOptions}
-              onChange={(value: string) => {
-                setOrder(value);
-                buscarPlanos(textoBusca, value, true);
-              }}
-            />
-          </div>
-
-          {podeIncluir && (
-            <FormButton 
-              className="justify-content-center" 
-              onClick={onRegister}
-              style={{
-                background: "#42ab8a",
-                border: "1px solid #42ab8a",
-                color: "#ffffff",
-              }}
+              loadAlone
+              variant="text"
+              onClick={() => buscarPlanos(textoBusca, order, true)}
             >
-              <FontAwesomeIcon icon={faPlus} color="#fff" />
-              Novo Plano
+              <FontAwesomeIcon icon={faRedo} />
             </FormButton>
-          )}
-        </div>
+
+            <div style={{ minWidth: "130px" }}>
+              <Select
+                label="Ordenar por"
+                value={order}
+                options={orderOptions}
+                onChange={(value: string) => {
+                  setOrder(value);
+                  buscarPlanos(textoBusca, value, true);
+                }}
+              />
+            </div>
+
+            {podeIncluir && (
+              <FormButton 
+                className="justify-content-center" 
+                onClick={onRegister}
+                style={{
+                  background: "#42ab8a",
+                  border: "1px solid #42ab8a",
+                  color: "#ffffff",
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} color="#fff" />
+                Novo Plano
+              </FormButton>
+            )}
+          </div>
+        )}
 
         <DataGrid
           columns={columns}

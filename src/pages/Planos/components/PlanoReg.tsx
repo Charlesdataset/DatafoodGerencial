@@ -58,6 +58,15 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
   const location = useLocation();
   const { emit, subscribe } = useNavigation();
   const isEditing = Boolean(location.state?.row);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const initialFormData: PlanoFormData = {
     id_plano: 0,
@@ -182,115 +191,239 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
     <form ref={formRef} onSubmit={handleSubmit}>
       <Card>
         <Card.Body>
-          <Fluid xs={[100]} rowGap={16}>
-            {/* LINHA 1: Descrição e Resumo */}
-            <Fluid xs={[50, 50]} rowGap={16}>
-              <TextBox
-                label="Descrição"
-                required
-                className="mb-0"
-                isFormField={false}
-                maxLength={100}
-                disabled={isEditing && !podeEditar}
-                value={formData.descricao}
-                onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                error={descricaoField.error}
-                onBlur={() => {}}
-              />
+          <Fluid xs={[100]} rowGap={24}>
+            {isMobile ? (
+              <Fluid xs={[100]} rowGap={16}>
+                {/* LINHA 1: Descrição (mobile) */}
+                <Fluid xs={[100]} rowGap={16}>
+                  <TextBox
+                    label="Descrição"
+                    required
+                    className="mb-0"
+                    isFormField={false}
+                    maxLength={100}
+                    disabled={isEditing && !podeEditar}
+                    value={formData.descricao}
+                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                    error={descricaoField.error}
+                    onBlur={() => {}}
+                  />
+                </Fluid>
 
-              <TextBox
-                label="Resumo"
-                className="mb-0"
-                isFormField={false}
-                maxLength={200}
-                disabled={isEditing && !podeEditar}
-                value={formData.resumo}
-                onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
-                placeholder="Breve descrição do plano"
-                onBlur={() => {}}
-              />
-            </Fluid>
+                {/* LINHA 2: Resumo (mobile) */}
+                <Fluid xs={[100]} rowGap={16}>
+                  <TextBox
+                    label="Resumo"
+                    className="mb-0"
+                    isFormField={false}
+                    maxLength={200}
+                    disabled={isEditing && !podeEditar}
+                    value={formData.resumo}
+                    onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
+                    placeholder="Breve descrição do plano"
+                    onBlur={() => {}}
+                  />
+                </Fluid>
 
-            {/* LINHA 2: Caixas, Usuários, Valor, Dias, Status, Ordem */}
-            <Fluid xs={[16.66, 16.66, 16.66, 16.66, 16.66, 16.66]} rowGap={16}>
-              <TextBox
-                label="Caixas"
-                required
-                className="mb-0"
-                isFormField={false}
-                type="number"
-                disabled={isEditing && !podeEditar}
-                value={formData.caixasMax === null ? "" : formData.caixasMax}
-                onChange={(e) => setFormData({ ...formData, caixasMax: e.target.value ? Number(e.target.value) : null })}
-                error={caixasField.error}
-                onBlur={() => {}}
-              />
+                {/* LINHA 3: Caixas + Usuários (mobile) */}
+                <Fluid xs={[50, 50]} rowGap={16}>
+                  <TextBox
+                    label="Caixas"
+                    required
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.caixasMax === null ? "" : formData.caixasMax}
+                    onChange={(e) => setFormData({ ...formData, caixasMax: e.target.value ? Number(e.target.value) : null })}
+                    error={caixasField.error}
+                    onBlur={() => {}}
+                  />
 
-              <TextBox
-                label="Usuários"
-                required
-                className="mb-0"
-                isFormField={false}
-                type="number"
-                disabled={isEditing && !podeEditar}
-                value={formData.usuariosMax === null ? "" : formData.usuariosMax}
-                onChange={(e) => setFormData({ ...formData, usuariosMax: e.target.value ? Number(e.target.value) : null })}
-                error={usuariosField.error}
-                onBlur={() => {}}
-              />
+                  <TextBox
+                    label="Usuários"
+                    required
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.usuariosMax === null ? "" : formData.usuariosMax}
+                    onChange={(e) => setFormData({ ...formData, usuariosMax: e.target.value ? Number(e.target.value) : null })}
+                    error={usuariosField.error}
+                    onBlur={() => {}}
+                  />
+                </Fluid>
 
-              <TextBox
-                label="Valor (R$)"
-                required
-                className="mb-0"
-                isFormField={false}
-                type="number"
-                step="0.01"
-                disabled={isEditing && !podeEditar}
-                value={formData.valorMensal === null ? "" : formData.valorMensal}
-                onChange={(e) => setFormData({ ...formData, valorMensal: e.target.value ? Number(e.target.value) : null })}
-                error={valorField.error}
-                onBlur={() => {}}
-              />
+                {/* LINHA 4: Valor + Dias (mobile) */}
+                <Fluid xs={[50, 50]} rowGap={16}>
+                  <TextBox
+                    label="Valor (R$)"
+                    required
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    step="0.01"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.valorMensal === null ? "" : formData.valorMensal}
+                    onChange={(e) => setFormData({ ...formData, valorMensal: e.target.value ? Number(e.target.value) : null })}
+                    error={valorField.error}
+                    onBlur={() => {}}
+                  />
 
-              <TextBox
-                label="Dias"
-                className="mb-0"
-                isFormField={false}
-                type="number"
-                disabled={isEditing && !podeEditar}
-                value={formData.diasValidade === null ? "" : formData.diasValidade}
-                onChange={(e) => setFormData({ ...formData, diasValidade: e.target.value ? Number(e.target.value) : null })}
-                placeholder="Opcional"
-                onBlur={() => {}}
-              />
+                  <TextBox
+                    label="Dias"
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.diasValidade === null ? "" : formData.diasValidade}
+                    onChange={(e) => setFormData({ ...formData, diasValidade: e.target.value ? Number(e.target.value) : null })}
+                    placeholder="Opcional"
+                    onBlur={() => {}}
+                  />
+                </Fluid>
 
-              <Select
-                label="Status"
-                className="mb-0"
-                value={formData.ativo ? "true" : "false"}
-                options={[
-                  { value: "true", label: "Ativo" },
-                  { value: "false", label: "Inativo" },
-                ]}
-                disabled={isEditing && !podeEditar}
-                onChange={(value: string) => {
-                  setFormData({ ...formData, ativo: value === "true" });
-                }}
-              />
+                {/* LINHA 5: Status + Ordem (mobile) */}
+                <Fluid xs={[50, 50]} rowGap={16}>
+                  <Select
+                    label="Status"
+                    className="mb-0"
+                    value={formData.ativo ? "true" : "false"}
+                    options={[
+                      { value: "true", label: "Ativo" },
+                      { value: "false", label: "Inativo" },
+                    ]}
+                    disabled={isEditing && !podeEditar}
+                    onChange={(value: string) => {
+                      setFormData({ ...formData, ativo: value === "true" });
+                    }}
+                  />
 
-              <TextBox
-                label="Ordem"
-                className="mb-0"
-                isFormField={false}
-                type="number"
-                disabled={isEditing && !podeEditar}
-                value={formData.ordem === null ? "" : formData.ordem}
-                onChange={(e) => setFormData({ ...formData, ordem: e.target.value ? Number(e.target.value) : 0 })}
-                placeholder="0"
-                onBlur={() => {}}
-              />
-            </Fluid>
+                  <TextBox
+                    label="Ordem"
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.ordem === null ? "" : formData.ordem}
+                    onChange={(e) => setFormData({ ...formData, ordem: e.target.value ? Number(e.target.value) : 0 })}
+                    placeholder="0"
+                    onBlur={() => {}}
+                  />
+                </Fluid>
+              </Fluid>
+            ) : (
+              <Fluid xs={[100]} rowGap={16}>
+                {/* LINHA 1: Descrição e Resumo (desktop) */}
+                <Fluid xs={[50, 50]} rowGap={16}>
+                  <TextBox
+                    label="Descrição"
+                    required
+                    className="mb-0"
+                    isFormField={false}
+                    maxLength={100}
+                    disabled={isEditing && !podeEditar}
+                    value={formData.descricao}
+                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                    error={descricaoField.error}
+                    onBlur={() => {}}
+                  />
+
+                  <TextBox
+                    label="Resumo"
+                    className="mb-0"
+                    isFormField={false}
+                    maxLength={200}
+                    disabled={isEditing && !podeEditar}
+                    value={formData.resumo}
+                    onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
+                    placeholder="Breve descrição do plano"
+                    onBlur={() => {}}
+                  />
+                </Fluid>
+
+                {/* LINHA 2: Caixas, Usuários, Valor, Dias, Status, Ordem (desktop) */}
+                <Fluid xs={[16.66, 16.66, 16.66, 16.66, 16.66, 16.66]} rowGap={16}>
+                  <TextBox
+                    label="Caixas"
+                    required
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.caixasMax === null ? "" : formData.caixasMax}
+                    onChange={(e) => setFormData({ ...formData, caixasMax: e.target.value ? Number(e.target.value) : null })}
+                    error={caixasField.error}
+                    onBlur={() => {}}
+                  />
+
+                  <TextBox
+                    label="Usuários"
+                    required
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.usuariosMax === null ? "" : formData.usuariosMax}
+                    onChange={(e) => setFormData({ ...formData, usuariosMax: e.target.value ? Number(e.target.value) : null })}
+                    error={usuariosField.error}
+                    onBlur={() => {}}
+                  />
+
+                  <TextBox
+                    label="Valor (R$)"
+                    required
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    step="0.01"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.valorMensal === null ? "" : formData.valorMensal}
+                    onChange={(e) => setFormData({ ...formData, valorMensal: e.target.value ? Number(e.target.value) : null })}
+                    error={valorField.error}
+                    onBlur={() => {}}
+                  />
+
+                  <TextBox
+                    label="Dias"
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.diasValidade === null ? "" : formData.diasValidade}
+                    onChange={(e) => setFormData({ ...formData, diasValidade: e.target.value ? Number(e.target.value) : null })}
+                    placeholder="Opcional"
+                    onBlur={() => {}}
+                  />
+
+                  <Select
+                    label="Status"
+                    className="mb-0"
+                    value={formData.ativo ? "true" : "false"}
+                    options={[
+                      { value: "true", label: "Ativo" },
+                      { value: "false", label: "Inativo" },
+                    ]}
+                    disabled={isEditing && !podeEditar}
+                    onChange={(value: string) => {
+                      setFormData({ ...formData, ativo: value === "true" });
+                    }}
+                  />
+
+                  <TextBox
+                    label="Ordem"
+                    className="mb-0"
+                    isFormField={false}
+                    type="number"
+                    disabled={isEditing && !podeEditar}
+                    value={formData.ordem === null ? "" : formData.ordem}
+                    onChange={(e) => setFormData({ ...formData, ordem: e.target.value ? Number(e.target.value) : 0 })}
+                    placeholder="0"
+                    onBlur={() => {}}
+                  />
+                </Fluid>
+              </Fluid>
+            )}
           </Fluid>
         </Card.Body>
       </Card>

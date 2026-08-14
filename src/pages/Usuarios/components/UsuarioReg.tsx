@@ -54,6 +54,15 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
   const location = useLocation();
   const { emit, subscribe } = useNavigation();
   const isEditing = Boolean(location.state?.row);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const initialFormData = {
     id_usuario: 0,
@@ -189,67 +198,132 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
     <form ref={formRef} onSubmit={handleSubmit}>
       <Card>
         <Card.Body>
-          <Fluid xs={[100]} rowGap={16}>
-            <Fluid xs={[50, 50]} rowGap={16}>
-              <TextBox
-                label="Nome"
-                required
-                className="mb-0"
-                isFormField={false}
-                maxLength={100}
-                disabled={isEditing && !podeEditar}
-                value={formData.nome_usuario}
-                onChange={(e) => setFormData({ ...formData, nome_usuario: e.target.value })}
-                error={nomeField.error}
-                onBlur={() => {}}
-              />
+          <Fluid xs={[100]} rowGap={24}>
+            {isMobile ? (
+              <Fluid xs={[100]} rowGap={24}>
+                {/* LINHA 1: Nome (mobile) */}
+                <Fluid xs={[100]} rowGap={16}>
+                  <TextBox
+                    label="Nome"
+                    required
+                    className="mb-0"
+                    isFormField={false}
+                    maxLength={100}
+                    disabled={isEditing && !podeEditar}
+                    value={formData.nome_usuario}
+                    onChange={(e) => setFormData({ ...formData, nome_usuario: e.target.value })}
+                    error={nomeField.error}
+                    onBlur={() => {}}
+                  />
+                </Fluid>
 
-              <Select
-                label="Franquia"
-                required
-                className="mb-0"
-                value={String(formData.id_franquia)}
-                options={franquiaOptions}
-                disabled={isEditing && !podeEditar}
-                onChange={(value: string) => {
-                  setFormData({ ...formData, id_franquia: parseInt(value) });
-                }}
-                error={franquiaField.error}
-              />
-            </Fluid>
+                {/* LINHA 2: Franquia + Senha + Status (mobile) */}
+                <Fluid xs={[33.33, 33.33, 33.33]} rowGap={16}>
+                  <Select
+                    label="Franquia"
+                    required
+                    className="mb-0"
+                    value={String(formData.id_franquia)}
+                    options={franquiaOptions}
+                    disabled={isEditing && !podeEditar}
+                    onChange={(value: string) => {
+                      setFormData({ ...formData, id_franquia: parseInt(value) });
+                    }}
+                    error={franquiaField.error}
+                  />
 
-            <Fluid xs={[50, 50]} rowGap={16}>
-              <TextBox
-                label="Senha"
-                required={!isEditing}
-                className="mb-0"
-                isFormField={false}
-                type="password"
-                maxLength={50}
-                placeholder={isEditing ? "Deixe em branco para manter" : "Digite a senha"}
-                disabled={isEditing && !podeEditar}
-                value={formData.senha}
-                onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-                error={senhaField.error}
-                onBlur={() => {}}
-              />
+                  <TextBox
+                    label="Senha"
+                    required={!isEditing}
+                    className="mb-0"
+                    isFormField={false}
+                    type="password"
+                    maxLength={50}
+                    placeholder={isEditing ? "Deixe em branco para manter" : "Digite a senha"}
+                    disabled={isEditing && !podeEditar}
+                    value={formData.senha}
+                    onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
+                    error={senhaField.error}
+                    onBlur={() => {}}
+                  />
 
-              <Select
-                label="Status"
-                className="mb-0"
-                value={formData.ativo ? "true" : "false"}
-                options={[
-                  { value: "true", label: "Ativo" },
-                  { value: "false", label: "Inativo" },
-                ]}
-                disabled={isEditing && !podeEditar}
-                onChange={(value: string) => {
-                  setFormData({ ...formData, ativo: value === "true" });
-                }}
-              />
-            </Fluid>
+                  <Select
+                    label="Status"
+                    className="mb-0"
+                    value={formData.ativo ? "true" : "false"}
+                    options={[
+                      { value: "true", label: "Ativo" },
+                      { value: "false", label: "Inativo" },
+                    ]}
+                    disabled={isEditing && !podeEditar}
+                    onChange={(value: string) => {
+                      setFormData({ ...formData, ativo: value === "true" });
+                    }}
+                  />
+                </Fluid>
+              </Fluid>
+            ) : (
+              /* LINHA UNICA: Nome (50%) + Franquia + Senha + Status (16.66% cada) (desktop) */
+              <Fluid xs={[50, 16.66, 16.66, 16.66]} rowGap={16}>
+                <TextBox
+                  label="Nome"
+                  required
+                  className="mb-0"
+                  isFormField={false}
+                  maxLength={100}
+                  disabled={isEditing && !podeEditar}
+                  value={formData.nome_usuario}
+                  onChange={(e) => setFormData({ ...formData, nome_usuario: e.target.value })}
+                  error={nomeField.error}
+                  onBlur={() => {}}
+                />
 
-            <div className="mt-3">
+                <Select
+                  label="Franquia"
+                  required
+                  className="mb-0"
+                  value={String(formData.id_franquia)}
+                  options={franquiaOptions}
+                  disabled={isEditing && !podeEditar}
+                  onChange={(value: string) => {
+                    setFormData({ ...formData, id_franquia: parseInt(value) });
+                  }}
+                  error={franquiaField.error}
+                />
+
+                <TextBox
+                  label="Senha"
+                  required={!isEditing}
+                  className="mb-0"
+                  isFormField={false}
+                  type="password"
+                  maxLength={50}
+                  placeholder={isEditing ? "Deixe em branco para manter" : "Digite a senha"}
+                  disabled={isEditing && !podeEditar}
+                  value={formData.senha}
+                  onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
+                  error={senhaField.error}
+                  onBlur={() => {}}
+                />
+
+                <Select
+                  label="Status"
+                  className="mb-0"
+                  value={formData.ativo ? "true" : "false"}
+                  options={[
+                    { value: "true", label: "Ativo" },
+                    { value: "false", label: "Inativo" },
+                  ]}
+                  disabled={isEditing && !podeEditar}
+                  onChange={(value: string) => {
+                    setFormData({ ...formData, ativo: value === "true" });
+                  }}
+                />
+              </Fluid>
+            )}
+
+            {/* LINHA 3: Permissões */}
+            <div className="mt-4">
               <label className="fw-bold mb-3 d-block">Permissões</label>
               <div className="d-flex flex-wrap gap-4">
                 <Switch

@@ -36,9 +36,18 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
   const [order, setOrder] = useState("description");
   const [refreshKey, setRefreshKey] = useState(0);
   const [filtroFranquia, setFiltroFranquia] = useState<string>("1");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const messageBox = useMessageBox();
   const isMounted = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
   const podeIncluir = dataRoute.incluir || false;
@@ -283,61 +292,101 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
   return (
     <Card>
       <Card.Body>
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "8px" }}>
-          <div style={{ flex: 1, minWidth: "150px" }}>
-            <TextSearch
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          alignItems: 'flex-end', 
+          gap: '8px',
+          rowGap: isMobile ? '16px' : '8px',
+          width: '100%'
+        }}>
+          {/* LINHA 1: Busca + Reload */}
+          <div style={{ 
+            display: 'flex', 
+            flex: isMobile ? '1 1 100%' : 1, 
+            minWidth: isMobile ? '100%' : '150px',
+            alignItems: 'flex-end',
+            gap: '8px'
+          }}>
+            <div style={{ flex: 1 }}>
+              <TextSearch
+                isLoading={carregandoBusca}
+                placeholder="Digite para buscar..."
+                value={textoBusca}
+                onChange={(e) => setTextoBusca(e.target.value)}
+              />
+            </div>
+            <FormButton
               isLoading={carregandoBusca}
-              placeholder="Digite para buscar..."
-              value={textoBusca}
-              onChange={(e) => setTextoBusca(e.target.value)}
-            />
-          </div>
-
-          <FormButton
-            isLoading={carregandoBusca}
-            loadAlone
-            variant="text"
-            onClick={() => buscarUsuarios(textoBusca, order, filtroFranquia, true)}
-          >
-            <FontAwesomeIcon icon={faRedo} />
-          </FormButton>
-
-          <div style={{ minWidth: "130px" }}>
-            <Select
-              label="Franquia"
-              value={filtroFranquia}
-              options={franquiaOptions}
-              onChange={(value: string) => {
-                setFiltroFranquia(value);
-              }}
-            />
-          </div>
-
-          <div style={{ minWidth: "130px" }}>
-            <Select
-              label="Ordenar por"
-              value={order}
-              options={orderOptions}
-              onChange={(value: string) => {
-                setOrder(value);
-                buscarUsuarios(textoBusca, value, filtroFranquia, true);
-              }}
-            />
-          </div>
-
-          {podeIncluir && (
-            <FormButton 
-              className="justify-content-center" 
-              onClick={onRegister}
-              style={{
-                background: "#42ab8a",
-                border: "1px solid #42ab8a",
-                color: "#ffffff",
-              }}
+              loadAlone
+              variant="text"
+              onClick={() => buscarUsuarios(textoBusca, order, filtroFranquia, true)}
             >
-              <FontAwesomeIcon icon={faPlus} color="#fff" />
-              Novo Usuário
+              <FontAwesomeIcon icon={faRedo} />
             </FormButton>
+          </div>
+
+          {/* LINHA 2: Franquia + Ordenar por */}
+          <div style={{ 
+            display: 'flex', 
+            flex: isMobile ? '1 1 100%' : '0 1 auto',
+            minWidth: isMobile ? '100%' : 'auto',
+            alignItems: 'flex-end',
+            gap: '8px',
+            flexWrap: isMobile ? 'nowrap' : 'wrap'
+          }}>
+            <div style={{ 
+              flex: isMobile ? 1 : '0 1 auto',
+              minWidth: isMobile ? '50%' : '130px',
+            }}>
+              <Select
+                label="Franquia"
+                value={filtroFranquia}
+                options={franquiaOptions}
+                onChange={(value: string) => {
+                  setFiltroFranquia(value);
+                  buscarUsuarios(textoBusca, order, value, true);
+                }}
+              />
+            </div>
+
+            <div style={{ 
+              flex: isMobile ? 1 : '0 1 auto',
+              minWidth: isMobile ? '50%' : '130px',
+            }}>
+              <Select
+                label="Ordenar por"
+                value={order}
+                options={orderOptions}
+                onChange={(value: string) => {
+                  setOrder(value);
+                  buscarUsuarios(textoBusca, value, filtroFranquia, true);
+                }}
+              />
+            </div>
+          </div>
+
+          {/* LINHA 3: Novo Usuário */}
+          {podeIncluir && (
+            <div style={{ 
+              flex: isMobile ? '1 1 100%' : '0 1 auto',
+              minWidth: isMobile ? '100%' : 'auto',
+              width: isMobile ? '100%' : 'auto',
+            }}>
+              <FormButton 
+                className="justify-content-center" 
+                onClick={onRegister}
+                style={{
+                  width: isMobile ? '100%' : 'auto',
+                  background: "#42ab8a",
+                  border: "1px solid #42ab8a",
+                  color: "#ffffff",
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} color="#fff" />
+                Novo Usuário
+              </FormButton>
+            </div>
           )}
         </div>
 
@@ -354,8 +403,4 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
   );
 };
 
-
-
-
 export default UsuarioList;
-

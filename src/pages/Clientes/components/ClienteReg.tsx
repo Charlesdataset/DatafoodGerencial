@@ -211,6 +211,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const [ramos, setRamos] = useState<RamoAtividade[]>([]);
   const [ramoSearch, setRamoSearch] = useState("");
   const [loadingRamos, setLoadingRamos] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const { loadingCep, buscarCep } = useCep();
 
@@ -222,6 +223,14 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [cidadeSearch, setCidadeSearch] = useState("");
   const [loadingCidades, setLoadingCidades] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const initialFormData: ClienteFormData = {
     id_cliente: 0,
@@ -252,7 +261,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const validation = useSimpleFormValidation(initialFormData, validators);
   const { validateAll, formData, textFieldProps, setFormData } = validation;
 
-  // PEGA OS FIELDS PROPS IGUAL AO PlanoReg
   const razaoSocialField = textFieldProps("razao_social");
   const cnpjField = textFieldProps("cnpj");
   const fantasiaField = textFieldProps("fantasia");
@@ -404,7 +412,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       return;
     }
 
-    // VALIDAÇÃO SÓ AQUI, IGUAL AO PlanoReg
     const isValid = validateAll();
     if (!isValid) {
       toast.error("Preencha todos os campos obrigatórios corretamente.");
@@ -1065,7 +1072,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
 
       <form ref={formRef} onSubmit={handleSubmit}>
         <Card>
-          <Card.Body style={{ height: 'calc(100vh - 65px)' }}>
+          <Card.Body style={{ height: isMobile ? 'auto' : 'calc(100vh - 65px)' }}>
             <div
               style={{
                 display: "flex",
@@ -1104,23 +1111,23 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
               <Fluid xs={[100]} rowGap={10} className="mt-3">
                 <div style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)",
                   gap: "10px",
-                  height: 'calc(100vh - 130px)'
+                  height: isMobile ? 'auto' : 'calc(100vh - 130px)'
                 }}>
-                  <Card style={{ height: '100%' }}>
+                  <Card style={{ height: isMobile ? 'auto' : '100%' }}>
                     <Card.Body>{renderEmpresa()}</Card.Body>
                   </Card>
 
-                  <Card className="h-100">
+                  <Card style={{ height: isMobile ? 'auto' : '100%' }}>
                     <Card.Body>{renderLocalizacao()}</Card.Body>
                   </Card>
 
-                  <Card className="h-100">
+                  <Card style={{ height: isMobile ? 'auto' : '100%' }}>
                     <Card.Body>{renderContato()}</Card.Body>
                   </Card>
 
-                  <Card className="h-100">
+                  <Card style={{ height: isMobile ? 'auto' : '100%' }}>
                     <Card.Body>{renderInstalacao()}</Card.Body>
                   </Card>
                 </div>

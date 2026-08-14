@@ -37,9 +37,18 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
   const [franchise, setFranchise] = useState("");
   const [order, setOrder] = useState("code");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const messageBox = useMessageBox();
   const isMounted = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
   const podeIncluir = dataRoute.incluir || false;
@@ -260,7 +269,14 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
   return (
     <Card>
       <Card.Body>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: '8px' }}>
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          alignItems: 'flex-end', 
+          gap: '8px',
+          rowGap: isMobile ? '16px' : '8px',
+          width: '100%'
+        }}>
           <div style={{ flex: 1, minWidth: '150px' }}>
             <TextSearch
               isLoading={carregandoBusca}
@@ -283,7 +299,10 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
             <FontAwesomeIcon icon={faRedo} />
           </FormButton>
 
-          <div style={{ minWidth: '130px' }}>
+          <div style={{ 
+            minWidth: '130px', 
+            flex: isMobile ? 1 : 0,
+          }}>
             <Select
               label="Franquia"
               value={franchise}
@@ -295,7 +314,10 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
             />
           </div>
 
-          <div style={{ minWidth: '130px' }}>
+          <div style={{ 
+            minWidth: '130px', 
+            flex: isMobile ? 1 : 0,
+          }}>
             <Select
               label="Ordenar por"
               value={order}
@@ -311,6 +333,11 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
             <FormButton
               className="justify-content-center"
               onClick={onRegister}
+              style={{
+                flex: isMobile ? '1 1 100%' : '0 1 auto',
+                minWidth: isMobile ? '100%' : 'auto',
+                width: isMobile ? '100%' : 'auto',
+              }}
             >
               <FontAwesomeIcon icon={faPlus} color="#fff" />
               Novo Cliente

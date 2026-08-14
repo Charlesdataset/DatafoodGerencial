@@ -62,9 +62,18 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
   const [ufFiltro, setUfFiltro] = useState("");
   const [order, setOrder] = useState("code");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const messageBox = useMessageBox();
   const isMounted = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
   const podeIncluir = dataRoute.incluir || false;
@@ -310,54 +319,98 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
   return (
     <Card>
       <Card.Body>
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "8px" }}>
-          <div style={{ flex: 1, minWidth: "150px" }}>
-            <TextSearch
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          alignItems: 'flex-end', 
+          gap: '8px',
+          rowGap: isMobile ? '16px' : '8px',
+          width: '100%'
+        }}>
+          {/* LINHA 1: Busca + Reload */}
+          <div style={{ 
+            display: 'flex', 
+            flex: isMobile ? '1 1 100%' : 1, 
+            minWidth: isMobile ? '100%' : '150px',
+            alignItems: 'flex-end',
+            gap: '8px'
+          }}>
+            <div style={{ flex: 1 }}>
+              <TextSearch
+                isLoading={carregandoBusca}
+                placeholder="Digite para buscar..."
+                value={textoBusca}
+                onChange={(e) => setTextoBusca(e.target.value)}
+              />
+            </div>
+            <FormButton
               isLoading={carregandoBusca}
-              placeholder="Digite para buscar..."
-              value={textoBusca}
-              onChange={(e) => setTextoBusca(e.target.value)}
-            />
-          </div>
-
-          <FormButton
-            isLoading={carregandoBusca}
-            loadAlone
-            variant="text"
-            onClick={() => buscarCidades(textoBusca, ufFiltro, order, true)}
-          >
-            <FontAwesomeIcon icon={faRedo} />
-          </FormButton>
-
-          <div style={{ minWidth: "130px" }}>
-            <Select
-              label="UF"
-              value={ufFiltro}
-              options={ufOptions}
-              onChange={(value: string) => {
-                setUfFiltro(value);
-                buscarCidades(textoBusca, value, order, true);
-              }}
-            />
-          </div>
-
-          <div style={{ minWidth: "130px" }}>
-            <Select
-              label="Ordenar por"
-              value={order}
-              options={orderOptions}
-              onChange={(value: string) => {
-                setOrder(value);
-                buscarCidades(textoBusca, ufFiltro, value, true);
-              }}
-            />
-          </div>
-
-          {podeIncluir && (
-            <FormButton className="justify-content-center" onClick={onRegister}>
-              <FontAwesomeIcon icon={faPlus} color="#fff" />
-              Nova Cidade
+              loadAlone
+              variant="text"
+              onClick={() => buscarCidades(textoBusca, ufFiltro, order, true)}
+            >
+              <FontAwesomeIcon icon={faRedo} />
             </FormButton>
+          </div>
+
+          {/* LINHA 2: UF + Ordenar por */}
+          <div style={{ 
+            display: 'flex', 
+            flex: isMobile ? '1 1 100%' : '0 1 auto',
+            minWidth: isMobile ? '100%' : 'auto',
+            alignItems: 'flex-end',
+            gap: '8px',
+            flexWrap: isMobile ? 'nowrap' : 'wrap'
+          }}>
+            <div style={{ 
+              flex: isMobile ? 1 : '0 1 auto',
+              minWidth: isMobile ? '50%' : '130px',
+            }}>
+              <Select
+                label="UF"
+                value={ufFiltro}
+                options={ufOptions}
+                onChange={(value: string) => {
+                  setUfFiltro(value);
+                  buscarCidades(textoBusca, value, order, true);
+                }}
+              />
+            </div>
+
+            <div style={{ 
+              flex: isMobile ? 1 : '0 1 auto',
+              minWidth: isMobile ? '50%' : '130px',
+            }}>
+              <Select
+                label="Ordenar por"
+                value={order}
+                options={orderOptions}
+                onChange={(value: string) => {
+                  setOrder(value);
+                  buscarCidades(textoBusca, ufFiltro, value, true);
+                }}
+              />
+            </div>
+          </div>
+
+          {/* LINHA 3: Nova Cidade */}
+          {podeIncluir && (
+            <div style={{ 
+              flex: isMobile ? '1 1 100%' : '0 1 auto',
+              minWidth: isMobile ? '100%' : 'auto',
+              width: isMobile ? '100%' : 'auto',
+            }}>
+              <FormButton 
+                className="justify-content-center" 
+                onClick={onRegister}
+                style={{
+                  width: isMobile ? '100%' : 'auto',
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} color="#fff" />
+                Nova Cidade
+              </FormButton>
+            </div>
           )}
         </div>
 
