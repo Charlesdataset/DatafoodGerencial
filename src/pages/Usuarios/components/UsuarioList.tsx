@@ -336,8 +336,8 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
             flexWrap: isMobile ? 'nowrap' : 'wrap'
           }}>
             <div style={{ 
-              flex: isMobile ? 1 : '0 1 auto',
-              minWidth: isMobile ? '50%' : '130px',
+              flex: 1,
+              minWidth: isMobile ? 0 : '130px',
             }}>
               <Select
                 label="Franquia"
@@ -351,8 +351,8 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
             </div>
 
             <div style={{ 
-              flex: isMobile ? 1 : '0 1 auto',
-              minWidth: isMobile ? '50%' : '130px',
+              flex: 1,
+              minWidth: isMobile ? 0 : '130px',
             }}>
               <Select
                 label="Ordenar por"

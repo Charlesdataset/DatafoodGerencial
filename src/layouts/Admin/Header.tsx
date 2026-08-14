@@ -26,9 +26,6 @@ interface HeaderProps {
   onMenuClick: () => void;
 }
 
-
-
-
 export const Header = ({ onMenuClick }: HeaderProps) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -41,16 +38,22 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
   const [showBackButton, setShowBackButton] = useState(false);
   const { lembrar } = useRememberMe();
   const currentIcon = pageIcons[`${location.pathname}${location.search}`] || "📌";
-  const currentTitle = pageTitles[`${location.pathname}${location.search}`] || "TicketFlow";
+  const currentTitle = pageTitles[`${location.pathname}${location.search}`] || 
+    pageTitles[location.pathname] || 
+    "TicketFlow";
   const isMobile = window.innerWidth <= 992;
-
 
   const { emit, subscribe } = useNavigation();
 
-
-
-
-
+  // SÓ MOSTRA FILTROS NO DASHBOARD
+  const deveMostrarFiltros = () => {
+    // Se tem action=register ou action=update, NÃO mostra
+    if (location.search.includes('action=register') || location.search.includes('action=update')) {
+      return false;
+    }
+    // SÓ MOSTRA NO DASHBOARD
+    return location.pathname === '/' || location.pathname === '/dashboard';
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -239,36 +242,25 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             style={{ display: inAction && !isMobile ? "none" : undefined }}
           >
 
-            {!isMobile && (
+            {!isMobile && canShowTurnoTipo && deveMostrarFiltros() && (
               <>
-                {canShowTurnoTipo && (
-                  <>
+                <MultiTextBox
+                  colorMode="multicolor"
+                  onChange={(labels) => {
+                    setTurnosSelecionados((prev) =>
+                      prev.filter((t) => labels.includes(`${t.label}`))
+                    )
+                  }}
+                  values={turnosSelecionados.map((t) => `${t.label}`)} boxHeight={35} className="mb-0" placeholder="Tipos de turnos"
+                  onInputClick={() => {
+                    setIsTipoTurnoSearchOpen(true);
+                  }} />
 
-
-                    <MultiTextBox
-
-                      colorMode="multicolor"
-                      onChange={(labels) => {
-                        setTurnosSelecionados((prev) =>
-                          prev.filter((t) => labels.includes(`${t.label}`))
-                        )
-                      }}
-                      values={turnosSelecionados.map((t) => `${t.label}`)} boxHeight={35} className="mb-0" placeholder="Tipos de turnos"
-                      onInputClick={() => {
-                        setIsTipoTurnoSearchOpen(true);
-                      }} />
-
-                    <DateRangePicker isForm={false} startDate={dataInicial} endDate={dataFinal} onChange={(s, e) => {
-                      setDataInicial(s);
-                      setDataFinal(e)
-                    }} />
-                  </>
-
-                )}
-
-
+                <DateRangePicker isForm={false} startDate={dataInicial} endDate={dataFinal} onChange={(s, e) => {
+                  setDataInicial(s);
+                  setDataFinal(e)
+                }} />
               </>
-
             )}
 
 

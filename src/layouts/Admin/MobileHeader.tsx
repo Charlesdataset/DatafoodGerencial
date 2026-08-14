@@ -3,12 +3,14 @@ import {
   faCancel,
   faChartPie,
   faChartSimple,
+  faCity,
   faFilter,
   faMagnifyingGlass,
   faMap,
   faMobileRetro,
   faMoneyCheckDollar,
   faNoteSticky,
+  faUserCog,
   faUsers
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -28,6 +30,10 @@ import styles from "./MobileHeader.module.scss";
 export const pageIcons: Record<string, any> = {
   "/": faChartPie,
   "/dashboard": faChartSimple,
+  "/clientes": faUsers,
+  "/cidades": faCity,
+  "/usuarios": faUserCog,
+  "/planos": faBox,
   "/reports": faChartPie,
   "/reports?listing=nota-entrada": faNoteSticky,
   "/reports?listing=nfce": faNoteSticky,
@@ -43,6 +49,18 @@ export const pageIcons: Record<string, any> = {
 export const pageTitles: Record<string, string> = {
   "/": "Dashboard",
   "/dashboard": "Dashboard",
+  "/clientes": "Clientes",
+  "/cidades": "Cidades",
+  "/usuarios": "Usuários",
+  "/planos": "Planos",
+  "/clientes?action=register": "Novo Cliente",
+  "/clientes?action=update": "Editar Cliente",
+  "/cidades?action=register": "Nova Cidade",
+  "/cidades?action=update": "Editar Cidade",
+  "/usuarios?action=register": "Novo Usuário",
+  "/usuarios?action=update": "Editar Usuário",
+  "/planos?action=register": "Novo Plano",
+  "/planos?action=update": "Editar Plano",
   "/reports": 'Relatórios',
   "/reports?listing=nota-entrada": 'Nota de entrada',
   "/reports?listing=nfce": 'NFC-e',
@@ -64,7 +82,19 @@ const MobileHeader = () => {
   const [oldTurnos, setOldTurnos] = useState([]);
   const [searchTurnoOpen, setSearchTurnoOpen] = useState(false);
   const currentIcon = pageIcons[`${location.pathname}${location.search}`] || "📌";
-  const currentTitle = pageTitles[`${location.pathname}${location.search}`] || "TicketFlow";
+  const currentTitle = pageTitles[`${location.pathname}${location.search}`] || 
+    pageTitles[location.pathname] || 
+    "TicketFlow";
+
+  // SÓ MOSTRA FILTROS NO DASHBOARD
+  const deveMostrarFiltros = () => {
+    // Se tem action=register ou action=update, NÃO mostra
+    if (location.search.includes('action=register') || location.search.includes('action=update')) {
+      return false;
+    }
+    // SÓ MOSTRA NO DASHBOARD
+    return location.pathname === '/' || location.pathname === '/dashboard';
+  };
 
   useEffect(() => {
     setOldDataFim(dataInicial);
@@ -162,10 +192,12 @@ const MobileHeader = () => {
             </span>
             <h2 style={{ color: '#fff' }}>{currentTitle}</h2>
           </div>
-          <FormButton variant="secondary" onClick={() => setIsModalOpen(true)} style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' }}>
-            <FontAwesomeIcon icon={faFilter} />
-            Filtros
-          </FormButton>
+          {deveMostrarFiltros() && (
+            <FormButton variant="secondary" onClick={() => setIsModalOpen(true)} style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+              <FontAwesomeIcon icon={faFilter} />
+              Filtros
+            </FormButton>
+          )}
         </Flex>
       </div>
     </>

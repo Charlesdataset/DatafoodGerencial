@@ -363,8 +363,8 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
             flexWrap: isMobile ? 'nowrap' : 'wrap'
           }}>
             <div style={{ 
-              flex: isMobile ? 1 : '0 1 auto',
-              minWidth: isMobile ? '50%' : '130px',
+              flex: 1,
+              minWidth: isMobile ? 0 : '130px',
             }}>
               <Select
                 label="UF"
@@ -378,8 +378,8 @@ const CidadeList: React.FC<CidadeListProps> = ({ onRegister, onEdit }) => {
             </div>
 
             <div style={{ 
-              flex: isMobile ? 1 : '0 1 auto',
-              minWidth: isMobile ? '50%' : '130px',
+              flex: 1,
+              minWidth: isMobile ? 0 : '130px',
             }}>
               <Select
                 label="Ordenar por"
