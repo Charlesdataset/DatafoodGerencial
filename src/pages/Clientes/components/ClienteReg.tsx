@@ -9,7 +9,8 @@ import { FormButton } from "../../../components/Inputs/Button/FormButton";
 import { useNavigation } from "../../../contexts/NavigationContext";
 import { formValidators } from "../../../hooks/formValidators";
 import { useSimpleFormValidation } from "../../../hooks/useSimpleFormValidation";
-import { useCep } from "../../../hooks/useCep.ts";
+import { useCep } from "../../../hooks/useCep";
+import { useCnpj } from "../../../hooks/useCnpj";
 import { api } from "../../../services/api";
 import type { Cliente } from "../types/Cliente";
 import { maskCnpj, maskCep, maskPhone, unMask } from "../../../utils/format";
@@ -214,6 +215,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const { loadingCep, buscarCep } = useCep();
+  const { loadingCnpj, buscarCnpj } = useCnpj();
 
   const [planos, setPlanos] = useState<Plano[]>([]);
   const [recursos, setRecursos] = useState<Recurso[]>([]);
@@ -516,9 +518,29 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         maxLength={18}
         disabled={isEditing && !podeEditar}
         value={formData.cnpj}
-        onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+        onChange={(e) => {
+          const value = e.target.value;
+          setFormData({ ...formData, cnpj: value });
+          if (unMask(value).length === 14 && !isEditing) {
+            buscarCnpj(value, setFormData);
+          }
+        }}
         error={cnpjField.error}
         onBlur={() => {}}
+        rightIcon={
+          !isEditing && (
+            <FontAwesomeIcon
+              icon={faSearch}
+              onClick={() => buscarCnpj(formData.cnpj, setFormData)}
+              style={{
+                cursor: loadingCnpj ? "wait" : "pointer",
+                color: "#6c757d",
+                opacity: loadingCnpj ? 0.5 : 1
+              }}
+              spin={loadingCnpj}
+            />
+          )
+        }
       />
 
       <TextBox
@@ -554,25 +576,46 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
 
   const renderLocalizacao = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      <TextBox
-        label="CEP"
-        required
-        className="mb-0"
-        isFormField={false}
-        mask="cep"
-        maxLength={9}
-        disabled={isEditing && !podeEditar}
-        value={formData.cep}
-        onChange={(e) => {
-          const value = e.target.value;
-          setFormData({ ...formData, cep: value });
-          if (value.replace(/\D/g, '').length === 8) {
-            buscarCep(value, setFormData);
+  <TextBox
+  label="CEP"
+  required
+  className="mb-0"
+  isFormField={false}
+  mask="cep"
+  maxLength={9}
+  disabled={isEditing && !podeEditar}
+  value={formData.cep}
+  onChange={(e) => {
+    const value = e.target.value;
+    setFormData({ ...formData, cep: value });
+    if (value.replace(/\D/g, '').length === 8) {
+      buscarCep(value, setFormData);
+    }
+  }}
+  error={cepField.error}
+  onBlur={() => {}}
+  rightIcon={
+    !isEditing && (
+      <FontAwesomeIcon
+        icon={faSearch}
+        onClick={() => {
+          const cepLimpo = formData.cep.replace(/\D/g, '');
+          if (cepLimpo.length === 8) {
+            buscarCep(formData.cep, setFormData);
+          } else {
+            toast.warning('CEP inválido! Digite 8 números');
           }
         }}
-        error={cepField.error}
-        onBlur={() => {}}
+        style={{
+          cursor: loadingCep ? "wait" : "pointer",
+          color: "#6c757d",
+          opacity: loadingCep ? 0.5 : 1
+        }}
+        spin={loadingCep}
       />
+    )
+  }
+/>
       {loadingCep && <small style={{ color: '#6c757d' }}>Buscando endereço...</small>}
 
       <TextBox

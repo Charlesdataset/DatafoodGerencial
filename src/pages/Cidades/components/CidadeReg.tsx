@@ -158,63 +158,59 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
     <form ref={formRef} onSubmit={handleSubmit}>
       <Card>
         <Card.Body>
-          <Fluid xs={[100]} rowGap={16}>
-            <Fluid xs={[50, 50]} rowGap={16}>
-              <TextBox
-                label="Nome"
-                required
-                className="mb-0"
-                isFormField={false}
-                maxLength={100}
-                disabled={isEditing && !podeEditar}
-                {...nomeField}
-              />
+          <Fluid xs={[50, 50, 50, 50]} lg={[50, 17, 17, 16]} rowGap={16}>
+            <TextBox
+              label="Nome"
+              required
+              className="mb-0"
+              isFormField={false}
+              maxLength={100}
+              disabled={isEditing && !podeEditar}
+              {...nomeField}
+            />
 
-              <Select
-                label="UF"
-                required
-                className="mb-0"
-                value={formData.uf}
-                options={ufOptions}
-                disabled={isEditing && !podeEditar}
-                onChange={(value: string) => {
-                  setFormData({ ...formData, uf: value });
-                }}
-                error={ufField.error}
-              />
-            </Fluid>
+            <Select
+              label="UF"
+              required
+              className="mb-0"
+              value={formData.uf}
+              options={ufOptions}
+              disabled={isEditing && !podeEditar}
+              onChange={(value: string) => {
+                setFormData({ ...formData, uf: value });
+              }}
+              error={ufField.error}
+            />
 
-            <Fluid xs={[50, 50]} rowGap={16}>
-              <TextBox
-                label="Código IBGE"
-                className="mb-0"
-                isFormField={false}
-                type="number"
-                disabled={isEditing && !podeEditar}
-                value={formData.codigo_ibge || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    codigo_ibge: e.target.value ? Number(e.target.value) : undefined,
-                  })
-                }
-                placeholder="Opcional"
-              />
+            <TextBox
+              label="Código IBGE"
+              className="mb-0"
+              isFormField={false}
+              type="number"
+              disabled={isEditing && !podeEditar}
+              value={formData.codigo_ibge || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  codigo_ibge: e.target.value ? Number(e.target.value) : undefined,
+                })
+              }
+              placeholder="Opcional"
+            />
 
-              <Select
-                label="Status"
-                className="mb-0"
-                value={formData.ativo ? "true" : "false"}
-                options={[
-                  { value: "true", label: "Ativo" },
-                  { value: "false", label: "Inativo" },
-                ]}
-                disabled={isEditing && !podeEditar}
-                onChange={(value: string) => {
-                  setFormData({ ...formData, ativo: value === "true" });
-                }}
-              />
-            </Fluid>
+            <Select
+              label="Status"
+              className="mb-0"
+              value={formData.ativo ? "true" : "false"}
+              options={[
+                { value: "true", label: "Ativo" },
+                { value: "false", label: "Inativo" },
+              ]}
+              disabled={isEditing && !podeEditar}
+              onChange={(value: string) => {
+                setFormData({ ...formData, ativo: value === "true" });
+              }}
+            />
           </Fluid>
         </Card.Body>
       </Card>

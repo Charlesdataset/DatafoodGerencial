@@ -364,9 +364,7 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
                 }}
               />
             </div>
-          </div>
-
-          {/* LINHA 3: Novo Usuário */}
+          </div>     
           {podeIncluir && (
             <div style={{ 
               flex: isMobile ? '1 1 100%' : '0 1 auto',
@@ -389,7 +387,6 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
             </div>
           )}
         </div>
-
         <DataGrid
           columns={columns}
           data={usuarios}
