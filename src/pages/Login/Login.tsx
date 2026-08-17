@@ -36,7 +36,6 @@ const Login = () => {
     const cnpjTrimed = cnpj.replace(/\D/g, '');
     if (cnpjTrimed.length === 14) {
       
-      // 👇 SE JÁ FALHOU NO AUTHLAYOUT, NÃO FAZ A CHAMADA
       if (localStorage.getItem("franchiseValidationFailed") === "true") {
         return;
       }
@@ -46,7 +45,6 @@ const Login = () => {
         const res = await api.get(`franquias?cnpj=${cnpjTrimed}`);
         if (res?.status == 200) {
           setCompanyInfo(prev => ({ ...prev, franquia: res.data.franquia }));
-          // SE DEU CERTO, REMOVE O FLAG
           localStorage.removeItem("franchiseValidationFailed");
         }
       } catch (error) {
@@ -147,15 +145,58 @@ const Login = () => {
         saveCredentials(currUser.codigo, currUser.senha, unMask(currUser.cnpj));
         setUser(res.data.user);
 
+        // =============================================
+        // SALVAR PERMISSÕES ESPECÍFICAS POR TELA
+        // =============================================
         if (res.data.user?.permissoes) {
-          const dataRoute = {
-            entrar: res.data.user.permissoes.entrar || false,
-            editar: res.data.user.permissoes.editar || false,
-            excluir: res.data.user.permissoes.excluir || false,
-            incluir: res.data.user.permissoes.incluir || false,
-            relatorio: res.data.user.permissoes.relatorio || false,
+          const permissoes = res.data.user.permissoes;
+          
+          // PERMISSÕES DE CLIENTE
+          const clientePermissoes = {
+            entrar: permissoes.cliente_entrar || false,
+            editar: permissoes.cliente_editar || false,
+            excluir: permissoes.cliente_excluir || false,
+            incluir: permissoes.cliente_incluir || false,
+            relatorio: permissoes.cliente_relatorio || false,
           };
-          localStorage.setItem('dataRoute', JSON.stringify(dataRoute));
+          localStorage.setItem('dataRouteCliente', JSON.stringify(clientePermissoes));
+
+          // PERMISSÕES DE CIDADE
+          const cidadePermissoes = {
+            entrar: permissoes.cidade_entrar || false,
+            editar: permissoes.cidade_editar || false,
+            excluir: permissoes.cidade_excluir || false,
+            incluir: permissoes.cidade_incluir || false,
+            relatorio: permissoes.cidade_relatorio || false,
+          };
+          localStorage.setItem('dataRouteCidade', JSON.stringify(cidadePermissoes));
+
+          // PERMISSÕES DE USUÁRIO
+          const usuarioPermissoes = {
+            entrar: permissoes.usuario_entrar || false,
+            editar: permissoes.usuario_editar || false,
+            excluir: permissoes.usuario_excluir || false,
+            incluir: permissoes.usuario_incluir || false,
+            relatorio: permissoes.usuario_relatorio || false,
+          };
+          localStorage.setItem('dataRouteUsuario', JSON.stringify(usuarioPermissoes));
+
+          // PERMISSÕES DE PLANO
+          const planoPermissoes = {
+            entrar: permissoes.plano_entrar || false,
+            editar: permissoes.plano_editar || false,
+            excluir: permissoes.plano_excluir || false,
+            incluir: permissoes.plano_incluir || false,
+            relatorio: permissoes.plano_relatorio || false,
+          };
+          localStorage.setItem('dataRoutePlano', JSON.stringify(planoPermissoes));
+
+          // PERMISSÕES GERAIS
+          const permissoesGerais = {
+            dashboard: permissoes.dashboard || false,
+            configuracao: permissoes.configuracao || false,
+          };
+          localStorage.setItem('dataRouteGerais', JSON.stringify(permissoesGerais));
         }
 
         toast.success("Login realizado com sucesso!");
@@ -183,7 +224,6 @@ const Login = () => {
     navigate(`?cnpj=${newCnpj}`, { replace: true });
     setcurrUser((prev) => ({ ...prev, cnpj: newCnpj }));
     
-    // 👇 RESETA O FLAG QUANDO O CNPJ MUDA
     localStorage.removeItem("franchiseValidationFailed");
   };
 

@@ -277,7 +277,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const emailField = textFieldProps("email");
   const codigoPlanoField = textFieldProps("codigo_plano");
 
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // 🔥 USA A PERMISSÃO ESPECÍFICA DE CLIENTE
+  const dataRoute = JSON.parse(localStorage.getItem('dataRouteCliente') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEditar = dataRoute.editar || false;
   const podeEntrar = dataRoute.entrar || false;
@@ -541,8 +542,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
             />
           )
         }
-      />
-
+      />    
+      
       <TextBox
         label="Inscrição Estadual"
         className="mb-0"
@@ -562,7 +563,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.cnae}
         onChange={(e) => setFormData({ ...formData, cnae: e.target.value })}
       />
-
       <Select
         label="Franquia"
         className="mb-0"
@@ -576,46 +576,46 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
 
   const renderLocalizacao = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-  <TextBox
-  label="CEP"
-  required
-  className="mb-0"
-  isFormField={false}
-  mask="cep"
-  maxLength={9}
-  disabled={isEditing && !podeEditar}
-  value={formData.cep}
-  onChange={(e) => {
-    const value = e.target.value;
-    setFormData({ ...formData, cep: value });
-    if (value.replace(/\D/g, '').length === 8) {
-      buscarCep(value, setFormData);
-    }
-  }}
-  error={cepField.error}
-  onBlur={() => {}}
-  rightIcon={
-    !isEditing && (
-      <FontAwesomeIcon
-        icon={faSearch}
-        onClick={() => {
-          const cepLimpo = formData.cep.replace(/\D/g, '');
-          if (cepLimpo.length === 8) {
-            buscarCep(formData.cep, setFormData);
-          } else {
-            toast.warning('CEP inválido! Digite 8 números');
+      <TextBox
+        label="CEP"
+        required
+        className="mb-0"
+        isFormField={false}
+        mask="cep"
+        maxLength={9}
+        disabled={isEditing && !podeEditar}
+        value={formData.cep}
+        onChange={(e) => {
+          const value = e.target.value;
+          setFormData({ ...formData, cep: value });
+          if (value.replace(/\D/g, '').length === 8) {
+            buscarCep(value, setFormData);
           }
         }}
-        style={{
-          cursor: loadingCep ? "wait" : "pointer",
-          color: "#6c757d",
-          opacity: loadingCep ? 0.5 : 1
-        }}
-        spin={loadingCep}
+        error={cepField.error}
+        onBlur={() => {}}
+        rightIcon={
+          !isEditing && (
+            <FontAwesomeIcon
+              icon={faSearch}
+              onClick={() => {
+                const cepLimpo = formData.cep.replace(/\D/g, '');
+                if (cepLimpo.length === 8) {
+                  buscarCep(formData.cep, setFormData);
+                } else {
+                  toast.warning('CEP inválido! Digite 8 números');
+                }
+              }}
+              style={{
+                cursor: loadingCep ? "wait" : "pointer",
+                color: "#6c757d",
+                opacity: loadingCep ? 0.5 : 1
+              }}
+              spin={loadingCep}
+            />
+          )
+        }
       />
-    )
-  }
-/>
       {loadingCep && <small style={{ color: '#6c757d' }}>Buscando endereço...</small>}
 
       <TextBox

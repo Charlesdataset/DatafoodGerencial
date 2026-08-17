@@ -49,7 +49,8 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // 🔥 USA A PERMISSÃO ESPECÍFICA DE USUÁRIO
+  const dataRoute = JSON.parse(localStorage.getItem('dataRouteUsuario') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEntrar = dataRoute.entrar || false;
   const podeExcluir = dataRoute.excluir || false;
@@ -207,12 +208,20 @@ const UsuarioList: React.FC<UsuarioListProps> = ({ onRegister, onEdit }) => {
       textAlign: "center",
       cell: (info) => {
         const row = info.row.original;
+        // 🔥 PERMISSÕES ESPECÍFICAS POR TELA
         const permissoes = [
-          { key: "entrar", label: "Entrar", color: "info" },
-          { key: "editar", label: "Editar", color: "warning" },
-          { key: "excluir", label: "Excluir", color: "danger" },
-          { key: "incluir", label: "Incluir", color: "success" },
-          { key: "relatorio", label: "Relatório", color: "secondary" },
+          // Cliente
+          { key: "cliente_entrar", label: "Cliente", color: "primary" },
+          // Cidade
+          { key: "cidade_entrar", label: "Cidade", color: "success" },
+          // Usuário
+          { key: "usuario_entrar", label: "Usuário", color: "warning" },
+          // Plano
+          { key: "plano_entrar", label: "Plano", color: "info" },
+          // Dashboard
+          { key: "dashboard", label: "Dashboard", color: "secondary" },
+          // Configuração
+          { key: "configuracao", label: "Config", color: "dark" },
         ];
         const ativas = permissoes.filter(p => row[p.key as keyof Usuario] === true);
         if (ativas.length === 0) {

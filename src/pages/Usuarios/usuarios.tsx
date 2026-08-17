@@ -13,7 +13,8 @@ const Usuarios = () => {
   const action = new URLSearchParams(location.search).get("action");
   const isRegistering = action === "register" || action === "update";
 
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // 🔥 USA A PERMISSÃO ESPECÍFICA DE USUÁRIO
+  const dataRoute = JSON.parse(localStorage.getItem('dataRouteUsuario') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEntrar = dataRoute.entrar || false;
 

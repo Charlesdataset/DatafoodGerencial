@@ -73,7 +73,8 @@ const CidadeReg: React.FC<CidadeRegProps> = ({ onBack }) => {
   const nomeField = textFieldProps("nome");
   const ufField = textFieldProps("uf");
 
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // 🔥 USA A PERMISSÃO ESPECÍFICA DE CIDADE
+  const dataRoute = JSON.parse(localStorage.getItem('dataRouteCidade') || '{}');
   const podeEditar = dataRoute.editar || false;
   const podeEntrar = dataRoute.entrar || false;
 

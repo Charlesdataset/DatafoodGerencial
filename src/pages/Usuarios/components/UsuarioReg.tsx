@@ -10,14 +10,40 @@ import { formValidators } from "../../../hooks/formValidators";
 import { useSimpleFormValidation } from "../../../hooks/useSimpleFormValidation";
 import { api } from "../../../services/api";
 import type { Usuario } from "../types/Usuario.ts";
-import { FormButton } from "../../../components/Inputs/Button/FormButton";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faCancel } from "@fortawesome/free-solid-svg-icons";
-import { Flex } from "../../../components/Layout";
 import { Switch } from "../../../components/Switch/Switch";
 
 interface UsuarioRegProps {
   onBack: () => void;
+}
+
+interface Permissoes {
+  // Cliente
+  cliente_entrar: boolean;
+  cliente_editar: boolean;
+  cliente_excluir: boolean;
+  cliente_incluir: boolean;
+  cliente_relatorio: boolean;
+  // Cidade
+  cidade_entrar: boolean;
+  cidade_editar: boolean;
+  cidade_excluir: boolean;
+  cidade_incluir: boolean;
+  cidade_relatorio: boolean;
+  // Usuário
+  usuario_entrar: boolean;
+  usuario_editar: boolean;
+  usuario_excluir: boolean;
+  usuario_incluir: boolean;
+  usuario_relatorio: boolean;
+  // Plano
+  plano_entrar: boolean;
+  plano_editar: boolean;
+  plano_excluir: boolean;
+  plano_incluir: boolean;
+  plano_relatorio: boolean;
+  // Gerais
+  dashboard: boolean;
+  configuracao: boolean;
 }
 
 const franquiaOptions = [
@@ -49,6 +75,32 @@ const validatorsEdicao = {
   ),
 };
 
+// PERMISSÕES INICIAIS PADRÃO
+const permissoesIniciais: Permissoes = {
+  cliente_entrar: false,
+  cliente_editar: false,
+  cliente_excluir: false,
+  cliente_incluir: false,
+  cliente_relatorio: false,
+  cidade_entrar: false,
+  cidade_editar: false,
+  cidade_excluir: false,
+  cidade_incluir: false,
+  cidade_relatorio: false,
+  usuario_entrar: false,
+  usuario_editar: false,
+  usuario_excluir: false,
+  usuario_incluir: false,
+  usuario_relatorio: false,
+  plano_entrar: false,
+  plano_editar: false,
+  plano_excluir: false,
+  plano_incluir: false,
+  plano_relatorio: false,
+  dashboard: false,
+  configuracao: false,
+};
+
 const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const location = useLocation();
@@ -70,13 +122,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
     id_franquia: 1,
     senha: "",
     ativo: true,
-    permissoes: {
-      entrar: false,
-      editar: false,
-      excluir: false,
-      incluir: false,
-      relatorio: false,
-    },
+    permissoes: permissoesIniciais,
   };
 
   const validation = useSimpleFormValidation(
@@ -89,7 +135,8 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
   const franquiaField = textFieldProps("id_franquia");
   const senhaField = textFieldProps("senha");
 
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // USA A PERMISSÃO ESPECÍFICA DE USUÁRIO
+  const dataRoute = JSON.parse(localStorage.getItem('dataRouteUsuario') || '{}');
   const podeEditar = dataRoute.editar || false;
   const podeEntrar = dataRoute.entrar || false;
 
@@ -104,19 +151,39 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
   useEffect(() => {
     if (location.state?.row) {
       const row = location.state.row as Usuario;
+      
+      const permissoes: Permissoes = {
+        cliente_entrar: row.cliente_entrar || false,
+        cliente_editar: row.cliente_editar || false,
+        cliente_excluir: row.cliente_excluir || false,
+        cliente_incluir: row.cliente_incluir || false,
+        cliente_relatorio: row.cliente_relatorio || false,
+        cidade_entrar: row.cidade_entrar || false,
+        cidade_editar: row.cidade_editar || false,
+        cidade_excluir: row.cidade_excluir || false,
+        cidade_incluir: row.cidade_incluir || false,
+        cidade_relatorio: row.cidade_relatorio || false,
+        usuario_entrar: row.usuario_entrar || false,
+        usuario_editar: row.usuario_editar || false,
+        usuario_excluir: row.usuario_excluir || false,
+        usuario_incluir: row.usuario_incluir || false,
+        usuario_relatorio: row.usuario_relatorio || false,
+        plano_entrar: row.plano_entrar || false,
+        plano_editar: row.plano_editar || false,
+        plano_excluir: row.plano_excluir || false,
+        plano_incluir: row.plano_incluir || false,
+        plano_relatorio: row.plano_relatorio || false,
+        dashboard: row.dashboard || false,
+        configuracao: row.configuracao || false,
+      };
+
       setFormData({
         id_usuario: row.idUsuario,
         nome_usuario: row.nome,
         id_franquia: row.franquiaId,
         senha: "",
         ativo: row.ativo,
-        permissoes: {
-          entrar: row.entrar || false,
-          editar: row.editar || false,
-          excluir: row.excluir || false,
-          incluir: row.incluir || false,
-          relatorio: row.relatorio || false,
-        },
+        permissoes: permissoes,
       });
     }
   }, [location.state]);
@@ -184,7 +251,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
     }
   };
 
-  const handlePermissaoChange = (key: string, value: boolean) => {
+  const handlePermissaoChange = (key: keyof Permissoes, value: boolean) => {
     setFormData({
       ...formData,
       permissoes: {
@@ -194,6 +261,51 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
     });
   };
 
+  // FUNÇÃO PARA SELECIONAR/DESELECIONAR TODAS AS PERMISSÕES DE UM MÓDULO
+  const toggleAllPermissoes = (modulo: string, checked: boolean) => {
+    const permissoesKeys: Record<string, (keyof Permissoes)[]> = {
+      cliente: ['cliente_entrar', 'cliente_editar', 'cliente_excluir', 'cliente_incluir', 'cliente_relatorio'],
+      cidade: ['cidade_entrar', 'cidade_editar', 'cidade_excluir', 'cidade_incluir', 'cidade_relatorio'],
+      usuario: ['usuario_entrar', 'usuario_editar', 'usuario_excluir', 'usuario_incluir', 'usuario_relatorio'],
+      plano: ['plano_entrar', 'plano_editar', 'plano_excluir', 'plano_incluir', 'plano_relatorio'],
+      gerais: ['dashboard', 'configuracao'],
+    };
+
+    const keys = permissoesKeys[modulo];
+    if (!keys) return;
+
+    const novasPermissoes = { ...formData.permissoes };
+    keys.forEach(key => {
+      novasPermissoes[key] = checked;
+    });
+
+    setFormData({
+      ...formData,
+      permissoes: novasPermissoes,
+    });
+  };
+
+  // VERIFICA SE TODAS AS PERMISSÕES DE UM MÓDULO ESTÃO MARCADAS
+  const isAllChecked = (modulo: string): boolean => {
+    const permissoesKeys: Record<string, (keyof Permissoes)[]> = {
+      cliente: ['cliente_entrar', 'cliente_editar', 'cliente_excluir', 'cliente_incluir', 'cliente_relatorio'],
+      cidade: ['cidade_entrar', 'cidade_editar', 'cidade_excluir', 'cidade_incluir', 'cidade_relatorio'],
+      usuario: ['usuario_entrar', 'usuario_editar', 'usuario_excluir', 'usuario_incluir', 'usuario_relatorio'],
+      plano: ['plano_entrar', 'plano_editar', 'plano_excluir', 'plano_incluir', 'plano_relatorio'],
+      gerais: ['dashboard', 'configuracao'],
+    };
+
+    const keys = permissoesKeys[modulo];
+    if (!keys || keys.length === 0) return false;
+    return keys.every(key => formData.permissoes[key] === true);
+  };
+
+  // 🔥 COR VERDE PRA TODOS OS SWITCHES
+  const switchStyle = {
+    '--switch-color': '#42ab8a',
+    '--switch-checked-color': '#42ab8a'
+  } as React.CSSProperties;
+
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
       <Card>
@@ -201,7 +313,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
           <Fluid xs={[100]} rowGap={24}>
             {isMobile ? (
               <Fluid xs={[100]} rowGap={24}>
-                {/* LINHA 1: Nome (mobile) */}
                 <Fluid xs={[100]} rowGap={16}>
                   <TextBox
                     label="Nome"
@@ -217,7 +328,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                   />
                 </Fluid>
 
-                {/* LINHA 2: Franquia + Senha + Status (mobile) */}
                 <Fluid xs={[33.33, 33.33, 33.33]} rowGap={16}>
                   <Select
                     label="Franquia"
@@ -263,7 +373,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                 </Fluid>
               </Fluid>
             ) : (
-              /* LINHA UNICA: Nome (50%) + Franquia + Senha + Status (16.66% cada) (desktop) */
               <Fluid xs={[50, 16.66, 16.66, 16.66]} rowGap={16}>
                 <TextBox
                   label="Nome"
@@ -322,55 +431,396 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
               </Fluid>
             )}
 
-            {/* LINHA 3: Permissões */}
+            {/* PERMISSÕES ESPECÍFICAS POR TELA - 4 COLUNAS LADO A LADO */}
             <div className="mt-4">
-              <label className="fw-bold mb-3 d-block">Permissões</label>
-              <div className="d-flex flex-wrap gap-4">
-                <Switch
-                  checked={formData.permissoes.entrar}
-                  onChange={(checked) => handlePermissaoChange("entrar", checked)}
-                  disabled={isEditing && !podeEditar}
-                  label="Entrar"
-                  variant="primary"
-                  size="md"
-                  labelPosition="right"
-                />
-                <Switch
-                  checked={formData.permissoes.editar}
-                  onChange={(checked) => handlePermissaoChange("editar", checked)}
-                  disabled={isEditing && !podeEditar}
-                  label="Editar"
-                  variant="primary"
-                  size="md"
-                  labelPosition="right"
-                />
-                <Switch
-                  checked={formData.permissoes.excluir}
-                  onChange={(checked) => handlePermissaoChange("excluir", checked)}
-                  disabled={isEditing && !podeEditar}
-                  label="Excluir"
-                  variant="primary"
-                  size="md"
-                  labelPosition="right"
-                />
-                <Switch
-                  checked={formData.permissoes.incluir}
-                  onChange={(checked) => handlePermissaoChange("incluir", checked)}
-                  disabled={isEditing && !podeEditar}
-                  label="Incluir"
-                  variant="primary"
-                  size="md"
-                  labelPosition="right"
-                />
-                <Switch
-                  checked={formData.permissoes.relatorio}
-                  onChange={(checked) => handlePermissaoChange("relatorio", checked)}
-                  disabled={isEditing && !podeEditar}
-                  label="Relatório"
-                  variant="primary"
-                  size="md"
-                  labelPosition="right"
-                />
+              <label 
+                className="mb-3 d-block" 
+                style={{ 
+                  fontSize: '14px', 
+                  fontWeight: 500, 
+                  color: '#6c757d' 
+                }}
+              >
+                Permissões por Tela
+              </label>
+              
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+                gap: '16px'
+              }}>
+                
+                {/* COLUNA 1: Cliente */}
+                <div className="border p-3" style={{ 
+                  backgroundColor: '#f8f9fa', 
+                  borderRadius: '8px'
+                }}>
+                  <label 
+                    className="d-block text-center" 
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: 500, 
+                      color: '#6c757d',
+                      marginBottom: '5px'
+                    }}
+                  >
+                    Cliente
+                  </label>
+                  <div className="d-flex flex-column gap-2">
+                    <Switch
+                      checked={isAllChecked('cliente')}
+                      onChange={(checked) => toggleAllPermissoes('cliente', checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Todos"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cliente_entrar}
+                      onChange={(checked) => handlePermissaoChange("cliente_entrar", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Entrar"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cliente_editar}
+                      onChange={(checked) => handlePermissaoChange("cliente_editar", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Editar"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cliente_excluir}
+                      onChange={(checked) => handlePermissaoChange("cliente_excluir", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Excluir"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cliente_incluir}
+                      onChange={(checked) => handlePermissaoChange("cliente_incluir", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Incluir"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cliente_relatorio}
+                      onChange={(checked) => handlePermissaoChange("cliente_relatorio", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Relatório"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                  </div>
+                </div>
+
+                {/* COLUNA 2: Cidade */}
+                <div className="border p-3" style={{ 
+                  backgroundColor: '#f8f9fa', 
+                  borderRadius: '8px'
+                }}>
+                  <label 
+                    className="d-block text-center" 
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: 500, 
+                      color: '#6c757d',
+                      marginBottom: '5px'
+                    }}
+                  >
+                    Cidade
+                  </label>
+                  <div className="d-flex flex-column gap-2">
+                    <Switch
+                      checked={isAllChecked('cidade')}
+                      onChange={(checked) => toggleAllPermissoes('cidade', checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Todos"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cidade_entrar}
+                      onChange={(checked) => handlePermissaoChange("cidade_entrar", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Entrar"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cidade_editar}
+                      onChange={(checked) => handlePermissaoChange("cidade_editar", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Editar"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cidade_excluir}
+                      onChange={(checked) => handlePermissaoChange("cidade_excluir", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Excluir"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cidade_incluir}
+                      onChange={(checked) => handlePermissaoChange("cidade_incluir", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Incluir"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.cidade_relatorio}
+                      onChange={(checked) => handlePermissaoChange("cidade_relatorio", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Relatório"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                  </div>
+                </div>
+
+                {/* COLUNA 3: Usuário */}
+                <div className="border p-3" style={{ 
+                  backgroundColor: '#f8f9fa', 
+                  borderRadius: '8px'
+                }}>
+                  <label 
+                    className="d-block text-center" 
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: 500, 
+                      color: '#6c757d',
+                      marginBottom: '5px'
+                    }}
+                  >
+                    Usuário
+                  </label>
+                  <div className="d-flex flex-column gap-2">
+                    <Switch
+                      checked={isAllChecked('usuario')}
+                      onChange={(checked) => toggleAllPermissoes('usuario', checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Todos"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.usuario_entrar}
+                      onChange={(checked) => handlePermissaoChange("usuario_entrar", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Entrar"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.usuario_editar}
+                      onChange={(checked) => handlePermissaoChange("usuario_editar", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Editar"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.usuario_excluir}
+                      onChange={(checked) => handlePermissaoChange("usuario_excluir", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Excluir"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.usuario_incluir}
+                      onChange={(checked) => handlePermissaoChange("usuario_incluir", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Incluir"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.usuario_relatorio}
+                      onChange={(checked) => handlePermissaoChange("usuario_relatorio", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Relatório"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                  </div>
+                </div>
+
+                {/* COLUNA 4: Plano */}
+                <div className="border p-3" style={{ 
+                  backgroundColor: '#f8f9fa', 
+                  borderRadius: '8px'
+                }}>
+                  <label 
+                    className="d-block text-center" 
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: 500, 
+                      color: '#6c757d',
+                      marginBottom: '5px'
+                    }}
+                  >
+                    Plano
+                  </label>
+                  <div className="d-flex flex-column gap-2">
+                    <Switch
+                      checked={isAllChecked('plano')}
+                      onChange={(checked) => toggleAllPermissoes('plano', checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Todos"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.plano_entrar}
+                      onChange={(checked) => handlePermissaoChange("plano_entrar", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Entrar"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.plano_editar}
+                      onChange={(checked) => handlePermissaoChange("plano_editar", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Editar"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.plano_excluir}
+                      onChange={(checked) => handlePermissaoChange("plano_excluir", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Excluir"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.plano_incluir}
+                      onChange={(checked) => handlePermissaoChange("plano_incluir", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Incluir"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.plano_relatorio}
+                      onChange={(checked) => handlePermissaoChange("plano_relatorio", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Relatório"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* GERAIS (embaixo, ocupando tudo) */}
+              <div className="mt-3">
+                <div className="border p-3" style={{ 
+                  backgroundColor: '#f8f9fa', 
+                  borderRadius: '8px'
+                }}>
+                  <label 
+                    className="d-block" 
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: 500, 
+                      color: '#6c757d',
+                      marginBottom: '5px'
+                    }}
+                  >
+                    Gerais
+                  </label>
+                  <div className="d-flex flex-column gap-2">
+                    <Switch
+                      checked={isAllChecked('gerais')}
+                      onChange={(checked) => toggleAllPermissoes('gerais', checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Todos"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.dashboard}
+                      onChange={(checked) => handlePermissaoChange("dashboard", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Dashboard"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                    <Switch
+                      checked={formData.permissoes.configuracao}
+                      onChange={(checked) => handlePermissaoChange("configuracao", checked)}
+                      disabled={isEditing && !podeEditar}
+                      label="Configurações"
+                      variant="primary"
+                      size="sm"
+                      labelPosition="right"
+                      style={switchStyle}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </Fluid>

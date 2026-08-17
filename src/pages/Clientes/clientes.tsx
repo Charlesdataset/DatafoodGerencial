@@ -13,7 +13,8 @@ const Clientes = () => {
   const action = new URLSearchParams(location.search).get("action");
   const isRegistering = action === "register" || action === "update";
 
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // 🔥 USA A PERMISSÃO ESPECÍFICA DE CLIENTE
+  const dataRoute = JSON.parse(localStorage.getItem('dataRouteCliente') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEditar = dataRoute.editar || false;
   const podeEntrar = dataRoute.entrar || false;
@@ -45,7 +46,6 @@ const Clientes = () => {
   };
 
   const handleEdit = (row: any) => {
-    // 🔥 USA "entrar" PARA PERMITIR ACESSAR A TELA DE EDIÇÃO
     if (!podeEntrar) {
       toast.error("Você não tem permissão para acessar a tela de edição");
       return;

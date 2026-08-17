@@ -13,8 +13,8 @@ const Cidades = () => {
   const action = new URLSearchParams(location.search).get("action");
   const isRegistering = action === "register" || action === "update";
 
-  // 🔥 LÊ AS PERMISSÕES
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // 🔥 USA A PERMISSÃO ESPECÍFICA DE CIDADE
+  const dataRoute = JSON.parse(localStorage.getItem('dataRouteCidade') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEntrar = dataRoute.entrar || false;
 
