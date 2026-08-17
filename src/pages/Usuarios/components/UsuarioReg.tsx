@@ -23,12 +23,6 @@ interface Permissoes {
   cliente_excluir: boolean;
   cliente_incluir: boolean;
   cliente_relatorio: boolean;
-  // Cidade
-  cidade_entrar: boolean;
-  cidade_editar: boolean;
-  cidade_excluir: boolean;
-  cidade_incluir: boolean;
-  cidade_relatorio: boolean;
   // Usuário
   usuario_entrar: boolean;
   usuario_editar: boolean;
@@ -82,11 +76,6 @@ const permissoesIniciais: Permissoes = {
   cliente_excluir: false,
   cliente_incluir: false,
   cliente_relatorio: false,
-  cidade_entrar: false,
-  cidade_editar: false,
-  cidade_excluir: false,
-  cidade_incluir: false,
-  cidade_relatorio: false,
   usuario_entrar: false,
   usuario_editar: false,
   usuario_excluir: false,
@@ -158,11 +147,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
         cliente_excluir: row.cliente_excluir || false,
         cliente_incluir: row.cliente_incluir || false,
         cliente_relatorio: row.cliente_relatorio || false,
-        cidade_entrar: row.cidade_entrar || false,
-        cidade_editar: row.cidade_editar || false,
-        cidade_excluir: row.cidade_excluir || false,
-        cidade_incluir: row.cidade_incluir || false,
-        cidade_relatorio: row.cidade_relatorio || false,
         usuario_entrar: row.usuario_entrar || false,
         usuario_editar: row.usuario_editar || false,
         usuario_excluir: row.usuario_excluir || false,
@@ -265,7 +249,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
   const toggleAllPermissoes = (modulo: string, checked: boolean) => {
     const permissoesKeys: Record<string, (keyof Permissoes)[]> = {
       cliente: ['cliente_entrar', 'cliente_editar', 'cliente_excluir', 'cliente_incluir', 'cliente_relatorio'],
-      cidade: ['cidade_entrar', 'cidade_editar', 'cidade_excluir', 'cidade_incluir', 'cidade_relatorio'],
       usuario: ['usuario_entrar', 'usuario_editar', 'usuario_excluir', 'usuario_incluir', 'usuario_relatorio'],
       plano: ['plano_entrar', 'plano_editar', 'plano_excluir', 'plano_incluir', 'plano_relatorio'],
       gerais: ['dashboard', 'configuracao'],
@@ -289,7 +272,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
   const isAllChecked = (modulo: string): boolean => {
     const permissoesKeys: Record<string, (keyof Permissoes)[]> = {
       cliente: ['cliente_entrar', 'cliente_editar', 'cliente_excluir', 'cliente_incluir', 'cliente_relatorio'],
-      cidade: ['cidade_entrar', 'cidade_editar', 'cidade_excluir', 'cidade_incluir', 'cidade_relatorio'],
       usuario: ['usuario_entrar', 'usuario_editar', 'usuario_excluir', 'usuario_incluir', 'usuario_relatorio'],
       plano: ['plano_entrar', 'plano_editar', 'plano_excluir', 'plano_incluir', 'plano_relatorio'],
       gerais: ['dashboard', 'configuracao'],
@@ -300,7 +282,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
     return keys.every(key => formData.permissoes[key] === true);
   };
 
-  // 🔥 COR VERDE PRA TODOS OS SWITCHES
+  // COR VERDE PRA TODOS OS SWITCHES
   const switchStyle = {
     '--switch-color': '#42ab8a',
     '--switch-checked-color': '#42ab8a'
@@ -431,7 +413,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
               </Fluid>
             )}
 
-            {/* PERMISSÕES ESPECÍFICAS POR TELA - 4 COLUNAS LADO A LADO */}
+            {/* PERMISSÕES ESPECÍFICAS POR TELA - 3 COLUNAS LADO A LADO */}
             <div className="mt-4">
               <label 
                 className="mb-3 d-block" 
@@ -446,7 +428,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
               
               <div style={{ 
                 display: 'grid', 
-                gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
                 gap: '16px'
               }}>
                 
@@ -530,87 +512,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                   </div>
                 </div>
 
-                {/* COLUNA 2: Cidade */}
-                <div className="border p-3" style={{ 
-                  backgroundColor: '#f8f9fa', 
-                  borderRadius: '8px'
-                }}>
-                  <label 
-                    className="d-block text-center" 
-                    style={{ 
-                      fontSize: '14px', 
-                      fontWeight: 500, 
-                      color: '#6c757d',
-                      marginBottom: '5px'
-                    }}
-                  >
-                    Cidade
-                  </label>
-                  <div className="d-flex flex-column gap-2">
-                    <Switch
-                      checked={isAllChecked('cidade')}
-                      onChange={(checked) => toggleAllPermissoes('cidade', checked)}
-                      disabled={isEditing && !podeEditar}
-                      label="Todos"
-                      variant="primary"
-                      size="sm"
-                      labelPosition="right"
-                      style={switchStyle}
-                    />
-                    <Switch
-                      checked={formData.permissoes.cidade_entrar}
-                      onChange={(checked) => handlePermissaoChange("cidade_entrar", checked)}
-                      disabled={isEditing && !podeEditar}
-                      label="Entrar"
-                      variant="primary"
-                      size="sm"
-                      labelPosition="right"
-                      style={switchStyle}
-                    />
-                    <Switch
-                      checked={formData.permissoes.cidade_editar}
-                      onChange={(checked) => handlePermissaoChange("cidade_editar", checked)}
-                      disabled={isEditing && !podeEditar}
-                      label="Editar"
-                      variant="primary"
-                      size="sm"
-                      labelPosition="right"
-                      style={switchStyle}
-                    />
-                    <Switch
-                      checked={formData.permissoes.cidade_excluir}
-                      onChange={(checked) => handlePermissaoChange("cidade_excluir", checked)}
-                      disabled={isEditing && !podeEditar}
-                      label="Excluir"
-                      variant="primary"
-                      size="sm"
-                      labelPosition="right"
-                      style={switchStyle}
-                    />
-                    <Switch
-                      checked={formData.permissoes.cidade_incluir}
-                      onChange={(checked) => handlePermissaoChange("cidade_incluir", checked)}
-                      disabled={isEditing && !podeEditar}
-                      label="Incluir"
-                      variant="primary"
-                      size="sm"
-                      labelPosition="right"
-                      style={switchStyle}
-                    />
-                    <Switch
-                      checked={formData.permissoes.cidade_relatorio}
-                      onChange={(checked) => handlePermissaoChange("cidade_relatorio", checked)}
-                      disabled={isEditing && !podeEditar}
-                      label="Relatório"
-                      variant="primary"
-                      size="sm"
-                      labelPosition="right"
-                      style={switchStyle}
-                    />
-                  </div>
-                </div>
-
-                {/* COLUNA 3: Usuário */}
+                {/* COLUNA 2: Usuário */}
                 <div className="border p-3" style={{ 
                   backgroundColor: '#f8f9fa', 
                   borderRadius: '8px'
@@ -690,7 +592,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                   </div>
                 </div>
 
-                {/* COLUNA 4: Plano */}
+                {/* COLUNA 3: Plano */}
                 <div className="border p-3" style={{ 
                   backgroundColor: '#f8f9fa', 
                   borderRadius: '8px'

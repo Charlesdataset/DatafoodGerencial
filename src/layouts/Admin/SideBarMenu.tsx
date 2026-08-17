@@ -56,11 +56,11 @@ export const SidebarMenu = ({ isCollapsed, onLinkClick, isMobile = false }: Side
           icon: faUser,
           to: "/clientes"
         },
-        {
-          name: "Cidades",
-          icon: faLocationDot,
-          to: "/cidades"
-        },
+        // {
+        //   name: "Cidades",
+        //   icon: faLocationDot,
+        //   to: "/cidades"
+        // },
         {
           name: "Usuários",
           icon: faUsers,

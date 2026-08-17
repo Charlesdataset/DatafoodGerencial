@@ -7,7 +7,7 @@ import { AdminLayout } from "./layouts/Admin/AdminLayout";
 import Dashboard from "./pages/Dashboard/dashboard";
 import Login from "./pages/Login/Login";
 import Clientes from "./pages/Clientes/clientes";
-import Cidades from "./pages/Cidades/cidades";
+//import Cidades from "./pages/Cidades/cidades";
 import Usuarios from "./pages/Usuarios/usuarios";
 import Planos from "./pages/Planos/planos";
 
@@ -24,7 +24,7 @@ function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/clientes" element={<Clientes />} />
-                <Route path="/cidades" element={<Cidades />} />
+                {/* <Route path="/cidades" element={<Cidades />} /> */}
                 <Route path="/usuarios" element={<Usuarios />} />
                 <Route path="/planos" element={<Planos />} />
               </Route>
