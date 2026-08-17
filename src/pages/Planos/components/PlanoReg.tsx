@@ -89,7 +89,8 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
   const usuariosField = textFieldProps("usuariosMax");
   const valorField = textFieldProps("valorMensal");
 
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // 🔥 USA A PERMISSÃO ESPECÍFICA DE PLANO
+  const dataRoute = JSON.parse(localStorage.getItem('dataRoutePlano') || '{}');
   const podeEditar = dataRoute.editar || false;
   const podeEntrar = dataRoute.entrar || false;
 
@@ -194,7 +195,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
           <Fluid xs={[100]} rowGap={24}>
             {isMobile ? (
               <Fluid xs={[100]} rowGap={16}>
-                {/* LINHA 1: Descrição (mobile) */}
                 <Fluid xs={[100]} rowGap={16}>
                   <TextBox
                     label="Descrição"
@@ -210,7 +210,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                   />
                 </Fluid>
 
-                {/* LINHA 2: Resumo (mobile) */}
                 <Fluid xs={[100]} rowGap={16}>
                   <TextBox
                     label="Resumo"
@@ -225,7 +224,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                   />
                 </Fluid>
 
-                {/* LINHA 3: Caixas + Usuários (mobile) */}
                 <Fluid xs={[50, 50]} rowGap={16}>
                   <TextBox
                     label="Caixas"
@@ -254,7 +252,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                   />
                 </Fluid>
 
-                {/* LINHA 4: Valor + Dias (mobile) */}
                 <Fluid xs={[50, 50]} rowGap={16}>
                   <TextBox
                     label="Valor (R$)"
@@ -283,7 +280,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                   />
                 </Fluid>
 
-                {/* LINHA 5: Status + Ordem (mobile) */}
                 <Fluid xs={[50, 50]} rowGap={16}>
                   <Select
                     label="Status"
@@ -314,7 +310,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
               </Fluid>
             ) : (
               <Fluid xs={[100]} rowGap={16}>
-                {/* LINHA 1: Descrição e Resumo (desktop) */}
                 <Fluid xs={[50, 50]} rowGap={16}>
                   <TextBox
                     label="Descrição"
@@ -342,7 +337,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                   />
                 </Fluid>
 
-                {/* LINHA 2: Caixas, Usuários, Valor, Dias, Status, Ordem (desktop) */}
                 <Fluid xs={[16.66, 16.66, 16.66, 16.66, 16.66, 16.66]} rowGap={16}>
                   <TextBox
                     label="Caixas"

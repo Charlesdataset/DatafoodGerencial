@@ -13,7 +13,8 @@ const Planos = () => {
   const action = new URLSearchParams(location.search).get("action");
   const isRegistering = action === "register" || action === "update";
 
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // 🔥 USA A PERMISSÃO ESPECÍFICA DE PLANO
+  const dataRoute = JSON.parse(localStorage.getItem('dataRoutePlano') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEntrar = dataRoute.entrar || false;
 

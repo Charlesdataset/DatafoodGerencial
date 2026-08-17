@@ -43,7 +43,8 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const dataRoute = JSON.parse(localStorage.getItem('dataRoute') || '{}');
+  // 🔥 USA A PERMISSÃO ESPECÍFICA DE PLANO
+  const dataRoute = JSON.parse(localStorage.getItem('dataRoutePlano') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEntrar = dataRoute.entrar || false;
   const podeExcluir = dataRoute.excluir || false;
