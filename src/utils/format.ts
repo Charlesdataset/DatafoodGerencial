@@ -29,7 +29,7 @@ export const formatDateTimes = (date) => {
   return date && dayjs(date).isValid() ? dayjs(date).format("YYYY-MM-DDTHH:mm:ssZ") : "";
 };
 
-export const maskCpf = (value: string): string => {
+export const maskCpfCnpj = (value: string): string => {
   const clean = unMask(value);
   if (clean.length <= 11) {
     return clean
@@ -38,7 +38,16 @@ export const maskCpf = (value: string): string => {
       .replace(/(\d{3})(\d{1,2})/, "$1-$2")
       .slice(0, 14);
   }
-  return maskCnpj(value);
+  return clean
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2")
+    .slice(0, 18);
+};
+
+export const maskCpf = (value: string): string => {
+  return maskCpfCnpj(value);
 };
 
 export const maskCnpj = (value: string): string => {
@@ -50,8 +59,6 @@ export const maskCnpj = (value: string): string => {
     .replace(/(\d{4})(\d)/, "$1-$2")
     .slice(0, 18);
 };
-
-// ========== NOVAS FUNÇÕES ADICIONADAS ==========
 
 export const maskPhone = (value: string): string => {
   const clean = unMask(value);
@@ -75,8 +82,6 @@ export const maskCep = (value: string): string => {
   const clean = unMask(value);
   return clean.replace(/(\d{5})(\d)/, "$1-$2").slice(0, 9);
 };
-
-// ========== FIM DAS NOVAS FUNÇÕES ==========
 
 export function unMask(v: string) {
   v = v.replace(/\D/g, "");

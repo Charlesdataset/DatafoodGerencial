@@ -13,7 +13,8 @@ import { useCep } from "../../../hooks/useCep";
 import { useCnpj } from "../../../hooks/useCnpj";
 import { api } from "../../../services/api";
 import type { Cliente } from "../types/Cliente";
-import { maskCnpj, maskCep, maskPhone, unMask } from "../../../utils/format";
+// 🔥 IMPORTANDO maskCpfCnpj
+import { maskCnpj, maskCep, maskPhone, unMask, maskCpfCnpj } from "../../../utils/format";
 import { Modal } from "../../../components/Modal";
 import { Flex } from "../../../components/Layout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -165,8 +166,8 @@ const validators = {
     formValidators.maxLength(100, "Razão Social deve ter no máximo 100 caracteres")
   ),
   cnpj: formValidators.compose(
-    formValidators.required("CNPJ é obrigatório"),
-    formValidators.minLength(14, "CNPJ deve ter 14 dígitos")
+    formValidators.required("CPF/CNPJ é obrigatório"),
+    formValidators.minLength(11, "CPF/CNPJ deve ter no mínimo 11 dígitos")
   ),
   fantasia: formValidators.compose(
     formValidators.required("Fantasia é obrigatória"),
@@ -191,8 +192,7 @@ const validators = {
   cidade: formValidators.required("Cidade é obrigatória"),
   uf: formValidators.required("UF é obrigatória"),
   inscricao_estadual: formValidators.compose(
-    formValidators.required("Inscrição Estadual é obrigatória"),
-    formValidators.inscricaoEstadual("Inscrição Estadual inválida")
+    formValidators.inscricaoEstadualOptional("Inscrição Estadual inválida")
   ),
   responsavel_nome: formValidators.compose(
     formValidators.required("Responsável é obrigatório"),
@@ -204,7 +204,8 @@ const validators = {
   ),
   email: formValidators.compose(
     formValidators.required("Email é obrigatório"),
-    formValidators.maxLength(150, "Email deve ter no máximo 150 caracteres")
+    formValidators.maxLength(150, "Email deve ter no máximo 150 caracteres"),
+    formValidators.email("Email inválido")
   ),
   codigo_plano: formValidators.compose(
     formValidators.required("Plano é obrigatório"),
@@ -215,6 +216,7 @@ const validators = {
       return null;
     }
   ),
+  codigo_ramo: formValidators.required("Ramo de Atividade é obrigatório"),
 };
 
 const toUpperCase = (value: string) => value ? value.toUpperCase() : '';
@@ -294,6 +296,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const telefoneField = textFieldProps("telefone");
   const emailField = textFieldProps("email");
   const codigoPlanoField = textFieldProps("codigo_plano");
+  const codigoRamoField = textFieldProps("codigo_ramo");
 
   const dataRoute = JSON.parse(localStorage.getItem('dataRouteCliente') || '{}');
   const podeIncluir = dataRoute.incluir || false;
@@ -342,7 +345,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       const row = location.state.row as Cliente;
       setFormData({
         ...row,
-        cnpj: maskCnpj(row.cnpj || ""),
+        // 🔥 CORREÇÃO: usa maskCpfCnpj
+        cnpj: maskCpfCnpj(row.cnpj || ""),
         cep: maskCep(row.cep || ""),
         telefone: maskPhone(row.telefone || ""),
         whatsapp: maskPhone(row.whatsapp || ""),
@@ -533,43 +537,56 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         onBlur={fantasiaField.onBlur}
       />
 
-      <TextBox
-        label="CNPJ"
-        required
-        className="mb-0"
-        isFormField={false}
-        mask="cnpj"
-        maxLength={18}
-        disabled={isEditing && !podeEditar}
-        value={formData.cnpj}
-        onChange={(e) => {
-          const value = e.target.value;
-          setFormData({ ...formData, cnpj: value });
-          if (unMask(value).length === 14 && !isEditing) {
-            buscarCnpj(value, setFormData);
+ 
+   <TextBox
+  label="CPF/CNPJ"
+  required
+  className="mb-0"
+  isFormField={false}
+  mask="cnpj"
+  maxLength={18}
+  disabled={isEditing && !podeEditar}
+  value={formData.cnpj}
+  onChange={(e) => {
+    const value = e.target.value;
+    const formatted = maskCpfCnpj(value);
+    setFormData({ ...formData, cnpj: formatted });
+    const cleanValue = unMask(value);
+    
+    // 🔥 SÓ BUSCA SE FOR CNPJ (14 DÍGITOS)! NÃO BUSCA CPF!
+    if (cleanValue.length === 14 && !isEditing) {
+      buscarCnpj(cleanValue, setFormData);
+    }
+  }}
+  error={cnpjField.error}
+  onBlur={cnpjField.onBlur}
+  rightIcon={
+    podeEditar && (
+      <FontAwesomeIcon
+        icon={faSearch}
+        onClick={() => {
+          const cleanValue = unMask(formData.cnpj);
+          if (cleanValue.length === 14) {
+            buscarCnpj(formData.cnpj, setFormData);
+          } else if (cleanValue.length === 11) {
+            toast.warning("Busca automática não disponível para CPF");
+          } else {
+            toast.warning("Digite um CNPJ válido (14 dígitos)");
           }
         }}
-        error={cnpjField.error}
-        onBlur={cnpjField.onBlur}
-        rightIcon={
-          podeEditar && (
-            <FontAwesomeIcon
-              icon={faSearch}
-              onClick={() => buscarCnpj(formData.cnpj, setFormData)}
-              style={{
-                cursor: loadingCnpj ? "wait" : "pointer",
-                color: "#6c757d",
-                opacity: loadingCnpj ? 0.5 : 1
-              }}
-              spin={loadingCnpj}
-            />
-          )
-        }
+        style={{
+          cursor: loadingCnpj ? "wait" : "pointer",
+          color: "#6c757d",
+          opacity: loadingCnpj ? 0.5 : 1
+        }}
+        spin={loadingCnpj}
       />
+    )
+  }
+/>
 
       <TextBox
         label="Inscrição Estadual"
-        required
         className="mb-0"
         isFormField={false}
         mask="number"
@@ -847,6 +864,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         <TextBox
           label="Ramo de Atividade"
+          required
           className="mb-0"
           isFormField={false}
           value={formData.codigo_ramo}
@@ -858,6 +876,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
             }
           }}
           placeholder="Selecione um ramo de atividade"
+          error={codigoRamoField.error}
+          onBlur={codigoRamoField.onBlur}
           rightIcon={
             formData.codigo_ramo ? (
               <FontAwesomeIcon

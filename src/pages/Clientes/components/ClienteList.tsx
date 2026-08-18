@@ -341,9 +341,7 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
                 }}
               />
             </div>
-          </div>
-
-       
+          </div>      
           {podeIncluir && (
             <div style={{ 
               flex: isMobile ? '1 1 100%' : '0 1 auto',
@@ -381,3 +379,4 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
 };
 
 export default ClienteList;
+

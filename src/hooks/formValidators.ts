@@ -116,7 +116,7 @@ export const formValidators = {
       return undefined;
     },
 
-  // 🔥 VALIDAÇÃO DE INSCRIÇÃO ESTADUAL (CONDICIONAL COM A UF)
+  // 🔥 VALIDAÇÃO DE INSCRIÇÃO ESTADUAL (OBRIGATÓRIA - QUANDO TEM UF)
   inscricaoEstadual:
     (message = "Inscrição Estadual inválida") =>
     (value: string, formData?: any) => {
@@ -125,6 +125,19 @@ export const formValidators = {
       }
       if (!value || value.trim() === "") {
         return "Inscrição Estadual é obrigatória";
+      }
+      const numeros = value.replace(/\D/g, "");
+      if (numeros.length < 3) {
+        return message;
+      }
+      return undefined;
+    },
+
+  inscricaoEstadualOptional:
+    (message = "Inscrição Estadual inválida") =>
+    (value: string, formData?: any) => {
+      if (!formData?.uf || !value || value.trim() === "") {
+        return undefined;
       }
       const numeros = value.replace(/\D/g, "");
       if (numeros.length < 3) {
