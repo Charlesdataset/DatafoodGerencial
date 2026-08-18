@@ -50,7 +50,6 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-
   const dataRoute = JSON.parse(localStorage.getItem('dataRouteCliente') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEntrar = dataRoute.entrar || false;
@@ -278,71 +277,93 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
           rowGap: isMobile ? '16px' : '8px',
           width: '100%'
         }}>
-          <div style={{ flex: 1, minWidth: '150px' }}>
-            <TextSearch
-              isLoading={carregandoBusca}
-              placeholder="Digite para buscar..."
-              value={textoBusca}
-              onChange={(e) => {
-                setTextoBusca(e.target.value);
-              }}
-            />
-          </div>
-
-          <FormButton
-            isLoading={carregandoBusca}
-            loadAlone
-            variant="text"
-            onClick={() => {
-              buscarClientes(textoBusca, franchise, order, true);
-            }}
-          >
-            <FontAwesomeIcon icon={faRedo} />
-          </FormButton>
-
+          {/* LINHA 1: Busca + Reload */}
           <div style={{ 
-            minWidth: '130px', 
-            flex: isMobile ? 1 : 0,
+            display: 'flex', 
+            flex: isMobile ? '1 1 100%' : 1,
+            minWidth: isMobile ? '100%' : '150px',
+            alignItems: 'flex-end',
+            gap: '8px'
           }}>
-            <Select
-              label="Franquia"
-              value={franchise}
-              options={franquiaOptions}
-              onChange={(value: string) => {
-                setFranchise(value);
-                buscarClientes(textoBusca, value, order, true);
-              }}
-            />
-          </div>
-
-          <div style={{ 
-            minWidth: '130px', 
-            flex: isMobile ? 1 : 0,
-          }}>
-            <Select
-              label="Ordenar por"
-              value={order}
-              options={orderOptions}
-              onChange={(value: string) => {
-                setOrder(value);
-                buscarClientes(textoBusca, franchise, value, true);
-              }}
-            />
-          </div>
-
-          {podeIncluir && (
+            <div style={{ flex: 1 }}>
+              <TextSearch
+                isLoading={carregandoBusca}
+                placeholder="Digite para buscar..."
+                value={textoBusca}
+                onChange={(e) => setTextoBusca(e.target.value)}
+              />
+            </div>
             <FormButton
-              className="justify-content-center"
-              onClick={onRegister}
-              style={{
-                flex: isMobile ? '1 1 100%' : '0 1 auto',
-                minWidth: isMobile ? '100%' : 'auto',
-                width: isMobile ? '100%' : 'auto',
-              }}
+              isLoading={carregandoBusca}
+              loadAlone
+              variant="text"
+              onClick={() => buscarClientes(textoBusca, franchise, order, true)}
             >
-              <FontAwesomeIcon icon={faPlus} color="#fff" />
-              Novo Cliente
+              <FontAwesomeIcon icon={faRedo} />
             </FormButton>
+          </div>
+
+          {/* LINHA 2: Franquia + Ordenar */}
+          <div style={{ 
+            display: 'flex', 
+            flex: isMobile ? '1 1 100%' : '0 1 auto',
+            minWidth: isMobile ? '100%' : 'auto',
+            alignItems: 'flex-end',
+            gap: '8px',
+            flexWrap: isMobile ? 'nowrap' : 'wrap'
+          }}>
+            <div style={{ 
+              flex: 1,
+              minWidth: isMobile ? 0 : '130px',
+            }}>
+              <Select
+                label="Franquia"
+                value={franchise}
+                options={franquiaOptions}
+                onChange={(value: string) => {
+                  setFranchise(value);
+                  buscarClientes(textoBusca, value, order, true);
+                }}
+              />
+            </div>
+
+            <div style={{ 
+              flex: 1,
+              minWidth: isMobile ? 0 : '130px',
+            }}>
+              <Select
+                label="Ordenar por"
+                value={order}
+                options={orderOptions}
+                onChange={(value: string) => {
+                  setOrder(value);
+                  buscarClientes(textoBusca, franchise, value, true);
+                }}
+              />
+            </div>
+          </div>
+
+       
+          {podeIncluir && (
+            <div style={{ 
+              flex: isMobile ? '1 1 100%' : '0 1 auto',
+              minWidth: isMobile ? '100%' : 'auto',
+              width: isMobile ? '100%' : 'auto',
+            }}>
+              <FormButton 
+                className="justify-content-center" 
+                onClick={onRegister}
+                style={{
+                  width: isMobile ? '100%' : 'auto',
+                  background: "#42ab8a",
+                  border: "1px solid #42ab8a",
+                  color: "#ffffff",
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} color="#fff" />
+                Novo Cliente
+              </FormButton>
+            </div>
           )}
         </div>
 
