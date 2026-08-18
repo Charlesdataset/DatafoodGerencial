@@ -13,7 +13,6 @@ import { useCep } from "../../../hooks/useCep";
 import { useCnpj } from "../../../hooks/useCnpj";
 import { api } from "../../../services/api";
 import type { Cliente } from "../types/Cliente";
-// 🔥 IMPORTANDO maskCpfCnpj
 import { maskCnpj, maskCep, maskPhone, unMask, maskCpfCnpj } from "../../../utils/format";
 import { Modal } from "../../../components/Modal";
 import { Flex } from "../../../components/Layout";
@@ -345,7 +344,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       const row = location.state.row as Cliente;
       setFormData({
         ...row,
-        // 🔥 CORREÇÃO: usa maskCpfCnpj
         cnpj: maskCpfCnpj(row.cnpj || ""),
         cep: maskCep(row.cep || ""),
         telefone: maskPhone(row.telefone || ""),
@@ -521,7 +519,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.razao_social}
         onChange={(e) => setFormData({ ...formData, razao_social: toUpperCase(e.target.value) })}
         error={razaoSocialField.error}
-        onBlur={razaoSocialField.onBlur}
+        // 🔥 REMOVIDO: onBlur={razaoSocialField.onBlur}
       />
 
       <TextBox
@@ -534,56 +532,53 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.fantasia}
         onChange={(e) => setFormData({ ...formData, fantasia: toUpperCase(e.target.value) })}
         error={fantasiaField.error}
-        onBlur={fantasiaField.onBlur}
+        // 🔥 REMOVIDO: onBlur={fantasiaField.onBlur}
       />
 
- 
-   <TextBox
-  label="CPF/CNPJ"
-  required
-  className="mb-0"
-  isFormField={false}
-  mask="cnpj"
-  maxLength={18}
-  disabled={isEditing && !podeEditar}
-  value={formData.cnpj}
-  onChange={(e) => {
-    const value = e.target.value;
-    const formatted = maskCpfCnpj(value);
-    setFormData({ ...formData, cnpj: formatted });
-    const cleanValue = unMask(value);
-    
-    // 🔥 SÓ BUSCA SE FOR CNPJ (14 DÍGITOS)! NÃO BUSCA CPF!
-    if (cleanValue.length === 14 && !isEditing) {
-      buscarCnpj(cleanValue, setFormData);
-    }
-  }}
-  error={cnpjField.error}
-  onBlur={cnpjField.onBlur}
-  rightIcon={
-    podeEditar && (
-      <FontAwesomeIcon
-        icon={faSearch}
-        onClick={() => {
-          const cleanValue = unMask(formData.cnpj);
-          if (cleanValue.length === 14) {
-            buscarCnpj(formData.cnpj, setFormData);
-          } else if (cleanValue.length === 11) {
-            toast.warning("Busca automática não disponível para CPF");
-          } else {
-            toast.warning("Digite um CNPJ válido (14 dígitos)");
+      <TextBox
+        label="CPF/CNPJ"
+        required
+        className="mb-0"
+        isFormField={false}
+        mask="cnpj"
+        maxLength={18}
+        disabled={isEditing && !podeEditar}
+        value={formData.cnpj}
+        onChange={(e) => {
+          const value = e.target.value;
+          const formatted = maskCpfCnpj(value);
+          setFormData({ ...formData, cnpj: formatted });
+          const cleanValue = unMask(value);
+          if (cleanValue.length === 14 && !isEditing) {
+            buscarCnpj(cleanValue, setFormData);
           }
         }}
-        style={{
-          cursor: loadingCnpj ? "wait" : "pointer",
-          color: "#6c757d",
-          opacity: loadingCnpj ? 0.5 : 1
-        }}
-        spin={loadingCnpj}
+        error={cnpjField.error}
+        // 🔥 REMOVIDO: onBlur={cnpjField.onBlur}
+        rightIcon={
+          podeEditar && (
+            <FontAwesomeIcon
+              icon={faSearch}
+              onClick={() => {
+                const cleanValue = unMask(formData.cnpj);
+                if (cleanValue.length === 14) {
+                  buscarCnpj(formData.cnpj, setFormData);
+                } else if (cleanValue.length === 11) {
+                  toast.warning("Busca automática não disponível para CPF");
+                } else {
+                  toast.warning("Digite um CNPJ válido (14 dígitos)");
+                }
+              }}
+              style={{
+                cursor: loadingCnpj ? "wait" : "pointer",
+                color: "#6c757d",
+                opacity: loadingCnpj ? 0.5 : 1
+              }}
+              spin={loadingCnpj}
+            />
+          )
+        }
       />
-    )
-  }
-/>
 
       <TextBox
         label="Inscrição Estadual"
@@ -595,7 +590,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.inscricao_estadual}
         onChange={(e) => setFormData({ ...formData, inscricao_estadual: e.target.value })}
         error={inscricaoEstadualField.error}
-        onBlur={inscricaoEstadualField.onBlur}
+        // 🔥 REMOVIDO: onBlur={inscricaoEstadualField.onBlur}
       />
 
       <TextBox
@@ -638,7 +633,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           }
         }}
         error={cepField.error}
-        onBlur={cepField.onBlur}
+        // 🔥 REMOVIDO: onBlur={cepField.onBlur}
         rightIcon={
           podeEditar && (
             <FontAwesomeIcon
@@ -673,7 +668,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.endereco}
         onChange={(e) => setFormData({ ...formData, endereco: toUpperCase(e.target.value) })}
         error={enderecoField.error}
-        onBlur={enderecoField.onBlur}
+        // 🔥 REMOVIDO: onBlur={enderecoField.onBlur}
       />
 
       <TextBox
@@ -686,7 +681,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.numero}
         onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
         error={numeroField.error}
-        onBlur={numeroField.onBlur}
+        // 🔥 REMOVIDO: onBlur={numeroField.onBlur}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "12px" }}>
@@ -700,7 +695,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           value={formData.bairro}
           onChange={(e) => setFormData({ ...formData, bairro: toUpperCase(e.target.value) })}
           error={bairroField.error}
-          onBlur={bairroField.onBlur}
+          // 🔥 REMOVIDO: onBlur={bairroField.onBlur}
         />
 
         <TextBox
@@ -713,7 +708,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           disabled={isEditing && !podeEditar || loadingCep}
           placeholder="UF"
           error={ufField.error}
-          onBlur={ufField.onBlur}
+          // 🔥 REMOVIDO: onBlur={ufField.onBlur}
           style={{ textTransform: "uppercase" }}
         />
       </div>
@@ -728,6 +723,8 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         disabled={isEditing && !podeEditar || loadingCep}
         onClick={() => setIsCidadeModalOpen(true)}
         placeholder="Selecione uma cidade"
+        error={cidadeField.error}
+        // 🔥 REMOVIDO: onBlur={cidadeField.onBlur}
         rightIcon={
           <FontAwesomeIcon
             icon={formData.cidade ? faTimes : faSearch}
@@ -742,8 +739,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
             style={{ cursor: "pointer", color: "#6c757d" }}
           />
         }
-        error={cidadeField.error}
-        onBlur={cidadeField.onBlur}
       />
 
       <TextBox
@@ -770,7 +765,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.responsavel_nome}
         onChange={(e) => setFormData({ ...formData, responsavel_nome: toUpperCase(e.target.value) })}
         error={responsavelField.error}
-        onBlur={responsavelField.onBlur}
+        // 🔥 REMOVIDO: onBlur={responsavelField.onBlur}
       />
 
       <TextBox
@@ -795,7 +790,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.telefone}
         onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
         error={telefoneField.error}
-        onBlur={telefoneField.onBlur}
+        // 🔥 REMOVIDO: onBlur={telefoneField.onBlur}
       />
 
       <TextBox
@@ -809,7 +804,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
         error={emailField.error}
-        onBlur={emailField.onBlur}
+        // 🔥 REMOVIDO: onBlur={emailField.onBlur}
       />
     </div>
   );
@@ -877,7 +872,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           }}
           placeholder="Selecione um ramo de atividade"
           error={codigoRamoField.error}
-          onBlur={codigoRamoField.onBlur}
+          // 🔥 REMOVIDO: onBlur={codigoRamoField.onBlur}
           rightIcon={
             formData.codigo_ramo ? (
               <FontAwesomeIcon
