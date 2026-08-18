@@ -31,6 +31,7 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
   const [order, setOrder] = useState("code");
   const [refreshKey, setRefreshKey] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
   const messageBox = useMessageBox();
   const isMounted = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -43,7 +44,9 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 🔥 USA A PERMISSÃO ESPECÍFICA DE PLANO
+  // PERMISSÕES LIDAS DIRETO DO LOCALSTORAGE A CADA RENDER
+  // (mesmo padrão usado em ClienteList) para nunca ficar desatualizado
+  // após login/navegação, sem depender do evento 'focus' da janela.
   const dataRoute = JSON.parse(localStorage.getItem('dataRoutePlano') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEntrar = dataRoute.entrar || false;
@@ -160,12 +163,12 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
 
     try {
       const novoStatus = !plano.ativo;
-      
+
       await api.put("/gerencial/planos", {
         id_plano: plano.id_plano,
         ativo: novoStatus,
       });
-      
+
       toast.success(`Plano ${novoStatus ? "ativado" : "desativado"} com sucesso`);
       buscarPlanos(textoBusca, order, true);
     } catch (error: any) {
@@ -371,8 +374,8 @@ const PlanoList: React.FC<PlanoListProps> = ({ onRegister, onEdit }) => {
             </div>
 
             {podeIncluir && (
-              <FormButton 
-                className="justify-content-center" 
+              <FormButton
+                className="justify-content-center"
                 onClick={onRegister}
                 style={{
                   background: "#42ab8a",

@@ -50,7 +50,7 @@ const ClienteList: React.FC<ClienteListProps> = ({ onRegister, onEdit }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 🔥 USA A PERMISSÃO ESPECÍFICA DE CLIENTE
+
   const dataRoute = JSON.parse(localStorage.getItem('dataRouteCliente') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEntrar = dataRoute.entrar || false;

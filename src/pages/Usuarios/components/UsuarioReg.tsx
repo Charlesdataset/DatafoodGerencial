@@ -124,7 +124,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
   const franquiaField = textFieldProps("id_franquia");
   const senhaField = textFieldProps("senha");
 
-  // USA A PERMISSÃO ESPECÍFICA DE USUÁRIO
   const dataRoute = JSON.parse(localStorage.getItem('dataRouteUsuario') || '{}');
   const podeEditar = dataRoute.editar || false;
   const podeEntrar = dataRoute.entrar || false;
@@ -311,20 +310,8 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                 </Fluid>
 
                 <Fluid xs={[33.33, 33.33, 33.33]} rowGap={16}>
-                  <Select
-                    label="Franquia"
-                    required
-                    className="mb-0"
-                    value={String(formData.id_franquia)}
-                    options={franquiaOptions}
-                    disabled={isEditing && !podeEditar}
-                    onChange={(value: string) => {
-                      setFormData({ ...formData, id_franquia: parseInt(value) });
-                    }}
-                    error={franquiaField.error}
-                  />
 
-                  <TextBox
+   <TextBox
                     label="Senha"
                     required={!isEditing}
                     className="mb-0"
@@ -338,6 +325,22 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                     error={senhaField.error}
                     onBlur={() => {}}
                   />
+
+
+                  <Select
+                    label="Franquia"
+                    required
+                    className="mb-0"
+                    value={String(formData.id_franquia)}
+                    options={franquiaOptions}
+                    disabled={isEditing && !podeEditar}
+                    onChange={(value: string) => {
+                      setFormData({ ...formData, id_franquia: parseInt(value) });
+                    }}
+                    error={franquiaField.error}
+                  />
+
+               
 
                   <Select
                     label="Status"
@@ -369,19 +372,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                   onBlur={() => {}}
                 />
 
-                <Select
-                  label="Franquia"
-                  required
-                  className="mb-0"
-                  value={String(formData.id_franquia)}
-                  options={franquiaOptions}
-                  disabled={isEditing && !podeEditar}
-                  onChange={(value: string) => {
-                    setFormData({ ...formData, id_franquia: parseInt(value) });
-                  }}
-                  error={franquiaField.error}
-                />
-
                 <TextBox
                   label="Senha"
                   required={!isEditing}
@@ -396,6 +386,19 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                   error={senhaField.error}
                   onBlur={() => {}}
                 />
+                <Select
+                  label="Franquia"
+                  required
+                  className="mb-0"
+                  value={String(formData.id_franquia)}
+                  options={franquiaOptions}
+                  disabled={isEditing && !podeEditar}
+                  onChange={(value: string) => {
+                    setFormData({ ...formData, id_franquia: parseInt(value) });
+                  }}
+                  error={franquiaField.error}
+                />
+
 
                 <Select
                   label="Status"

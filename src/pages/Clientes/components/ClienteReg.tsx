@@ -126,7 +126,7 @@ interface Cidade {
 }
 
 interface ClienteFormData extends Cliente {
-  codigo_plano: string;
+  codigo_plano: number;
 }
 
 const iconeMap: Record<string, any> = {
@@ -151,6 +151,12 @@ const franquiaOptions = [
   { value: "DATASET", label: "DATASET" },
   { value: "ARS", label: "ARS" },
   { value: "GIGABYTE", label: "GIGABYTE" },
+];
+
+const origemOptions = [
+  { value: "SITE", label: "SITE" },
+  { value: "SUPORTE", label: "SUPORTE" },
+  { value: "AUTOCADASTRO", label: "AUTOCADASTRO" },
 ];
 
 const validators = {
@@ -184,7 +190,10 @@ const validators = {
   ),
   cidade: formValidators.required("Cidade é obrigatória"),
   uf: formValidators.required("UF é obrigatória"),
-  inscricao_estadual: formValidators.inscricaoEstadual("Inscrição Estadual inválida"),
+  inscricao_estadual: formValidators.compose(
+    formValidators.required("Inscrição Estadual é obrigatória"),
+    formValidators.inscricaoEstadual("Inscrição Estadual inválida")
+  ),
   responsavel_nome: formValidators.compose(
     formValidators.required("Responsável é obrigatório"),
     formValidators.maxLength(100, "Responsável deve ter no máximo 100 caracteres")
@@ -197,7 +206,15 @@ const validators = {
     formValidators.required("Email é obrigatório"),
     formValidators.maxLength(150, "Email deve ter no máximo 150 caracteres")
   ),
-  codigo_plano: formValidators.required("Plano é obrigatório"),
+  codigo_plano: formValidators.compose(
+    formValidators.required("Plano é obrigatório"),
+    (value: number) => {
+      if (value === 0 || value === null || value === undefined) {
+        return "Plano é obrigatório";
+      }
+      return null;
+    }
+  ),
 };
 
 const toUpperCase = (value: string) => value ? value.toUpperCase() : '';
@@ -257,7 +274,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     origem: "SUPORTE",
     observacoes: "",
     excluido: false,
-    codigo_plano: "",
+    codigo_plano: 0,
   };
 
   const validation = useSimpleFormValidation(initialFormData, validators);
@@ -272,12 +289,12 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const bairroField = textFieldProps("bairro");
   const cidadeField = textFieldProps("cidade");
   const ufField = textFieldProps("uf");
+  const inscricaoEstadualField = textFieldProps("inscricao_estadual");
   const responsavelField = textFieldProps("responsavel_nome");
   const telefoneField = textFieldProps("telefone");
   const emailField = textFieldProps("email");
   const codigoPlanoField = textFieldProps("codigo_plano");
 
-  // 🔥 USA A PERMISSÃO ESPECÍFICA DE CLIENTE
   const dataRoute = JSON.parse(localStorage.getItem('dataRouteCliente') || '{}');
   const podeIncluir = dataRoute.incluir || false;
   const podeEditar = dataRoute.editar || false;
@@ -329,10 +346,16 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         cep: maskCep(row.cep || ""),
         telefone: maskPhone(row.telefone || ""),
         whatsapp: maskPhone(row.whatsapp || ""),
-        codigo_plano: row.codigo_plano || "",
+        codigo_plano: row.id_plano || 0,
       } as ClienteFormData);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (isEditing && formData.codigo_plano) {
+      fetchRecursos(formData.codigo_plano);
+    }
+  }, [isEditing, formData.codigo_plano]);
 
   useEffect(() => {
     const unsubscribeOnCommit = subscribe("onRequestCommit", () => {
@@ -444,7 +467,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           try {
             await api.post("/gerencial/licencas", {
               id_cliente: clienteId,
-              id_plano: parseInt(formData.codigo_plano),
+              id_plano: formData.codigo_plano,
               situacao: "ATIVO",
               vigente: true,
             });
@@ -461,7 +484,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         emit("isCommited", false);
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Erro ao salvar cliente");
+      // toast.error(error.response?.data?.message || "Erro ao salvar cliente");
       emit("isCommited", false);
     }
   };
@@ -494,7 +517,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.razao_social}
         onChange={(e) => setFormData({ ...formData, razao_social: toUpperCase(e.target.value) })}
         error={razaoSocialField.error}
-        onBlur={() => {}}
+        onBlur={razaoSocialField.onBlur}
       />
 
       <TextBox
@@ -507,7 +530,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.fantasia}
         onChange={(e) => setFormData({ ...formData, fantasia: toUpperCase(e.target.value) })}
         error={fantasiaField.error}
-        onBlur={() => {}}
+        onBlur={fantasiaField.onBlur}
       />
 
       <TextBox
@@ -527,9 +550,9 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           }
         }}
         error={cnpjField.error}
-        onBlur={() => {}}
+        onBlur={cnpjField.onBlur}
         rightIcon={
-          !isEditing && (
+          podeEditar && (
             <FontAwesomeIcon
               icon={faSearch}
               onClick={() => buscarCnpj(formData.cnpj, setFormData)}
@@ -542,16 +565,20 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
             />
           )
         }
-      />    
-      
+      />
+
       <TextBox
         label="Inscrição Estadual"
+        required
         className="mb-0"
         isFormField={false}
+        mask="number"
         maxLength={20}
         disabled={isEditing && !podeEditar || !formData.uf}
         value={formData.inscricao_estadual}
         onChange={(e) => setFormData({ ...formData, inscricao_estadual: e.target.value })}
+        error={inscricaoEstadualField.error}
+        onBlur={inscricaoEstadualField.onBlur}
       />
 
       <TextBox
@@ -563,6 +590,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.cnae}
         onChange={(e) => setFormData({ ...formData, cnae: e.target.value })}
       />
+
       <Select
         label="Franquia"
         className="mb-0"
@@ -593,9 +621,9 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           }
         }}
         error={cepField.error}
-        onBlur={() => {}}
+        onBlur={cepField.onBlur}
         rightIcon={
-          !isEditing && (
+          podeEditar && (
             <FontAwesomeIcon
               icon={faSearch}
               onClick={() => {
@@ -628,7 +656,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.endereco}
         onChange={(e) => setFormData({ ...formData, endereco: toUpperCase(e.target.value) })}
         error={enderecoField.error}
-        onBlur={() => {}}
+        onBlur={enderecoField.onBlur}
       />
 
       <TextBox
@@ -641,7 +669,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.numero}
         onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
         error={numeroField.error}
-        onBlur={() => {}}
+        onBlur={numeroField.onBlur}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "12px" }}>
@@ -655,7 +683,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           value={formData.bairro}
           onChange={(e) => setFormData({ ...formData, bairro: toUpperCase(e.target.value) })}
           error={bairroField.error}
-          onBlur={() => {}}
+          onBlur={bairroField.onBlur}
         />
 
         <TextBox
@@ -668,7 +696,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           disabled={isEditing && !podeEditar || loadingCep}
           placeholder="UF"
           error={ufField.error}
-          onBlur={() => {}}
+          onBlur={ufField.onBlur}
           style={{ textTransform: "uppercase" }}
         />
       </div>
@@ -698,7 +726,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           />
         }
         error={cidadeField.error}
-        onBlur={() => {}}
+        onBlur={cidadeField.onBlur}
       />
 
       <TextBox
@@ -725,7 +753,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.responsavel_nome}
         onChange={(e) => setFormData({ ...formData, responsavel_nome: toUpperCase(e.target.value) })}
         error={responsavelField.error}
-        onBlur={() => {}}
+        onBlur={responsavelField.onBlur}
       />
 
       <TextBox
@@ -750,7 +778,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.telefone}
         onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
         error={telefoneField.error}
-        onBlur={() => {}}
+        onBlur={telefoneField.onBlur}
       />
 
       <TextBox
@@ -764,7 +792,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
         error={emailField.error}
-        onBlur={() => {}}
+        onBlur={emailField.onBlur}
       />
     </div>
   );
@@ -824,7 +852,11 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           value={formData.codigo_ramo}
           readOnly
           disabled={isEditing && !podeEditar}
-          onClick={() => setIsRamoModalOpen(true)}
+          onClick={() => {
+            if (!(isEditing && !podeEditar)) {
+              setIsRamoModalOpen(true);
+            }
+          }}
           placeholder="Selecione um ramo de atividade"
           rightIcon={
             formData.codigo_ramo ? (
@@ -832,47 +864,71 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
                 icon={faTimes}
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
-                  setFormData({ ...formData, codigo_ramo: "" });
+                  if (!(isEditing && !podeEditar)) {
+                    setFormData({ ...formData, codigo_ramo: "" });
+                  }
                 }}
-                style={{ cursor: "pointer", color: "#6c757d" }}
+                style={{
+                  cursor: (isEditing && !podeEditar) ? "not-allowed" : "pointer",
+                  color: (isEditing && !podeEditar) ? "#ccc" : "#6c757d"
+                }}
               />
             ) : (
-              <FontAwesomeIcon icon={faSearch} />
+              <FontAwesomeIcon
+                icon={faSearch}
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  if (!(isEditing && !podeEditar)) {
+                    setIsRamoModalOpen(true);
+                  }
+                }}
+                style={{
+                  cursor: (isEditing && !podeEditar) ? "not-allowed" : "pointer",
+                  color: (isEditing && !podeEditar) ? "#ccc" : "#6c757d"
+                }}
+              />
             )
           }
         />
 
-        <TextBox
+        <Select
           label="Origem"
           className="mb-0"
-          isFormField={false}
-          maxLength={20}
-          disabled={isEditing && !podeEditar}
           value={formData.origem}
-          onChange={(e) => setFormData({ ...formData, origem: toUpperCase(e.target.value) })}
+          options={origemOptions}
+          disabled={isEditing && !podeEditar}
+          onChange={(value: string) => setFormData({ ...formData, origem: value })}
         />
 
         <Select
           label="Plano"
           required
           className="mb-0"
-          value={formData.codigo_plano}
-          options={planos.map((p) => ({ 
-            value: String(p.id_plano), 
-            label: p.descricao 
-          }))}
+          value={formData.codigo_plano.toString()}
+          options={[
+            { value: "", label: "Selecione um plano" },
+            ...planos.map((p) => ({ 
+              value: p.id_plano.toString(), 
+              label: p.descricao 
+            }))
+          ]}
           disabled={isEditing && !podeEditar}
-          onChange={async (value: string) => {
-            setFormData({ ...formData, codigo_plano: value });
-            if (value) {
-              await fetchRecursos(parseInt(value));
+          onChange={(value: string) => {
+            if (value === "") {
+              setFormData({ ...formData, codigo_plano: 0 });
+              setRecursos([]);
+              return;
+            }
+            const numero = parseInt(value);
+            setFormData({ ...formData, codigo_plano: numero });
+            if (numero) {
+              fetchRecursos(numero);
             } else {
               setRecursos([]);
             }
           }}
           placeholder={loadingPlanos ? "Carregando planos..." : "Selecione um plano"}
           error={codigoPlanoField.error}
-          onBlur={() => {}}
         />
 
         {recursos.length > 0 && (
@@ -966,8 +1022,18 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
 
   return (
     <>
-      <Modal isOpen={isCidadeModalOpen} onClose={() => setIsCidadeModalOpen(false)} size="md">
-        <Modal.Header onClose={() => setIsCidadeModalOpen(false)}>
+      <Modal 
+        isOpen={isCidadeModalOpen} 
+        onClose={() => {
+          setIsCidadeModalOpen(false);
+          setCidadeSearch("");
+        }} 
+        size="md"
+      >
+        <Modal.Header onClose={() => {
+          setIsCidadeModalOpen(false);
+          setCidadeSearch("");
+        }}>
           <Flex>
             <FontAwesomeIcon icon={faFilter} />
             Selecionar Cidade
@@ -1014,7 +1080,10 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
             <FormButton
               variant="outline-secondary"
               className="justify-content-center"
-              onClick={() => setIsCidadeModalOpen(false)}
+              onClick={() => {
+                setIsCidadeModalOpen(false);
+                setCidadeSearch("");
+              }}
             >
               <Flex wrap="nowrap">
                 <FontAwesomeIcon icon={faCancel} />
@@ -1028,7 +1097,10 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
                 border: "1px solid #217145",
                 color: "#ffffff",
               }}
-              onClick={() => setIsCidadeModalOpen(false)}
+              onClick={() => {
+                setIsCidadeModalOpen(false);
+                setCidadeSearch("");
+              }}
             >
               <Flex wrap="nowrap">
                 <FontAwesomeIcon icon={faCheck} />
@@ -1039,8 +1111,18 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         </Modal.Footer>
       </Modal>
 
-      <Modal isOpen={isRamoModalOpen} onClose={() => setIsRamoModalOpen(false)} size="md">
-        <Modal.Header onClose={() => setIsRamoModalOpen(false)}>
+      <Modal 
+        isOpen={isRamoModalOpen} 
+        onClose={() => {
+          setIsRamoModalOpen(false);
+          setRamoSearch("");
+        }} 
+        size="md"
+      >
+        <Modal.Header onClose={() => {
+          setIsRamoModalOpen(false);
+          setRamoSearch("");
+        }}>
           <Flex>
             <FontAwesomeIcon icon={faFilter} />
             Selecionar Ramo de Atividade
@@ -1088,7 +1170,10 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
             <FormButton
               variant="outline-secondary"
               className="justify-content-center"
-              onClick={() => setIsRamoModalOpen(false)}
+              onClick={() => {
+                setIsRamoModalOpen(false);
+                setRamoSearch("");
+              }}
             >
               <Flex wrap="nowrap">
                 <FontAwesomeIcon icon={faCancel} />
@@ -1102,7 +1187,10 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
                 border: "1px solid #217145",
                 color: "#ffffff",
               }}
-              onClick={() => setIsRamoModalOpen(false)}
+              onClick={() => {
+                setIsRamoModalOpen(false);
+                setRamoSearch("");
+              }}
             >
               <Flex wrap="nowrap">
                 <FontAwesomeIcon icon={faCheck} />

@@ -21,5 +21,5 @@ export interface Cliente {
   origem: string;
   observacoes: string;
   excluido: boolean;
-  codigo_plano?: string;
+  id_plano?: string;
 }

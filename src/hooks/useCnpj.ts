@@ -10,7 +10,12 @@ export const useCnpj = () => {
     const cnpjClean = unMask(cnpj);
 
     if (cnpjClean.length !== 14) {
-      toast.warning("CNPJ inválido!");
+      toast.warning("CNPJ inválido! Digite 14 números");
+      return;
+    }
+
+    if (!/^\d{14}$/.test(cnpjClean)) {
+      toast.warning("CNPJ inválido! Use apenas números");
       return;
     }
 
@@ -19,20 +24,27 @@ export const useCnpj = () => {
     try {
       const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjClean}`);
 
+      if (response.status === 404 || response.status === 400) {
+        toast.warning("CNPJ não encontrado ou inválido. Verifique os dados e tente novamente.");
+        setLoadingCnpj(false);
+        return;
+      }
+
       if (!response.ok) {
-        if (response.status === 404) {
-          toast.warning("CNPJ não encontrado");
-        } else {
-          toast.error("Erro ao buscar CNPJ");
-        }
+        toast.error(`Erro ao buscar CNPJ: ${response.status}`);
         setLoadingCnpj(false);
         return;
       }
 
       const data = await response.json();
 
-      setFormData((prev: any) => ({
-        ...prev,
+      if (!data.cnpj) {
+        toast.warning("CNPJ não encontrado ou dados incompletos");
+        setLoadingCnpj(false);
+        return;
+      }
+
+      const novosDados: any = {
         razao_social: data.razao_social?.toUpperCase() || "",
         fantasia: data.nome_fantasia?.toUpperCase() || "",
         cep: maskCep(data.cep?.toString() || ""),
@@ -43,15 +55,21 @@ export const useCnpj = () => {
         uf: data.uf?.toUpperCase() || "",
         complemento: data.complemento?.toUpperCase() || "",
         telefone: maskPhone(data.ddd_telefone_1 || ""),
-        email: data.email || "",
-        inscricao_estadual: data.inscricao_estadual || "",
-        cnae: data.cnae_fiscal || "",
+        cnae: data.cnae_fiscal?.toString() || "",
+      };
+
+      setFormData((prev: any) => ({
+        ...prev,
+        ...novosDados,
       }));
 
       toast.success("Dados carregados com sucesso!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Erro ao pesquisar CNPJ!");
+    } catch (error: any) {
+      if (error.name === "TypeError" && error.message.includes("Failed to fetch")) {
+        toast.error("Erro de rede! Verifique sua conexão com a internet");
+      } else {
+        toast.error("Erro inesperado ao buscar CNPJ. Tente novamente");
+      }
     } finally {
       setLoadingCnpj(false);
     }
