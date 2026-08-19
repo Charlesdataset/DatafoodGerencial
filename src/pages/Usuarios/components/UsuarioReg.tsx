@@ -11,47 +11,45 @@ import { useSimpleFormValidation } from "../../../hooks/useSimpleFormValidation"
 import { api } from "../../../services/api";
 import type { Usuario } from "../types/Usuario.ts";
 import { Switch } from "../../../components/Switch/Switch";
+import { useApp } from "../../../contexts/AppContext";
 
 interface UsuarioRegProps {
   onBack: () => void;
 }
 
 interface Permissoes {
-  // Cliente
   cliente_entrar: boolean;
   cliente_editar: boolean;
   cliente_excluir: boolean;
   cliente_incluir: boolean;
   cliente_relatorio: boolean;
-  // Usuário
   usuario_entrar: boolean;
   usuario_editar: boolean;
   usuario_excluir: boolean;
   usuario_incluir: boolean;
   usuario_relatorio: boolean;
-  // Plano
   plano_entrar: boolean;
   plano_editar: boolean;
   plano_excluir: boolean;
   plano_incluir: boolean;
   plano_relatorio: boolean;
-  // Gerais
   dashboard: boolean;
   configuracao: boolean;
 }
 
-const franquiaOptions = [
-  { value: "1", label: "DATASET" },
-  { value: "2", label: "ARS" },
-  { value: "3", label: "GIGABYTE" },
-];
+// 🔥 MAPEAMENTO DE FRANQUIA PARA ID
+const getFranquiaId = (nome: string): number => {
+  if (nome === "DATASET") return 1;
+  if (nome === "ARS") return 2;
+  if (nome === "GIGABYTE") return 3;
+  return 1;
+};
 
 const validatorsCadastro = {
   nome_usuario: formValidators.compose(
     formValidators.required("Nome é obrigatório"),
     formValidators.maxLength(100, "Nome deve ter no máximo 100 caracteres")
   ),
-  id_franquia: formValidators.required("Franquia é obrigatória"),
   senha: formValidators.compose(
     formValidators.required("Senha é obrigatória"),
     formValidators.minLength(3, "Senha deve ter no mínimo 3 caracteres")
@@ -63,13 +61,11 @@ const validatorsEdicao = {
     formValidators.required("Nome é obrigatório"),
     formValidators.maxLength(100, "Nome deve ter no máximo 100 caracteres")
   ),
-  id_franquia: formValidators.required("Franquia é obrigatória"),
   senha: formValidators.compose(
     formValidators.minLength(3, "Senha deve ter no mínimo 3 caracteres")
   ),
 };
 
-// PERMISSÕES INICIAIS PADRÃO
 const permissoesIniciais: Permissoes = {
   cliente_entrar: false,
   cliente_editar: false,
@@ -94,6 +90,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const location = useLocation();
   const { emit, subscribe } = useNavigation();
+  const { companyInfo } = useApp();
   const isEditing = Boolean(location.state?.row);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -105,10 +102,14 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 🔥 USA A FRANQUIA LOGADA COMO PADRÃO
+  const franquiaId = getFranquiaId(companyInfo?.franquia || "DATASET");
+  const nomeFranquia = companyInfo?.franquia || "DATASET";
+
   const initialFormData = {
     id_usuario: 0,
     nome_usuario: "",
-    id_franquia: 1,
+    id_franquia: franquiaId,
     senha: "",
     ativo: true,
     permissoes: permissoesIniciais,
@@ -121,7 +122,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
   const { validateAll, formData, textFieldProps, setFormData } = validation;
 
   const nomeField = textFieldProps("nome_usuario");
-  const franquiaField = textFieldProps("id_franquia");
   const senhaField = textFieldProps("senha");
 
   const dataRoute = JSON.parse(localStorage.getItem('dataRouteUsuario') || '{}');
@@ -163,7 +163,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
       setFormData({
         id_usuario: row.idUsuario,
         nome_usuario: row.nome,
-        id_franquia: row.franquiaId,
+        id_franquia: row.franquiaId || franquiaId,
         senha: "",
         ativo: row.ativo,
         permissoes: permissoes,
@@ -244,7 +244,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
     });
   };
 
-  // FUNÇÃO PARA SELECIONAR/DESELECIONAR TODAS AS PERMISSÕES DE UM MÓDULO
   const toggleAllPermissoes = (modulo: string, checked: boolean) => {
     const permissoesKeys: Record<string, (keyof Permissoes)[]> = {
       cliente: ['cliente_entrar', 'cliente_editar', 'cliente_excluir', 'cliente_incluir', 'cliente_relatorio'],
@@ -267,7 +266,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
     });
   };
 
-  // VERIFICA SE TODAS AS PERMISSÕES DE UM MÓDULO ESTÃO MARCADAS
   const isAllChecked = (modulo: string): boolean => {
     const permissoesKeys: Record<string, (keyof Permissoes)[]> = {
       cliente: ['cliente_entrar', 'cliente_editar', 'cliente_excluir', 'cliente_incluir', 'cliente_relatorio'],
@@ -281,7 +279,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
     return keys.every(key => formData.permissoes[key] === true);
   };
 
-  // COR VERDE PRA TODOS OS SWITCHES
   const switchStyle = {
     '--switch-color': '#42ab8a',
     '--switch-checked-color': '#42ab8a'
@@ -305,13 +302,10 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                     value={formData.nome_usuario}
                     onChange={(e) => setFormData({ ...formData, nome_usuario: e.target.value })}
                     error={nomeField.error}
-                    onBlur={() => {}}
+                    autoComplete="off" 
                   />
-                </Fluid>
 
-                <Fluid xs={[33.33, 33.33, 33.33]} rowGap={16}>
-
-   <TextBox
+                  <TextBox
                     label="Senha"
                     required={!isEditing}
                     className="mb-0"
@@ -323,26 +317,9 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                     value={formData.senha}
                     onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
                     error={senhaField.error}
-                    onBlur={() => {}}
+                    autoComplete="off" 
                   />
-
-
-                  <Select
-                    label="Franquia"
-                    required
-                    className="mb-0"
-                    value={String(formData.id_franquia)}
-                    options={franquiaOptions}
-                    disabled={isEditing && !podeEditar}
-                    onChange={(value: string) => {
-                      setFormData({ ...formData, id_franquia: parseInt(value) });
-                    }}
-                    error={franquiaField.error}
-                  />
-
-               
-
-                  <Select
+  <Select
                     label="Status"
                     className="mb-0"
                     value={formData.ativo ? "true" : "false"}
@@ -355,6 +332,22 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                       setFormData({ ...formData, ativo: value === "true" });
                     }}
                   />
+               
+                  <TextBox
+                    label="Franquia"
+                    className="mb-0"
+                    isFormField={false}
+                    value={nomeFranquia}
+                    readOnly
+                    disabled
+                    style={{ 
+                      backgroundColor: '#f5f5f5',
+                      cursor: 'not-allowed',
+                      color: '#333'
+                    }}
+                  />
+
+                
                 </Fluid>
               </Fluid>
             ) : (
@@ -369,7 +362,6 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                   value={formData.nome_usuario}
                   onChange={(e) => setFormData({ ...formData, nome_usuario: e.target.value })}
                   error={nomeField.error}
-                  onBlur={() => {}}
                 />
 
                 <TextBox
@@ -384,21 +376,7 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                   value={formData.senha}
                   onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
                   error={senhaField.error}
-                  onBlur={() => {}}
                 />
-                <Select
-                  label="Franquia"
-                  required
-                  className="mb-0"
-                  value={String(formData.id_franquia)}
-                  options={franquiaOptions}
-                  disabled={isEditing && !podeEditar}
-                  onChange={(value: string) => {
-                    setFormData({ ...formData, id_franquia: parseInt(value) });
-                  }}
-                  error={franquiaField.error}
-                />
-
 
                 <Select
                   label="Status"
@@ -413,10 +391,25 @@ const UsuarioReg: React.FC<UsuarioRegProps> = ({ onBack }) => {
                     setFormData({ ...formData, ativo: value === "true" });
                   }}
                 />
+          
+                <TextBox
+                  label="Franquia"
+                  className="mb-0"
+                  isFormField={false}
+                  value={nomeFranquia}
+                  readOnly
+                  disabled
+                  style={{ 
+                    backgroundColor: '#f5f5f5',
+                    cursor: 'not-allowed',
+                    color: '#333'
+                  }}
+                />
+
               </Fluid>
             )}
 
-            {/* PERMISSÕES ESPECÍFICAS POR TELA - 3 COLUNAS LADO A LADO */}
+     
             <div className="mt-4">
               <label 
                 className="mb-3 d-block" 

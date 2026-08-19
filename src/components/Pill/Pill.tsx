@@ -19,24 +19,41 @@ export interface PillProps {
   variant?: PillVariant;
   /** Callback ao clicar no × — se omitido, o botão não aparece */
   onRemove?: () => void;
+  /** 🔥 NOVO: Callback ao clicar no pill inteiro */
+  onClick?: () => void;
   /** Classe extra no container */
   className?: string;
   /** Qualquer prop HTML adicional */
   style?: React.CSSProperties;
 }
 
-const Pill: React.FC<PillProps> = ({ label, color = "#94a3b8", size = "md", variant = "solid", onRemove, className = "", style }) => {
+const Pill: React.FC<PillProps> = ({ 
+  label, 
+  color = "#94a3b8", 
+  size = "md", 
+  variant = "solid", 
+  onRemove, 
+  onClick,
+  className = "", 
+  style 
+}) => {
   const isSolid = variant === "solid";
 
   const containerStyle: React.CSSProperties = {
     backgroundColor: isSolid ? color : "transparent",
     borderColor: color,
     color: isSolid ? getContrastColor(color) : color,
+    cursor: onClick ? "pointer" : "default",
     ...style,
   };
 
   return (
-    <span className={[styles.pill, styles[size], styles[variant], className].filter(Boolean).join(" ")} style={containerStyle} title={label}>
+    <span 
+      className={[styles.pill, styles[size], styles[variant], className].filter(Boolean).join(" ")} 
+      style={containerStyle} 
+      onClick={onClick}
+      title={label}
+    >
       <span className={styles.label}>{label}</span>
 
       {onRemove && (
@@ -77,8 +94,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 
 function getContrastColor(color: string): string {
   const rgb = hexToRgb(color);
-  if (!rgb) return "#ffffff"; // fallback para não-hex
-  // Luminância relativa (W3C)
+  if (!rgb) return "#ffffff";
   const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
   return luminance > 0.55 ? "#1e293b" : "#ffffff";
 }

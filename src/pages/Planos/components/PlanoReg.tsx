@@ -9,15 +9,32 @@ import { useNavigation } from "../../../contexts/NavigationContext";
 import { formValidators } from "../../../hooks/formValidators";
 import { useSimpleFormValidation } from "../../../hooks/useSimpleFormValidation";
 import { api } from "../../../services/api";
-import type { Plano, PlanoFormData } from "../types/Plano";
-import { FormButton } from "../../../components/Inputs/Button/FormButton";
+import type { Plano, PlanoFormData, Recurso } from "../types/Plano";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faCancel } from "@fortawesome/free-solid-svg-icons";
-import { Flex } from "../../../components/Layout";
+import {
+  faPlus,
+  faTrash,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import { Switch } from "../../../components/Switch/Switch";
+import Pill from "../../../components/Pill/Pill";
 
 interface PlanoRegProps {
   onBack: () => void;
 }
+
+const TODOS_RECURSOS = [
+  { codigo: 'cad_produtos', label: 'Produtos' },
+  { codigo: 'cad_clientes', label: 'Clientes' },
+  { codigo: 'cad_balcao', label: 'Balcão' },
+  { codigo: 'fis_nfce', label: 'NFC-e' },
+  { codigo: 'cad_turnos', label: 'Turnos' },
+  { codigo: 'cad_mesas', label: 'Mesas' },
+  { codigo: 'cad_delivery', label: 'Delivery' },
+  { codigo: 'fin_dre', label: 'DRE' },
+  { codigo: 'fis_nfe', label: 'NF-e' },
+  { codigo: 'com_whatsapp', label: 'WhatsApp' },
+];
 
 const validators = {
   descricao: formValidators.compose(
@@ -89,21 +106,12 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
   const usuariosField = textFieldProps("usuariosMax");
   const valorField = textFieldProps("valorMensal");
 
-  // 🔥 USA A PERMISSÃO ESPECÍFICA DE PLANO
   const dataRoute = JSON.parse(localStorage.getItem('dataRoutePlano') || '{}');
   const podeEditar = dataRoute.editar || false;
   const podeEntrar = dataRoute.entrar || false;
 
   useEffect(() => {
-    if (isEditing && !podeEntrar) {
-      toast.error("Você não tem permissão para acessar a tela de edição");
-      onBack();
-      return;
-    }
-  }, [isEditing, podeEntrar]);
-
-  useEffect(() => {
-    if (location.state?.row) {
+    if (isEditing && location.state?.row) {
       const row = location.state.row as Plano;
       setFormData({
         id_plano: row.id_plano,
@@ -115,10 +123,37 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
         diasValidade: row.diasValidade || null,
         ordem: row.ordem || 0,
         ativo: row.ativo,
-        recursos: [],
+        recursos: row.recursos || [],
       });
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (isEditing && location.state?.row) {
+      const row = location.state.row as Plano;
+      fetchRecursosPlano(row.id_plano);
+    }
+  }, [isEditing]);
+
+  const fetchRecursosPlano = async (idPlano: number) => {
+    try {
+      const response = await api.get(`/gerencial/planos/${idPlano}/recursos`);
+      setFormData(prev => ({
+        ...prev,
+        recursos: response.data || [],
+      }));
+    } catch (error) {
+      console.error("Erro ao carregar recursos do plano:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isEditing && !podeEntrar) {
+      toast.error("Você não tem permissão para acessar a tela de edição");
+      onBack();
+      return;
+    }
+  }, [isEditing, podeEntrar]);
 
   useEffect(() => {
     const unsubscribeOnCommit = subscribe("onRequestCommit", () => {
@@ -161,7 +196,7 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
         diasValidade: formData.diasValidade || null,
         ordem: formData.ordem || 0,
         ativo: formData.ativo,
-        recursos: formData.recursos,
+        recursos: formData.recursos || [],
       };
 
       const response = isEditing
@@ -188,6 +223,55 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
     }
   };
 
+  const handleRecursoToggle = (codigo: string) => {
+    const novosRecursos = [...(formData.recursos || [])];
+    const index = novosRecursos.findIndex(r => r.codigoFormulario === codigo);
+    
+    if (index >= 0) {
+      novosRecursos.splice(index, 1);
+    } else {
+      novosRecursos.push({ codigoFormulario: codigo, liberado: true });
+    }
+    
+    setFormData({ ...formData, recursos: novosRecursos });
+  };
+
+  const handleLiberadoToggle = (codigo: string) => {
+    const novosRecursos = [...(formData.recursos || [])];
+    const index = novosRecursos.findIndex(r => r.codigoFormulario === codigo);
+    
+    if (index >= 0) {
+      novosRecursos[index].liberado = !novosRecursos[index].liberado;
+      setFormData({ ...formData, recursos: novosRecursos });
+    }
+  };
+
+  const handleRemoverRecurso = (codigo: string) => {
+    const novosRecursos = (formData.recursos || []).filter(r => r.codigoFormulario !== codigo);
+    setFormData({ ...formData, recursos: novosRecursos });
+  };
+
+  const adicionarTodosRecursos = () => {
+    const todos = TODOS_RECURSOS.map(r => ({
+      codigoFormulario: r.codigo,
+      liberado: true
+    }));
+    setFormData({ ...formData, recursos: todos });
+  };
+
+  const removerTodosRecursos = () => {
+    setFormData({ ...formData, recursos: [] });
+  };
+
+  const isRecursoSelecionado = (codigo: string) => {
+    return (formData.recursos || []).some(r => r.codigoFormulario === codigo);
+  };
+
+  const switchStyle = {
+    '--switch-color': '#42ab8a',
+    '--switch-checked-color': '#42ab8a'
+  } as React.CSSProperties;
+
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
       <Card>
@@ -206,11 +290,8 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.descricao}
                     onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
                     error={descricaoField.error}
-                    onBlur={() => {}}
                   />
-                </Fluid>
 
-                <Fluid xs={[100]} rowGap={16}>
                   <TextBox
                     label="Resumo"
                     className="mb-0"
@@ -220,7 +301,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.resumo}
                     onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
                     placeholder="Breve descrição do plano"
-                    onBlur={() => {}}
                   />
                 </Fluid>
 
@@ -235,7 +315,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.caixasMax === null ? "" : formData.caixasMax}
                     onChange={(e) => setFormData({ ...formData, caixasMax: e.target.value ? Number(e.target.value) : null })}
                     error={caixasField.error}
-                    onBlur={() => {}}
                   />
 
                   <TextBox
@@ -248,7 +327,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.usuariosMax === null ? "" : formData.usuariosMax}
                     onChange={(e) => setFormData({ ...formData, usuariosMax: e.target.value ? Number(e.target.value) : null })}
                     error={usuariosField.error}
-                    onBlur={() => {}}
                   />
                 </Fluid>
 
@@ -264,7 +342,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.valorMensal === null ? "" : formData.valorMensal}
                     onChange={(e) => setFormData({ ...formData, valorMensal: e.target.value ? Number(e.target.value) : null })}
                     error={valorField.error}
-                    onBlur={() => {}}
                   />
 
                   <TextBox
@@ -276,7 +353,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.diasValidade === null ? "" : formData.diasValidade}
                     onChange={(e) => setFormData({ ...formData, diasValidade: e.target.value ? Number(e.target.value) : null })}
                     placeholder="Opcional"
-                    onBlur={() => {}}
                   />
                 </Fluid>
 
@@ -304,7 +380,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.ordem === null ? "" : formData.ordem}
                     onChange={(e) => setFormData({ ...formData, ordem: e.target.value ? Number(e.target.value) : 0 })}
                     placeholder="0"
-                    onBlur={() => {}}
                   />
                 </Fluid>
               </Fluid>
@@ -321,7 +396,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.descricao}
                     onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
                     error={descricaoField.error}
-                    onBlur={() => {}}
                   />
 
                   <TextBox
@@ -333,7 +407,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.resumo}
                     onChange={(e) => setFormData({ ...formData, resumo: e.target.value })}
                     placeholder="Breve descrição do plano"
-                    onBlur={() => {}}
                   />
                 </Fluid>
 
@@ -348,7 +421,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.caixasMax === null ? "" : formData.caixasMax}
                     onChange={(e) => setFormData({ ...formData, caixasMax: e.target.value ? Number(e.target.value) : null })}
                     error={caixasField.error}
-                    onBlur={() => {}}
                   />
 
                   <TextBox
@@ -361,7 +433,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.usuariosMax === null ? "" : formData.usuariosMax}
                     onChange={(e) => setFormData({ ...formData, usuariosMax: e.target.value ? Number(e.target.value) : null })}
                     error={usuariosField.error}
-                    onBlur={() => {}}
                   />
 
                   <TextBox
@@ -375,7 +446,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.valorMensal === null ? "" : formData.valorMensal}
                     onChange={(e) => setFormData({ ...formData, valorMensal: e.target.value ? Number(e.target.value) : null })}
                     error={valorField.error}
-                    onBlur={() => {}}
                   />
 
                   <TextBox
@@ -387,7 +457,6 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.diasValidade === null ? "" : formData.diasValidade}
                     onChange={(e) => setFormData({ ...formData, diasValidade: e.target.value ? Number(e.target.value) : null })}
                     placeholder="Opcional"
-                    onBlur={() => {}}
                   />
 
                   <Select
@@ -413,11 +482,103 @@ const PlanoReg: React.FC<PlanoRegProps> = ({ onBack }) => {
                     value={formData.ordem === null ? "" : formData.ordem}
                     onChange={(e) => setFormData({ ...formData, ordem: e.target.value ? Number(e.target.value) : 0 })}
                     placeholder="0"
-                    onBlur={() => {}}
                   />
                 </Fluid>
               </Fluid>
             )}
+
+            {/* 🔥 SEÇÃO DE RECURSOS */}
+            <div className="mt-3">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <label style={{ fontSize: '14px', fontWeight: 500, color: '#6c757d' }}>
+                  Recursos do Plano
+                </label>
+                <div className="d-flex gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-success"
+                    onClick={adicionarTodosRecursos}
+                    disabled={isEditing && !podeEditar}
+                  >
+                    <FontAwesomeIcon icon={faPlus} className="me-1" />
+                    Todos
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={removerTodosRecursos}
+                    disabled={isEditing && !podeEditar}
+                  >
+                    <FontAwesomeIcon icon={faTrash} className="me-1" />
+                    Limpar
+                  </button>
+                </div>
+              </div>
+
+              {/* 🔥 LISTA DE RECURSOS DISPONÍVEIS COM PILL - AGORA COM onClick FUNCIONANDO */}
+              <div className="border p-2 mb-2" style={{ backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {TODOS_RECURSOS.map((recurso) => {
+                    const selecionado = isRecursoSelecionado(recurso.codigo);
+                    return (
+                      <Pill
+                        key={recurso.codigo}
+                        label={recurso.label}
+                        color={selecionado ? '#42ab8a' : '#94a3b8'}
+                        size="md"
+                        variant={selecionado ? 'solid' : 'outline'}
+                        onClick={() => handleRecursoToggle(recurso.codigo)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    );
+                  })}
+                </div>
+                <div className="mt-1">
+                  <span style={{ fontSize: '11px', color: '#6c757d' }}>
+                  Clique em um recurso para adicionar ou remover
+                  </span>
+                </div>
+              </div>
+
+              {(formData.recursos || []).length > 0 ? (
+                <div className="border p-2" style={{ backgroundColor: '#fff', borderRadius: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(200px, 1fr))', gap: '4px' }}>
+                    {(formData.recursos || []).map((recurso) => {
+                      const label = TODOS_RECURSOS.find(r => r.codigo === recurso.codigoFormulario)?.label || recurso.codigoFormulario;
+                      return (
+                        <div key={recurso.codigoFormulario} className="d-flex align-items-center justify-content-between p-1" style={{ borderBottom: '1px solid #f0f0f0' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 500 }}>{label}</span>
+                          <div className="d-flex align-items-center gap-2">
+                            <Switch
+                              checked={recurso.liberado}
+                              onChange={() => handleLiberadoToggle(recurso.codigoFormulario)}
+                              disabled={isEditing && !podeEditar}
+                              label=""
+                              variant="primary"
+                              size="sm"
+                              style={switchStyle}
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() => handleRemoverRecurso(recurso.codigoFormulario)}
+                              disabled={isEditing && !podeEditar}
+                              style={{ padding: '0 4px', fontSize: '10px' }}
+                            >
+                              <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-muted p-2" style={{ fontSize: '13px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+               Nenhum recurso selecionado. Clique nos botões acima para adicionar.
+                </div>
+              )}
+            </div>
           </Fluid>
         </Card.Body>
       </Card>

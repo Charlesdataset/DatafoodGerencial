@@ -8,6 +8,7 @@ export interface Plano {
   diasValidade: number | null;
   ordem: number;
   ativo: boolean;
+    recursos: Recurso[];
 }
 
 export interface Recurso {

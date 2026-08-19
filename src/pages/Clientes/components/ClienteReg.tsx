@@ -112,11 +112,6 @@ interface Plano {
   ativo: boolean;
 }
 
-interface Recurso {
-  codigoFormulario: string;
-  liberado: boolean;
-}
-
 interface Cidade {
   id_cidade: number;
   nome: string;
@@ -236,7 +231,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
   const { loadingCnpj, buscarCnpj } = useCnpj();
 
   const [planos, setPlanos] = useState<Plano[]>([]);
-  const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loadingPlanos, setLoadingPlanos] = useState(false);
 
   const [isCidadeModalOpen, setIsCidadeModalOpen] = useState(false);
@@ -326,19 +320,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
     }
   };
 
-  const fetchRecursos = async (idPlano: number) => {
-    if (!idPlano) {
-      setRecursos([]);
-      return;
-    }
-    try {
-      const response = await api.get(`/gerencial/planos/${idPlano}/recursos`);
-      setRecursos(response.data || []);
-    } catch (error) {
-      setRecursos([]);
-    }
-  };
-
   useEffect(() => {
     if (location.state?.row) {
       const row = location.state.row as Cliente;
@@ -352,12 +333,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
       } as ClienteFormData);
     }
   }, [location.state]);
-
-  useEffect(() => {
-    if (isEditing && formData.codigo_plano) {
-      fetchRecursos(formData.codigo_plano);
-    }
-  }, [isEditing, formData.codigo_plano]);
 
   useEffect(() => {
     const unsubscribeOnCommit = subscribe("onRequestCommit", () => {
@@ -519,7 +494,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.razao_social}
         onChange={(e) => setFormData({ ...formData, razao_social: toUpperCase(e.target.value) })}
         error={razaoSocialField.error}
-        // 🔥 REMOVIDO: onBlur={razaoSocialField.onBlur}
       />
 
       <TextBox
@@ -532,7 +506,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.fantasia}
         onChange={(e) => setFormData({ ...formData, fantasia: toUpperCase(e.target.value) })}
         error={fantasiaField.error}
-        // 🔥 REMOVIDO: onBlur={fantasiaField.onBlur}
       />
 
       <TextBox
@@ -554,7 +527,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           }
         }}
         error={cnpjField.error}
-        // 🔥 REMOVIDO: onBlur={cnpjField.onBlur}
         rightIcon={
           podeEditar && (
             <FontAwesomeIcon
@@ -590,7 +562,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.inscricao_estadual}
         onChange={(e) => setFormData({ ...formData, inscricao_estadual: e.target.value })}
         error={inscricaoEstadualField.error}
-        // 🔥 REMOVIDO: onBlur={inscricaoEstadualField.onBlur}
       />
 
       <TextBox
@@ -633,7 +604,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           }
         }}
         error={cepField.error}
-        // 🔥 REMOVIDO: onBlur={cepField.onBlur}
         rightIcon={
           podeEditar && (
             <FontAwesomeIcon
@@ -668,7 +638,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.endereco}
         onChange={(e) => setFormData({ ...formData, endereco: toUpperCase(e.target.value) })}
         error={enderecoField.error}
-        // 🔥 REMOVIDO: onBlur={enderecoField.onBlur}
       />
 
       <TextBox
@@ -681,7 +650,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.numero}
         onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
         error={numeroField.error}
-        // 🔥 REMOVIDO: onBlur={numeroField.onBlur}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "12px" }}>
@@ -695,7 +663,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           value={formData.bairro}
           onChange={(e) => setFormData({ ...formData, bairro: toUpperCase(e.target.value) })}
           error={bairroField.error}
-          // 🔥 REMOVIDO: onBlur={bairroField.onBlur}
         />
 
         <TextBox
@@ -708,7 +675,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           disabled={isEditing && !podeEditar || loadingCep}
           placeholder="UF"
           error={ufField.error}
-          // 🔥 REMOVIDO: onBlur={ufField.onBlur}
           style={{ textTransform: "uppercase" }}
         />
       </div>
@@ -724,7 +690,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         onClick={() => setIsCidadeModalOpen(true)}
         placeholder="Selecione uma cidade"
         error={cidadeField.error}
-        // 🔥 REMOVIDO: onBlur={cidadeField.onBlur}
         rightIcon={
           <FontAwesomeIcon
             icon={formData.cidade ? faTimes : faSearch}
@@ -740,7 +705,7 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           />
         }
       />
-
+      
       <TextBox
         label="Complemento"
         className="mb-0"
@@ -765,7 +730,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.responsavel_nome}
         onChange={(e) => setFormData({ ...formData, responsavel_nome: toUpperCase(e.target.value) })}
         error={responsavelField.error}
-        // 🔥 REMOVIDO: onBlur={responsavelField.onBlur}
       />
 
       <TextBox
@@ -790,7 +754,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.telefone}
         onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
         error={telefoneField.error}
-        // 🔥 REMOVIDO: onBlur={telefoneField.onBlur}
       />
 
       <TextBox
@@ -804,57 +767,11 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
         error={emailField.error}
-        // 🔥 REMOVIDO: onBlur={emailField.onBlur}
       />
     </div>
   );
 
   const renderInstalacao = () => {
-    const recursoIconeMap: Record<string, any> = {
-      'fin_dre': faChartPie,
-      'fin_balanco': faScaleBalanced,
-      'fin_extrato': faFileLines,
-      'fin_nfce': faReceipt,
-      'fin_nfe': faFileInvoice,
-      'fin_boleto': faBarcode,
-      'fin_cartao': faCreditCard,
-      'com_whatsapp': faWhatsapp,
-      'com_email': faEnvelope,
-      'com_sms': faCommentDots,
-      'com_chat': faComments,
-      'com_notificacao': faBell,
-      'fis_nfe': faFileInvoice,
-      'fis_cte': faTruck,
-      'fis_mdfe': faShip,
-      'fis_nfce': faReceipt,
-      'fis_cupom': faReceipt,
-      'cad_clientes': faUsers,
-      'cad_fornecedores': faHandshake,
-      'cad_produtos': faBoxes,
-      'cad_mesas': faChair,
-      'cad_balcao': faStore,
-      'cad_turnos': faClock,
-      'cad_turno': faClock,
-      'cad_delivery': faMotorcycle,
-      'delivery': faMotorcycle,
-      'cad_comandas': faReceipt,
-      'cad_categorias': faTags,
-      'cad_usuarios': faUserCog,
-      'cad_funcionarios': faUserTie,
-      'ger_relatorio': faChartBar,
-      'ger_dashboard': faGaugeHigh,
-      'ger_grafico': faChartLine,
-      'ven_pedidos': faShoppingCart,
-      'ven_caixa': faCashRegister,
-      'ven_balcao': faStore,
-      'ven_delivery': faMotorcycle,
-      'ven_consumacao': faMugSaucer,
-      'est_estoque': faWarehouse,
-      'est_entrada': faArrowRight,
-      'est_saida': faArrowLeft,
-      'est_transferencia': faExchangeAlt,
-    };
-
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         <TextBox
@@ -872,7 +789,6 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           }}
           placeholder="Selecione um ramo de atividade"
           error={codigoRamoField.error}
-          // 🔥 REMOVIDO: onBlur={codigoRamoField.onBlur}
           rightIcon={
             formData.codigo_ramo ? (
               <FontAwesomeIcon
@@ -931,92 +847,14 @@ const ClienteReg: React.FC<ClienteRegProps> = ({ onBack }) => {
           onChange={(value: string) => {
             if (value === "") {
               setFormData({ ...formData, codigo_plano: 0 });
-              setRecursos([]);
               return;
             }
             const numero = parseInt(value);
             setFormData({ ...formData, codigo_plano: numero });
-            if (numero) {
-              fetchRecursos(numero);
-            } else {
-              setRecursos([]);
-            }
           }}
           placeholder={loadingPlanos ? "Carregando planos..." : "Selecione um plano"}
           error={codigoPlanoField.error}
         />
-
-        {recursos.length > 0 && (
-          <div>
-            <label style={{ fontWeight: 600, fontSize: "13px", display: "block", marginBottom: "6px" }}>
-              Recursos do plano:
-            </label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "4px" }}>
-              {recursos.map((recurso) => {
-                const nomeFormatado = recurso.codigoFormulario
-                  .split('_')
-                  .map((palavra, index) => {
-                    if (index === 0) {
-                      const map: Record<string, string> = {
-                        'fin': 'Financeiro',
-                        'com': 'Comunicação',
-                        'fis': 'Físico',
-                        'cad': 'Cadastro',
-                        'ger': 'Gerencial',
-                        'ven': 'Vendas',
-                        'est': 'Estoque'
-                      };
-                      return map[palavra] || palavra.charAt(0).toUpperCase() + palavra.slice(1);
-                    }
-                    return palavra.toUpperCase();
-                  })
-                  .join(' ');
-
-                const icone = recursoIconeMap[recurso.codigoFormulario] || faCubes;
-
-                return (
-                  <div
-                    key={recurso.codigoFormulario}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      padding: "4px 10px",
-                      borderRadius: "4px",
-                      backgroundColor: recurso.liberado ? "#e8f5e9" : "#f5f5f5",
-                      border: recurso.liberado ? "1px solid #c8e6c9" : "1px solid #e0e0e0",
-                      opacity: recurso.liberado ? 1 : 0.7,
-                    }}
-                  >
-                    <FontAwesomeIcon 
-                      icon={recurso.liberado ? faCheck : faBan}
-                      style={{ 
-                        color: recurso.liberado ? "#2e7d32" : "#d32f2f",
-                        fontSize: "14px",
-                        width: "14px"
-                      }}
-                    />
-                    <FontAwesomeIcon 
-                      icon={icone}
-                      style={{ 
-                        color: recurso.liberado ? "#1b5e20" : "#999999",
-                        fontSize: "16px",
-                        width: "16px"
-                      }}
-                    />
-                    <span style={{ 
-                      fontSize: "12px", 
-                      fontWeight: recurso.liberado ? "500" : "400",
-                      color: recurso.liberado ? "#1b5e20" : "#999999"
-                    }}>
-                      {nomeFormatado}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
     );
   };
